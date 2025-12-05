@@ -950,20 +950,12 @@ int ObESQueryParser::construct_es_expr_field(ObReqColumnExpr *raw_field, ObReqEx
     ret = OB_INVALID_ARGUMENT;
     LOG_WARN("raw_field is null", K(ret));
   } else {
-    char *buf = static_cast<char *>(alloc_.alloc(OB_MAX_COLUMN_NAME_LENGTH));
-    int64_t pos = 0;
-    if (OB_ISNULL(buf)) {
-      ret = OB_ALLOCATE_MEMORY_FAILED;
-      LOG_WARN("fail to allocate memory for field param buffer", K(ret));
-    } else if (OB_FAIL(databuff_printf(buf, OB_MAX_COLUMN_NAME_LENGTH, pos, "%.*s", raw_field->expr_name.length(), raw_field->expr_name.ptr()))) {
-      LOG_WARN("fail to write field name", K(ret));
-    } else if (OB_FAIL(databuff_printf(buf, OB_MAX_COLUMN_NAME_LENGTH, pos, "^%.15g", (raw_field->weight_ == -1.0) ? 1.0 : raw_field->weight_))) {
-      LOG_WARN("fail to write field weight", K(ret));
+    ObReqColumnExpr *col_field = nullptr;
+    double weight = (raw_field->weight_ == -1.0) ? 1.0 : raw_field->weight_;
+    if (OB_FAIL(ObReqColumnExpr::construct_column_expr(col_field, alloc_, raw_field->expr_name, weight, true))) {
+      LOG_WARN("fail to create column expr for ES field", K(ret));
     } else {
-      ObString field_param_str(pos, buf);
-      if (OB_FAIL(ObReqExpr::construct_expr(field, alloc_, field_param_str))) {
-        LOG_WARN("fail to create field param expr", K(ret));
-      }
+      field = col_field;
     }
   }
   return ret;
@@ -2251,6 +2243,16 @@ int ObESQueryParser::parse_query_string(ObIJsonBase &req_node, ObEsQueryInfo &qu
     }
 
     if (OB_SUCC(ret)) {
+      if (OB_SUCC(parse_query_string_operator(req_node, query_info))) {
+        parsed_keys++;
+      } else if (ret == OB_SEARCH_NOT_FOUND) {
+        ret = OB_SUCCESS;
+      } else {
+        LOG_WARN("fail to parse query_string operator", K(ret));
+      }
+    }
+
+    if (OB_SUCC(ret)) {
       if (OB_SUCC(parse_query_string_fields(req_node, query_info))) {
         parsed_keys++;
       } else {
@@ -2263,16 +2265,6 @@ int ObESQueryParser::parse_query_string(ObIJsonBase &req_node, ObEsQueryInfo &qu
         parsed_keys++;
       } else {
         LOG_WARN("fail to parse query_string query", K(ret));
-      }
-    }
-
-    if (OB_SUCC(ret)) {
-      if (OB_SUCC(parse_query_string_operator(req_node, query_info))) {
-        parsed_keys++;
-      } else if (ret == OB_SEARCH_NOT_FOUND) {
-        ret = OB_SUCCESS;
-      } else {
-        LOG_WARN("fail to parse query_string operator", K(ret));
       }
     }
 
@@ -2507,7 +2499,8 @@ int ObESQueryParser::parse_keyword_query_string(ObEsQueryInfo &query_info,
   }
 
   if (OB_FAIL(ret)) {
-  } else if (query_info.score_type_ != SCORE_TYPE_CROSS_FIELDS) {
+  } else if (query_info.score_type_ == SCORE_TYPE_PHRASE ||
+             (query_info.score_type_ != SCORE_TYPE_CROSS_FIELDS && query_info.opr_ != T_OP_AND)) {
     common::ObSEArray<ObReqConstExpr *, 4, common::ModulePageAllocator, true> current_phrase_keywords;
     for (int64_t i = 0; OB_SUCC(ret) && i < raw_keywords.count(); i++) {
       ObReqConstExpr *current_keyword = raw_keywords.at(i);
