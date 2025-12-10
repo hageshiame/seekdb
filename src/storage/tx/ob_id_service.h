@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_TRANSACTION_OB_ID_SERVICE_
@@ -101,15 +105,12 @@ public:
   static void get_all_id_service_type(int64_t *service_type);
   static int get_id_service(const int64_t id_service_type, ObIDService *&id_service);
   static int update_id_service(const ObAllIDMeta &id_meta);
-
-  //获取数值或数值组
+  // Get the value or array of values
   int get_number(const int64_t range, const int64_t base_id, int64_t &start_id, int64_t &end_id);
-
-  //日志处理
+  // Log processing
   int handle_submit_callback(const bool success, const int64_t limited_id, const share::SCN log_ts);
   void test_lock() { WLockGuard guard(rwlock_); }
-
-  //获取回放数据
+  // Get replay data
   int handle_replay_result(const int64_t last_id, const int64_t limited_id, const share::SCN log_ts);
 
   // clog checkpoint
@@ -119,8 +120,7 @@ public:
 
   // for clog replay
   int replay(const void *buffer, const int64_t buf_size, const palf::LSN &lsn, const share::SCN &log_ts);
-
-  //切主
+  // Switch main
   int switch_to_follower_gracefully();
   void switch_to_follower_forcedly() {}
   int resume_leader() { return OB_SUCCESS; }
@@ -131,8 +131,7 @@ public:
   void reset_ls();
   void update_limited_id(const int64_t limited_id, const share::SCN latest_log_ts);
   int update_ls_id_meta(const bool write_slog);
-
-  // 虚表
+  // vtable
   void get_virtual_info(int64_t &last_id, int64_t &limited_id, share::SCN &rec_log_ts,
                         share::SCN &latest_log_ts, int64_t &pre_allocated_range,
                         int64_t &submit_log_ts, bool &is_master);
@@ -141,23 +140,23 @@ public:
 protected:
   typedef common::SpinWLockGuard  WLockGuard;
   typedef common::SpinRLockGuard  RLockGuard;
-  //日志提交
+  // Log commit
   int submit_log_(const int64_t last_id, const int64_t limited_id);
   int submit_log_with_lock_(const int64_t last_id, const int64_t limited_id);
   int64_t max_pre_allocated_id_(const int64_t base_id);
 protected:
   ServiceType service_type_;
-  //预分配大小
+  // Pre-allocate size
   int64_t pre_allocated_range_;
-  // 当前已经分配的最大值
+  // The maximum value currently allocated
   int64_t last_id_;
-  // 回放出的临时状态
+  // Released temporary state
   int64_t tmp_last_id_;
   int64_t limited_id_;
   bool is_logging_;
   //checkpoint ts
   share::SCN rec_log_ts_;
-  //最新持久化成功的ts
+  // Latest successfully persisted ts
   share::SCN latest_log_ts_;
   // current time when submit log
   int64_t submit_log_ts_;

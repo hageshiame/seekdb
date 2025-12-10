@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include <gtest/gtest.h>
@@ -125,8 +129,7 @@ public:
   }
 
   void set_standalone(uint16_t standalone) {  }
-
-  // 用于确定key是否匹配
+  // Used to determine if the key matches
   int compare(const ObString& key, int& res) { 
     UNUSED(key); 
     res = 0; 
@@ -147,13 +150,13 @@ public:
   bool has_flags(ObMulModeNodeFlag flag) { return false; }
   bool get_unparse() { return false; }
   bool get_is_empty() { return false; }
-  // 返回节点具体类型
-  // 例如：json返回jsonInt，jsonDouble
-  // xml 返回xmlElment, XmlAttribute
+  // Return the specific type of the node
+  // For example: json returns jsonInt, jsonDouble
+  // xml returns xmlElment, XmlAttribute
   int node_type() const { return 0; }
 
   // @return see ObObjType.
-  // 用于对应该数据的原始sql类型，当前是json在使用
+  // Used to correspond to the original sql type of this data, currently json is in use
   ObObjType field_type() const { return ObNullType;}
 
   virtual int append(ObIMulModeBase* node)

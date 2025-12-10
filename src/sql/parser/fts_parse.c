@@ -1,18 +1,22 @@
-/**
- * Copyright (c) 2024 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "fts_parse.h"
 #include "ftsblex_lex.h"
-#include "ftsparser_tab.h"  // Bison 生成的头文件
+#include "ftsparser_tab.h"  // Bison generated header file
 
 
 extern int obsql_fts_yyparse(void* yyscanner);
@@ -29,9 +33,9 @@ void fts_parse_docment(const char *input, const int length, void * pool, FtsPars
     ss->charset_info_ = NULL;
     ss->malloc_pool_ = pool;
     obsql_fts_yylex_init_extra(ss, &scanner);
-    YY_BUFFER_STATE bufferState = obsql_fts_yy_scan_bytes(input, length, scanner);  // 读取字符串
+    YY_BUFFER_STATE bufferState = obsql_fts_yy_scan_bytes(input, length, scanner);  // read string
     ss->yyscanner_ = scanner;
-    obsql_fts_yyparse(ss);  // 调用语法分析器
-    obsql_fts_yy_delete_buffer(bufferState, scanner);  // 删除缓冲区
+    obsql_fts_yyparse(ss);  // call the parser
+    obsql_fts_yy_delete_buffer(bufferState, scanner);  // delete buffer
     obsql_fts_yylex_destroy(scanner);
 }

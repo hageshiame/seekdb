@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX LIB
@@ -1182,7 +1186,7 @@ static int use_daemon()
   return ret;
 }
 
-int start_daemon(const char *pidfile)
+int start_daemon(const char *pidfile, bool skip_daemon)
 {
   int ret = OB_SUCCESS;
 
@@ -1195,7 +1199,7 @@ int start_daemon(const char *pidfile)
   }
 
   // start daemon
-  if (OB_SUCC(ret) && OB_FAIL(use_daemon())) {
+  if (OB_SUCC(ret) && !skip_daemon && OB_FAIL(use_daemon())) {
     LOG_ERROR("create daemon process fail", K(ret));
   }
 
@@ -2105,6 +2109,74 @@ int64_t calculate_scaled_value_by_memory(int64_t min_value, int64_t max_value)
   // calculate target value
   int64_t value = static_cast<int64_t>(min_value + memory_ratio * (max_value - min_value));
   return value;
+}
+
+int get_os_info(char *name, int64_t name_size, char *release, int64_t release_size)
+{
+  int ret = OB_SUCCESS;
+  if (OB_ISNULL(name) || name_size <= 0 || OB_ISNULL(release) || release_size <= 0) {
+    ret = OB_INVALID_ARGUMENT;
+    LOG_WARN("Invalid argument", K(ret), KP(name), K(name_size), KP(release), K(release_size));
+  } else {
+    FILE *file = fopen("/etc/os-release", "r");
+    if (NULL == file) {
+      LOG_WARN("Failed to open /etc/os-release", K(ret));
+      ret = OB_IO_ERROR;
+    } else {
+      char line[64];
+      char value[64];
+      while (fgets(line, sizeof(line), file) != nullptr) {
+        if (1 == sscanf(line, "ID=%s", value)) {
+          strncpy(name, value + 1, MIN(name_size, strlen(value) - 2));
+        } else if (1 == sscanf(line, "VERSION_ID=%s", value)) {
+          strncpy(release, value + 1, MIN(release_size, strlen(value) - 2));
+        }
+      }
+      fclose(file);
+    }
+  }
+  return ret;
+}
+
+int get_cpu_model(char *buf, int64_t buf_size)
+{
+  int ret = OB_SUCCESS;
+  if (OB_ISNULL(buf) || buf_size <= 0) {
+    ret = OB_INVALID_ARGUMENT;
+    LOG_WARN("Invalid argument", K(ret), KP(buf), K(buf_size));
+  } else {
+    FILE *file = fopen("/proc/cpuinfo", "r");
+    if (NULL == file) {
+      LOG_WARN("Failed to open /proc/cpuinfo", K(ret));
+      ret = OB_IO_ERROR;
+    } else {
+      char line[256];
+      while (fgets(line, sizeof(line), file)) {
+        if (NULL != strstr(line, "model name")) {
+          char *colon = strchr(line, ':');
+          if (NULL != colon) {
+            // skip ":" and " "
+            colon++;
+            while (*colon == ' ' || *colon == '\t') {
+              colon++;
+            }
+
+            size_t len = strlen(colon);
+            if (len > 0 && '\n' == colon[len - 1]) {
+              colon[len - 1] = '\0';
+              len--;
+            }
+
+            strncpy(buf, colon, buf_size - 1);
+            buf[buf_size - 1] = '\0';
+            break;
+          }
+        }
+      }
+      fclose(file);
+    }
+  }
+  return ret;
 }
 
 } // end namespace common

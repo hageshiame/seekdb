@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SERVER
@@ -162,13 +166,13 @@ int ObTableLoadSchema::get_user_column_schemas(const ObTableSchema *table_schema
         ret = OB_ERR_UNEXPECTED;
         LOG_WARN("The column is null", KR(ret));
       } else if (column_schema->is_hidden()) {
-        // 不显示隐藏列(堆表隐藏主键列,快速删除列,?)
+        // Do not display hidden columns (heap table hidden primary key column, quick delete column, ?)
       } else if (column_schema->is_unused()) {
-        // 不显示快速删除列
+        // Do not display the quick delete column
       } else if (column_schema->is_invisible_column() && !contain_invisible_column) {
-        // 不显示invisible列
+        // Do not display invisible column
       } else if (column_schema->is_shadow_column()) {
-        // 不显示shadow列
+        // Do not display the shadow column
       } else if (OB_FAIL(column_schemas.push_back(column_schema))) {
         LOG_WARN("fail to push back column schema", KR(ret));
       }
@@ -329,7 +333,7 @@ int ObTableLoadSchema::get_tenant_optimizer_gather_stats_on_load(const uint64_t 
   SMART_VAR(ObMySQLProxy::MySQLResult, res)
   {
     sqlclient::ObMySQLResult *result = nullptr;
-    // TODO(suzhi.yt) 这里为啥是带zone纬度的? 如果查询结果中有多个zone的, 选哪个作为返回值呢?
+    // TODO(suzhi.yt) Why is it with zone dimension? If there are multiple zones in the query results, which one should be returned?
     if (OB_FAIL(sql.assign_fmt(
           "SELECT value FROM %s WHERE tenant_id = %ld and (zone, name, schema_version) in (select "
           "zone, name, max(schema_version) FROM %s group by zone, name) and name = '%s'",

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_OBSERVER_MYSQL_OBMP_STMT_PREXECUTE_H_
@@ -145,11 +149,11 @@ private:
   common::ObString sql_;
   uint64_t sql_len_;
   /*
-   * iteration_count_ 的含义
-   *  1. DML 语句 + iteration_count_ > 1 表示当前是 arraybinding 模式
-   *  2. arraybinding 模式下， 此值代表了 array 的大小
-   *  3. exact_fetch + select 模式下， 此值代表了返回结果集的大小
-   *  4. 其余场景，此值 > 0 表示需要有结果集返回
+   * the meaning of iteration_count_
+   *  1. DML statement + iteration_count_ > 1 indicates that the current mode is arraybinding mode
+   *  2. in arraybinding mode, this value represents the size of the array
+   *  3. in exact_fetch + select mode, this value represents the size of the result set returned
+   *  4. in other scenarios, this value > 0 indicates that a result set needs to be returned
    **/ 
   int32_t iteration_count_;
   uint32_t exec_mode_;

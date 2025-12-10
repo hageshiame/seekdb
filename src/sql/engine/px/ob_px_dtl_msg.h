@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef _OB_SQL_PX_DTL_MSG_H_
@@ -95,16 +99,15 @@ public:
   }
   TO_STRING_KV(K_(sched_exec_time_start), K_(sched_exec_time_end), K_(exec_time_start), K_(exec_time_end), K(metrics_.count()));
 private:
-  int64_t sched_exec_time_start_;          //sqc观察到的task执行开始时间戳
-  int64_t sched_exec_time_end_;            //sqc观察到的task执行结束时间戳
-  int64_t exec_time_start_;                //task执行开始时间
-  int64_t exec_time_end_;                  //task执行结束时间
+  int64_t sched_exec_time_start_;          // sqc observed task execution start timestamp
+  int64_t sched_exec_time_end_;            // sqc observed task execution end timestamp
+  int64_t exec_time_start_;                // task execution start time
+  int64_t exec_time_end_;                  // task execution end time
   common::ObSEArray<sql::ObOpMetric, 1> metrics_;     // operator metric
 };
 
 typedef common::ObSEArray<ObPxTaskMonitorInfo, 1> ObPxTaskMonitorInfoArray;
-
-// 每个 Task 都有一组输出 channel，对接 consumer DFO 的所有 Task
+// Each Task has a set of output channels, connecting to all Tasks of the consumer DFO
 class ObPxTaskChSet : public dtl::ObDtlChSet
 {
   OB_UNIS_VERSION(1);
@@ -124,8 +127,7 @@ private:
   int64_t task_id_;
   int64_t sm_group_id_;
 };
-
-// 每个 SQC 都包含多个 Task，这个结构用于记录它们的全部 channel
+// Each SQC contains multiple Tasks, this structure is used to record all their channels
 typedef common::ObArray<ObPxTaskChSet,
                         common::ModulePageAllocator,
                         false /*auto free*/ > ObPxTaskChSets;
@@ -168,16 +170,15 @@ private:
 typedef common::ObArray<ObPxBloomFilterChSet,
                         common::ModulePageAllocator,
                         false /*auto free*/ > ObPxBloomFilterChSets;
-
-// partition map格式：
-// 老的形式： first: tablet_id second: 全局task_idx
-// 新的形式： 2种情况
+// partition map format:
+// Old format: first: tablet_id second: global task_idx
+// New form: 2 situations
 //        case1: first：tablet_id, second: prefix_task_count, third: sqc_task_idx
-//               case1是普通partition wise join下的场景，之前为了获取task_idx重新遍历了所有task，代价比较高
-//               新的方式则仅仅记录 prefix_task_count 和 sqc的task_idx，只要两者之和就可以得到真正的task_idx
+//               case1 is the scenario under normal partition wise join, previously we re-traversed all tasks to get task_idx, which was quite costly
+//               The new approach only records prefix_task_count and sqc's task_idx, as long as their sum can get the real task_idx
 //        case2: first：tablet_id, second: prefix_task_count
-//               在slave mapping等场景，partition是发送到sqc所有worker，所以这里只记录了sqc的sqc_id
-//               worker在后续拿的时候直接构建整个sqc所有worker之间的映射即可
+//               In slave mapping scenarios, partition is sent to all workers of sqc, so here only sqc's sqc_id is recorded
+//               worker fetches the entire sqc mapping directly from subsequent workersis sufficient
 struct ObPxPartChMapItem
 {
   OB_UNIS_VERSION(1);
@@ -263,8 +264,8 @@ public:
   }
   TO_STRING_KV(K_(child_dfo_id), K_(ch_sets), K_(ch_total_info));
 private:
-  // 通过 child_dfo_id 来判断本 ch_sets_
-  // 属于哪个 ReceiveOp (一个DFO可以有多个ReceiveOp)
+  // Through child_dfo_id to judge this ch_sets_
+  // Belongs to which ReceiveOp (a DFO can have multiple ReceiveOps)
   int64_t child_dfo_id_;
   ObPxTaskChSets ch_sets_;
   dtl::ObDtlChTotalInfo ch_total_info_;
@@ -335,7 +336,7 @@ public:
 private:
   ObPxTaskChSets ch_sets_;
   dtl::ObDtlChTotalInfo ch_total_info_;
-  ObPxPartChMapArray part_affinity_map_; // partition wise join 时寻址 channel
+  ObPxPartChMapArray part_affinity_map_; // partition wise join when addressing channel
   bool has_filled_channel_;
 };
 
@@ -361,7 +362,7 @@ public:
 public:
   int64_t dfo_id_;
   int64_t sqc_id_;
-  int rc_; // 错误码
+  int rc_; // error code
   int64_t task_count_;
   ObPxUserErrorMsg err_msg_; // for error msg & warning msg
   // No need to serialize
@@ -412,12 +413,12 @@ public:
 public:
   int64_t dfo_id_;
   int64_t sqc_id_;
-  int rc_; // 错误码
+  int rc_; // error code
   int das_retry_rc_; //record the error code that cause DAS to retry
   transaction::ObTxExecResult trans_result_;
   ObPxTaskMonitorInfoArray task_monitor_info_array_; // deprecated, keep for compatiblity
-  int64_t sqc_affected_rows_; // pdml情况下，一个sqc 影响的行数
-  ObPxDmlRowInfo dml_row_info_; // SQC存在DML算子时, 需要统计行 信息
+  int64_t sqc_affected_rows_; // pdml case, the number of rows affected by an sqc
+  ObPxDmlRowInfo dml_row_info_; // SQC exists DML operator, need to statistics row information
   uint64_t temp_table_id_;
   ObSEArray<uint64_t, 8> interm_result_ids_;
   ObExecFeedbackInfo fb_info_;

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "ob_tmp_file_meta_tree.h"
@@ -2746,8 +2750,7 @@ int ObSharedNothingTmpFileMetaTree::get_need_evict_page_num(
   }
   return ret;
 }
-
-//NOTE: 这个页被取出来时，并没有加锁，到时候可能需要为write_cache的读写单独弄一把锁
+//NOTE: This page was retrieved without locking, so it may be necessary to have a separate lock for read/write operations on write_cache
 int ObSharedNothingTmpFileMetaTree::get_page_(
     const ObSharedNothingTmpFileMetaItem &page_info,
     const int32_t level_page_index,
@@ -3056,8 +3059,7 @@ int ObSharedNothingTmpFileMetaTree::read_item_(
   }
   return ret;
 }
-
-// XXX 增加 page 物理范围校验；
+// XXX add page physical range validation;
 template<typename ItemType>
 int ObSharedNothingTmpFileMetaTree::read_item_(
     const char* page_buff,

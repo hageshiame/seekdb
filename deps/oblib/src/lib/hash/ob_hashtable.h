@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef  OCEANBASE_COMMON_HASH_HASHTABLE_
@@ -1332,13 +1336,12 @@ public:
   {
     return read_atomic(key, callback, preproc_);
   }
-
-  // 该原子操作在bucket上添加的写锁,
-  // 如果节点存在，调用 callback 进行修改，如果节点不存在，插入该节点
+  // This atomic operation adds a write lock on the bucket,
+  // If the node exists, call callback to modify it, if the node does not exist, insert the node
   //
-  // 返回值：
-  //   OB_SUCCESS 表示成功
-  //   其它 表示出错
+  // Return value:
+  //   OB_SUCCESS indicates success
+  //   other indicates an error
   template<class _callback>
   int set_or_update(const _key_type &key, const _value_type &value,
                     _callback &callback)
@@ -1631,9 +1634,8 @@ public:
     }
     return ret;
   }
-
-  // 不存在就插入，存在就调用 callback 修改
-  // 该原子操作在bucket上添加的写锁
+  // Not exist then insert, exist then call callback to modify
+  // This atomic operation adds a write lock on the bucket
   template<class _callback, class _preproc>
   int set_or_update(const _key_type &key, const _value_type &value,
                     _callback &callback, _preproc &preproc)

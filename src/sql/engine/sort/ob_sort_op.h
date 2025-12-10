@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SQL_ENGINE_SORT_SORT_OP_H_
@@ -45,10 +49,10 @@ public:
   ObExpr *topk_limit_expr_;
   ObExpr *topk_offset_expr_;
   // sort exprs + output_exprs
-  // 理论上这里应该是包含上层Operator需要的所有行
-  // 因为如果不包含，则上层就无法得到对应列的正确值
-  // 其实是所有算子都应该这样，只要有自产生数据逻辑，本质上必须包含上层operator所有Expr
-  // 否则拿到的可能就跨Operator了，则数据可能就完全乱掉了
+  // Theoretically, this should include all the lines needed by the upper-level Operator
+  // Because if it is not included, the upper layer will not be able to get the correct value of the corresponding column
+  // Actually all operators should be this way, as long as there is self-generated data logic, it essentially must include all Expr of the upper operator
+  // Otherwise the obtained data might span across Operators, then the data might be completely messed up
   ExprFixedArray all_exprs_;
   ObSortCollations sort_collations_;
   ObSortFuncs sort_cmp_funs_;

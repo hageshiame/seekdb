@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SERVER
@@ -433,34 +437,29 @@ int ObMPPacketSender::send_error_packet(int err,
     }
 
     if (ObServerConfig::get_instance().enable_rich_error_msg) {
-      // 测试过程中，如果通过proxy访问oceanbase集群，
-      // 往往不知道sql发给了哪个observer，
-      // 需要先查询proxy日志，仔细对照sql文本和错误码才能确认，十分低效。
-      // 增加本功能后，可以通过
-      //  1. ip:port直接定位到observer
-      //  2. 然后通过时间定为到日志文件
-      //  3. 最后通过trace id直接定位到日志
+      // During the test process, if accessing the OceanBase cluster through a proxy,
+      // Often it is unknown which observer the sql was sent to,
+      // Need to query the proxy logs first, carefully compare the SQL text and error codes to confirm, which is very inefficient.
+      // After adding this feature, it can be achieved through
+      //  1. ip:port directly locates to observer
+      //  2. Then time-stamp to the log file
+      //  3. Finally locate the log directly through the trace id
 
       int32_t msg_buf_size = 0;
-      const ObAddr addr = ObCurTraceId::get_addr();
 
       struct timeval tv;
       struct tm tm;
-      char addr_buf[MAX_IP_PORT_LENGTH];
       (void)gettimeofday(&tv, NULL);
       ::localtime_r((const time_t *)&tv.tv_sec, &tm);
-      addr.ip_port_to_string(addr_buf, sizeof(addr_buf));
 
       char tmp_msg_buf[MAX_MSG_BUF_SIZE];
       strncpy(tmp_msg_buf, message.ptr(), message.length()); // msg_buf is overwriten
       char trace_id_buf[OB_MAX_TRACE_ID_BUFFER_SIZE] = {'\0'};
       msg_buf_size = snprintf(msg_buf, MAX_MSG_BUF_SIZE,
                            "%.*s\n"
-                           "[%s] "
                            "[%04d-%02d-%02d %02d:%02d:%02d.%06ld] "
                            "[%s]",
                            message.length(), tmp_msg_buf,
-                           addr_buf,
                            tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
                            tm.tm_hour, tm.tm_min, tm.tm_sec, tv.tv_usec,
                               ObCurTraceId::get_trace_id_str(trace_id_buf, sizeof(trace_id_buf)));
@@ -533,9 +532,8 @@ int ObMPPacketSender::send_error_packet(int err,
       }
     }
   }
-
-  // TODO: 应该把下面这部分逻辑从send_error_packet中剥离开，因为connect失败的时候，
-  // 也需要调用send_error_packet，而此时没有session
+  // TODO: Should separate the logic below from send_error_packet because connect fails,
+  // Also need to call send_error_packet, but there is no session at this time
   //
   // for obproxy or OCJ, followed by another OK packet
   if (conn_valid_) {

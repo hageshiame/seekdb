@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX RS
@@ -130,7 +134,7 @@ Data2Compare parallel_data;
 #define TABLE_SQL "select * from oceanbase.%s where table_id < 500000 and schema_version < (select column_value from oceanbase.__all_core_table where column_name='baseline_schema_version') "
 #define ALL_TABLE_SQL TABLE_SQL "order by table_id"
 #define ALL_COLUMN_SQL TABLE_SQL "order by table_id, column_id"
-// 只获取创建租户时的第一条operation记录，检查时忽略schema_version
+// Only get the first operation record when creating a tenant, ignore schema_version when checking
 #define ALL_DDL_OPERATION_SQL "select * from oceanbase.%s where schema_version in " \
   "(select min(schema_version) a from __all_table_history where table_id < 500000 group by table_id" \
     " union "\
@@ -141,7 +145,7 @@ class ObCreateTenantCompareTest : public ObSimpleClusterTestBase
 {
 public:
   ObCreateTenantCompareTest() : ObSimpleClusterTestBase(TEST_NAME "_") {}
-  // 避免运行ObSimpleClusterTestBase里的SetUp和TearDown
+  // Avoid running SetUp and TearDown in ObSimpleClusterTestBase
   virtual void SetUp() {}
   virtual void TearDown() {}
   int start_observer(bool enable_parallel_tenant_creation = false);

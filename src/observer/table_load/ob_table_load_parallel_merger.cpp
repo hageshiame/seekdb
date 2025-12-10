@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2024 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SERVER
@@ -90,7 +94,7 @@ int ObTableLoadParallelMerger::init_merge_task(ObTableLoadMergeTableBaseOp *op)
       if (OB_FAIL(task_iter_.init(&merge_ctx_))) {
         LOG_WARN("fail to init task iter", KR(ret));
       } else {
-        // merge_task会持有table的引用计数, 这里可以先清空
+        // merge_task will hold a reference count to the table, so we can clear it here
         table_store->clear();
         store_ctx_ = op->store_ctx_;
         op_ = op;
@@ -139,19 +143,19 @@ int ObTableLoadParallelMerger::start()
     running_thread_cnt_ = thread_count;
     for (int64_t i = 0; OB_SUCC(ret) && i < thread_count; ++i) {
       ObTableLoadTask *task = nullptr;
-      // 1. 分配task
+      // 1. assign task
       if (OB_FAIL(ctx->alloc_task(task))) {
         LOG_WARN("fail to alloc task", KR(ret));
       }
-      // 2. 设置processor
+      // 2. Set processor
       else if (OB_FAIL(task->set_processor<MergeTaskProcessor>(ctx, this))) {
         LOG_WARN("fail to set merge task processor", KR(ret));
       }
-      // 3. 设置callback
+      // 3. Set callback
       else if (OB_FAIL(task->set_callback<MergeTaskCallback>(ctx, this))) {
         LOG_WARN("fail to set merge task callback", KR(ret));
       }
-      // 4. 把task放入调度器
+      // 4. Put task into scheduler
       else if (OB_FAIL(store_ctx_->task_scheduler_->add_task(i, task))) {
         LOG_WARN("fail to add task", KR(ret), K(i), KPC(task));
       }
@@ -200,12 +204,12 @@ int ObTableLoadParallelMerger::handle_merge_task_finish(ObDirectLoadIMergeTask *
                                                         int ret_code)
 {
   int ret = OB_SUCCESS;
-  // 先把任务从running队列移除
+  // First remove the task from the running queue
   {
     ObMutexGuard guard(mutex_);
     abort_unless(OB_NOT_NULL(running_task_list_.remove(merge_task)));
   }
-  // 任务可能执行成功或失败
+  // The task may succeed or fail
   ObDirectLoadTabletMergeCtx *tablet_merge_ctx = merge_task->get_merge_ctx();
   bool is_ready = false;
   if (OB_ISNULL(tablet_merge_ctx)) {
@@ -222,7 +226,7 @@ int ObTableLoadParallelMerger::handle_merge_task_finish(ObDirectLoadIMergeTask *
                OB_FAIL(insert_tablet_ctx->close())) {
       LOG_WARN("fail to close", KR(ret));
     } else {
-      // 清理
+      // cleanup
       tablet_merge_ctx->reset();
     }
   }

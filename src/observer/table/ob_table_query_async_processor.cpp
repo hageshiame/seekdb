@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SERVER
@@ -129,7 +133,7 @@ int ObTableQueryAsyncP::init_tb_ctx(ObIAllocator* allocator,
   ObObjectID tmp_first_level_part_id = OB_INVALID_ID;
   ObTabletID real_tablet_id;
   if (tablegroup_req) { 
-    if (query_ctx.part_idx_ == OB_INVALID_INDEX && query_ctx.subpart_idx_ == OB_INVALID_INDEX) { // 非分区表
+    if (query_ctx.part_idx_ == OB_INVALID_INDEX && query_ctx.subpart_idx_ == OB_INVALID_INDEX) { // non-partitioned table
       real_tablet_id = query_info.simple_schema_->get_tablet_id();
     } else if (OB_FAIL(query_info.simple_schema_->get_part_id_and_tablet_id_by_idx(query_ctx.part_idx_,
                                                                                    query_ctx.subpart_idx_,
@@ -637,7 +641,7 @@ int ObTableQueryAsyncP::query_scan_with_init(ObIAllocator *allocator, ObTableQue
   if (OB_ISNULL(allocator)) {
     ret = OB_INVALID_ARGUMENT;
     LOG_WARN("Allocator is NULL", K(ret));
-  } else if (OB_FAIL(arg_.query_.deep_copy(*allocator, query))) {  // 存储的 key range 是引用，所以这里需要深拷贝  
+  } else if (OB_FAIL(arg_.query_.deep_copy(*allocator, query))) {  // The stored key range is a reference, so a deep copy is needed here
     LOG_WARN("fail to deep copy query", K(ret), K(arg_.query_));
   } else {
     query_session_->set_req_start_time(common::ObTimeUtility::current_monotonic_time());
@@ -1014,7 +1018,7 @@ int ObTableQueryAsyncP::try_process()
 int ObTableQueryAsyncP::old_try_process()
 {
   int ret = OB_SUCCESS;
-  observer::ObReqTimeGuard req_timeinfo_guard; // 引用cache资源必须加ObReqTimeGuard
+  observer::ObReqTimeGuard req_timeinfo_guard; // Reference cache resources must add ObReqTimeGuard
   if (OB_FAIL(ObTableQueryASyncMgr::check_query_type(arg_.query_type_))) {
     LOG_WARN("query type is invalid", K(ret), K(arg_.query_type_));
   } else if (OB_FAIL(MTL(ObTableQueryASyncMgr*)->get_session_id(query_session_id_, arg_.query_session_id_, arg_.query_type_))) {

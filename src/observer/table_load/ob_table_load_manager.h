@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #pragma once
@@ -290,14 +294,12 @@ private:
   ObjAllocator<ObTableLoadTableCtx> table_ctx_alloc_;
   ObjAllocator<ObTableLoadClientTask> client_task_alloc_;
   ObjAllocator<ObTableLoadClientTaskBrief> client_task_brief_alloc_;
-
-  // map会持有对象的引用计数
+  // map will hold a reference count of the object
   ObTableLoadTableCtxMap table_ctx_map_;
   ObTableLoadClientTaskMap client_task_map_;
   ObTableLoadClientTaskBriefMap client_task_brief_map_;
-
-  // 对象的引用计数归0后, 放入gc队列
-  // client_task_brief的引用计数归0后直接释放
+  // After the reference count of the object is reduced to 0, it is placed in the gc queue
+  // client_task_brief's reference count drops to 0 and is released directly
   mutable common::ObSpinLock gc_list_lock_;
   ObArray<ObTableLoadTableCtx *> table_ctx_gc_list_;
   ObArray<ObTableLoadClientTask *> client_task_gc_list_;

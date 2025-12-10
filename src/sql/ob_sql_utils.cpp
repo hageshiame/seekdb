@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_OPT
@@ -76,8 +80,7 @@ int ObSQLUtils::check_enable_decimalint(const ObSQLSessionInfo *session, bool &e
     ret = OB_INVALID_ARGUMENT;
     LOG_WARN("session is null", K(ret));
   } else {
-    enable_decimalint = (const_cast<ObSQLSessionInfo *>(session)->is_enable_decimal_int_type()
-                         && GET_MIN_CLUSTER_VERSION() >= CLUSTER_VERSION_4_3_0_0);
+    enable_decimalint = (const_cast<ObSQLSessionInfo *>(session)->is_enable_decimal_int_type());
   }
   return ret;
 }
@@ -104,19 +107,19 @@ void ObSQLUtils::check_if_need_disconnect_after_end_trans(const int end_trans_er
                                                           const bool is_explicit,
                                                           bool &is_need_disconnect)
 {
-  // 1.对于commit操作（不管是隐式还是显式），失败的时候遇到事务模块目前没有明确指明的错误码，都采取断连接操作。
-  // 2.对于显式rollback操作，如果失败，由于客户端就算收到错误码也不知道怎么处理，因此统一都断连接。
-  // 3.对于隐式rollback操作，如果失败，这种情况是autocommit=1的情况，由于autocommit=1的分布式查询经常遇到rollback失败，
-  // 所以这种情况不断连接，如果这种情况下有特殊情况需要断连接，需要在外层调用implicit_end_trans之后自行加上断连接的逻辑。
+  // 1.For commit operation (whether implicit or explicit), when a failure occurs and the transaction module does not explicitly specify an error code, a disconnect operation is taken.
+  // 2.For explicit rollback operations, if it fails, since the client will not know how to handle it even if they receive an error code, therefore, we uniformly disconnect the connection.
+  // 3.For implicit rollback operation, if it fails, this situation is autocommit=1, due to frequent rollback failures in distributed queries with autocommit=1,
+  // So this situation keeps connecting, if there are special cases that need to disconnect under this situation, you need to add the disconnection logic yourself after calling implicit_end_trans in the outer layer.
   is_need_disconnect = false;
   if (is_rollback) {
     // rollback
     if (OB_UNLIKELY(OB_SUCCESS != end_trans_err && is_explicit)) {
-      // 显式rollback失败，要断连接
+      // Explicit rollback failed, need to disconnect
       is_need_disconnect = true;
       LOG_WARN_RET(end_trans_err, "fail to rollback explicitly, disconnect", K(end_trans_err));
     } else {
-      // 隐式rollback（不管成功还是失败），或者显式rollback成功，不用断连接
+      // Implicit rollback (regardless of success or failure), or explicit rollback success, no need to disconnect
       is_need_disconnect = false;
     }
   } else {
@@ -469,116 +472,6 @@ int ObSQLUtils::calc_const_expr(const ObRawExpr *expr,
   return ret;
 }
 
-int ObSQLUtils::is_charset_data_version_valid(ObCharsetType charset_type, const int64_t tenant_id)
-{
-  int ret = OB_SUCCESS;
-  uint64_t data_version = 0;
-  if (OB_FAIL(GET_MIN_DATA_VERSION(tenant_id, data_version))) {
-    SQL_LOG(WARN, "failed to GET_MIN_DATA_VERSION", K(ret));
-  } else if (CHARSET_LATIN1 == charset_type && data_version < DATA_VERSION_4_1_0_0 ) {
-    ret = OB_NOT_SUPPORTED;
-    SQL_LOG(WARN, "latin1 not supported when data_version < 4_1_0_0", K(ret));
-    LOG_USER_ERROR(OB_NOT_SUPPORTED, "tenant data version is less than 4.1, charset latin1 is");
-  } else if (CHARSET_GB18030_2022 == charset_type && data_version < DATA_VERSION_4_2_0_0 ) {
-    ret = OB_NOT_SUPPORTED;
-    SQL_LOG(WARN, "GB18030_2022 not supported when data_version < 4_2_0_0", K(ret));
-    LOG_USER_ERROR(OB_NOT_SUPPORTED, "tenant data version is less than 4.2, charset GB18030_2022 is");
-  } else if ((CHARSET_ASCII == charset_type || CHARSET_TIS620 == charset_type) &&
-             ((data_version < MOCK_DATA_VERSION_4_2_4_0) ||
-              (DATA_VERSION_4_3_0_0 <= data_version && data_version < DATA_VERSION_4_3_3_0))) {
-    ret = OB_NOT_SUPPORTED;
-    SQL_LOG(WARN, "charset not supported when data_version < 4_2_4_0 or between [430,433)",K(charset_type), K(ret));
-    LOG_USER_ERROR(OB_NOT_SUPPORTED, "tenant data version is less than 4.2.4 or between [430,433), charset is");
-  } else if ((CHARSET_SJIS == charset_type || CHARSET_HKSCS == charset_type || CHARSET_HKSCS31 == charset_type
-              || CHARSET_DEC8 == charset_type || CHARSET_BIG5 == charset_type || CHARSET_UTF16LE == charset_type)
-              && ((data_version < MOCK_DATA_VERSION_4_2_5_0) || (DATA_VERSION_4_3_0_0 <= data_version && data_version < DATA_VERSION_4_3_4_0))) {
-    ret = OB_NOT_SUPPORTED;
-    SQL_LOG(WARN, "charset not supported when data_version < 4_2_5_0 or between [430,434)",K(charset_type), K(ret));
-    LOG_USER_ERROR(OB_NOT_SUPPORTED, "tenant data version is less than 4.2.5 or between [430,434), charset is");
-  } else if ((CHARSET_GB2312 == charset_type || CHARSET_UJIS == charset_type || CHARSET_EUCKR == charset_type || CHARSET_EUCJPMS == charset_type || CHARSET_CP932 == charset_type
-              || CHARSET_CP850 == charset_type || CHARSET_HP8 == charset_type || CHARSET_MACROMAN == charset_type || CHARSET_SWE7 == charset_type)
-              && ((data_version < MOCK_DATA_VERSION_4_2_5_0) || (DATA_VERSION_4_3_0_0 <= data_version && data_version < DATA_VERSION_4_3_5_1)) ) {
-    ret = OB_NOT_SUPPORTED;
-    SQL_LOG(WARN, "charset not supported when data_version < 4_2_5_0 or between [430,435.1)",K(charset_type), K(ret));
-    LOG_USER_ERROR(OB_NOT_SUPPORTED, "tenant data version is less than 4.2.5 or between [430,435.1), charset is");
-  }
-  return ret;
-}
-
-int ObSQLUtils::is_collation_data_version_valid(ObCollationType collation_type, const int64_t tenant_id)
-{
-  int ret = OB_SUCCESS;
-   uint64_t data_version = 0;
-  if (OB_FAIL(GET_MIN_DATA_VERSION(tenant_id, data_version))) {
-    SQL_LOG(WARN, "failed to GET_MIN_DATA_VERSION", K(ret));
-  } else if ((data_version < MOCK_DATA_VERSION_4_2_4_0
-              || (data_version >= DATA_VERSION_4_3_0_0 && data_version < DATA_VERSION_4_3_3_0))
-             && (CS_TYPE_UTF8MB4_CROATIAN_UCA_CI == collation_type
-                 || CS_TYPE_UTF8MB4_UNICODE_520_CI == collation_type
-                 || CS_TYPE_UTF8MB4_CZECH_UCA_CI == collation_type
-                 || CS_TYPE_UTF8MB4_0900_AI_CI == collation_type)) {
-    ret = OB_NOT_SUPPORTED;
-    SQL_LOG(WARN, "Unicode collation not supported when data_version < 4_2_4_0 or between [430,433)", K(collation_type), K(ret));
-    LOG_USER_ERROR(OB_NOT_SUPPORTED, "Unicode collation not supported when data_version < 4_2_4_0 or between [430,433), unicode collation is");
-  } else if ((
-                data_version < MOCK_DATA_VERSION_4_2_5_0 || 
-                (data_version >= DATA_VERSION_4_3_0_0 && data_version < DATA_VERSION_4_3_4_0)
-              )
-              &&
-              (
-                 CS_TYPE_UTF8MB4_ZH_0900_AS_CS != collation_type &&
-                 CS_TYPE_UTF8MB4_CROATIAN_UCA_CI != collation_type &&
-                 CS_TYPE_UTF8MB4_UNICODE_520_CI != collation_type &&
-                 CS_TYPE_UTF8MB4_CZECH_UCA_CI != collation_type &&
-                 CS_TYPE_UTF8MB4_0900_AI_CI != collation_type &&
-                  ((CS_TYPE_UTF8MB4_0900_AI_CI <= collation_type && collation_type <= CS_TYPE_UTF8MB4_MN_CYRL_0900_AS_CS)
-                   || (CS_TYPE_UTF16_ICELANDIC_UCA_CI <= collation_type && collation_type <= CS_TYPE_UTF16_VIETNAMESE_CI)
-                   || (CS_TYPE_UTF8MB4_ICELANDIC_UCA_CI <= collation_type && collation_type <= CS_TYPE_UTF8MB4_VIETNAMESE_CI)
-                   || CS_TYPE_BIG5_BIN == collation_type 
-                   || CS_TYPE_BIG5_CHINESE_CI == collation_type
-                   || CS_TYPE_HKSCS31_BIN == collation_type
-                   || CS_TYPE_HKSCS_BIN == collation_type
-                   || CS_TYPE_DEC8_BIN == collation_type
-                   || CS_TYPE_DEC8_SWEDISH_CI == collation_type
-                  )
-              )) {
-    ret = OB_NOT_SUPPORTED;
-    SQL_LOG(WARN, "Unicode collation not supported when data_version < 4_2_5_0 or between [430,434)", K(collation_type), K(ret));
-    LOG_USER_ERROR(OB_NOT_SUPPORTED, "Unicode collation not supported when data_version < 4_2_5_0 or between [430,434), unicode collation is");
-  } else if ((
-               data_version < MOCK_DATA_VERSION_4_2_5_0 ||
-               (data_version >= DATA_VERSION_4_3_0_0 && data_version < DATA_VERSION_4_3_5_0)
-              )
-              &&
-              (
-                   CS_TYPE_LATIN1_GERMAN2_CI == collation_type
-                   || CS_TYPE_LATIN1_GERMAN1_CI == collation_type
-                   || CS_TYPE_LATIN1_DANISH_CI == collation_type
-                   || CS_TYPE_LATIN1_SPANISH_CI == collation_type
-                   || CS_TYPE_LATIN1_GENERAL_CI == collation_type
-                   || CS_TYPE_LATIN1_GENERAL_CS == collation_type
-              )
-            ) {
-    ret = OB_NOT_SUPPORTED;
-    SQL_LOG(WARN, "Unicode collation not supported when data_version < 4_2_5_0 or between [430,434)", K(collation_type), K(ret));
-    LOG_USER_ERROR(OB_NOT_SUPPORTED, "Unicode collation not supported when data_version < 4_2_5_0 or between [430,434), unicode collation is");
-  }
-#ifndef OB_BUILD_CLOSE_MODULES
-  if (OB_SUCC(ret)) {
-    if (data_version < DATA_VERSION_4_2_2_0 &&
-              (CS_TYPE_UTF16_UNICODE_CI == collation_type ||
-                CS_TYPE_UTF8MB4_UNICODE_CI == collation_type)) {
-      ret = OB_NOT_SUPPORTED;
-      SQL_LOG(WARN, "Unicode collation not supported when data_version < 4_2_2_0", K(collation_type), K(ret));
-      LOG_USER_ERROR(OB_NOT_SUPPORTED, "tenant data version is less than 4.2.2, unicode collation is");
-    }
-  }
-#endif
-  return ret;
-}
-
-// 参数raw_expr中如果出现函数addr_to_partition_id，
-// 那么得到的partition_id结果在后面无法映射到相应的addr
 int ObSQLUtils::calc_calculable_expr(ObSQLSessionInfo *session,
                                      const ObRawExpr *expr,
                                      ObObj &result,
@@ -838,10 +731,10 @@ int ObSQLUtils::se_calc_const_expr(ObSQLSessionInfo *session,
 int ObSQLUtils::check_and_convert_db_name(const ObCollationType cs_type, const bool preserve_lettercase,
                                           ObString &name)
 {
-  /*如果database name的字节数大于384则报错OB_WRONG_DB_NAME;
-   *如果database name的字节数大于128且小于等于384则报错OB_ERR_TOO_LONG_IDENT;
-   *如果database name的最后一个字符是空格，则报错OB_WRONG_DB_NAME;
-   *如果database name的前缀为#mysql50#，并且以以下四个字符结尾，'.','~','/','\\', 则报错OB_WRONG_DB_NAME;
+  /*If the byte count of database name is greater than 384, report OB_WRONG_DB_NAME;
+   *If the byte count of database name is greater than 128 and less than or equal to 384, report OB_ERR_TOO_LONG_IDENT;
+   *If the last character of database name is a space, report OB_WRONG_DB_NAME;
+   *If the prefix of database name is #mysql50#, and it ends with any of the following four characters, '.', '~', '/', '\', report OB_WRONG_DB_NAME;
    */
   int ret = OB_SUCCESS;
   UNUSED(cs_type);
@@ -882,7 +775,7 @@ int ObSQLUtils::check_and_convert_db_name(const ObCollationType cs_type, const b
   return ret;
 }
 
-/* 将用户输入的dbname换成数据库内部存放的大小写 */
+/* Replace user input dbname with the case of the database internally stored */
 int ObSQLUtils::cvt_db_name_to_org(share::schema::ObSchemaGetterGuard &schema_guard,
                                    const ObSQLSessionInfo *session,
                                    common::ObString &name,
@@ -910,7 +803,7 @@ int ObSQLUtils::cvt_db_name_to_org(share::schema::ObSchemaGetterGuard &schema_gu
   return ret;
 }
 
-/* 将用户输入的dbname换成数据库内部存放的大小写 */
+/* Replace user input dbname with the case of the database internally stored */
 int ObSQLUtils::cvt_db_name_to_org(sql::ObSqlSchemaGuard &sql_schema_guard,
                                    const ObSQLSessionInfo *session,
                                    const uint64_t catalog_id,
@@ -969,16 +862,16 @@ int ObSQLUtils::check_and_convert_table_name(const ObCollationType cs_type,
                                              const bool is_index_table)
 {
   /**
-   * MYSQL模式
-   *  如果table name的字节数大于192则报错OB_WRONG_TABLE_NAME;
-   *  如果table name的字节数大于64且小于等于192则报错OB_ERR_TOO_LONG_IDENT;
-   *  如果table name的最后一个字符是空格，则报错OB_WRONG_TABLE_NAME;
-   *  如果是直接查询索引表,对表名长度特殊处理
-   * ORACLE模式
-   *  如果table name的字节数大于384则报错OB_WRONG_TABLE_NAME;
-   *  如果table name的字节数大于128且小于等于384则报错OB_ERR_TOO_LONG_IDENT;
-   *  如果table name的最后一个字符是空格，则报错OB_WRONG_TABLE_NAME;
-   *  如果是直接查询索引表,对表名长度特殊处理
+   * MYSQL mode
+   *  If the byte number of table name is greater than 192, report OB_WRONG_TABLE_NAME;
+   *  If the byte number of table name is greater than 64 and less than or equal to 192, report OB_ERR_TOO_LONG_IDENT;
+   *  If the last character of table name is a space, report OB_WRONG_TABLE_NAME;
+   *  If it is a direct query on the index table, special handling for table name length
+   * ORACLE mode
+   *  If the byte number of table name is greater than 384, report OB_WRONG_TABLE_NAME;
+   *  If the byte number of table name is greater than 128 and less than or equal to 384, report OB_ERR_TOO_LONG_IDENT;
+   *  If the last character of table name is a space, report OB_WRONG_TABLE_NAME;
+   *  If it is a direct query on the index table, special handling for table name length
    */
   UNUSED(cs_type);
   int ret = OB_SUCCESS;
@@ -1008,7 +901,7 @@ int ObSQLUtils::check_and_convert_table_name(const ObCollationType cs_type,
       bool check_for_path_chars = false;
       int64_t max_ident_len = max_user_table_name_length;
       if ((stmt::T_SELECT == stmt_type || stmt::T_INSERT == stmt_type) && is_index_table) {
-        //索引表会有额外前缀,因此查询时长度限制用OB_MAX_TABLE_NAME_LENGTH
+        // Index table will have an extra prefix, therefore use OB_MAX_TABLE_NAME_LENGTH for length limit when querying
         max_ident_len = OB_MAX_TABLE_NAME_LENGTH;
       }
       if (OB_ERR_WRONG_IDENT_NAME == (ret = check_ident_name(CS_TYPE_UTF8MB4_GENERAL_CI,
@@ -1039,12 +932,12 @@ int ObSQLUtils::check_and_convert_context_namespace(const common::ObCollationTyp
 
 int ObSQLUtils::check_index_name(const ObCollationType cs_type, ObString &name)
 {
-  /* MYSQL模式
-   *  如果table name的字节数大于64则报错OB_ERR_TOO_LONG_IDENT;
-   *  如果table name的最后一个字符是空格，则报错OB_WRONG_NAME_FOR_INDEX
-   * ORACLE模式
-   *  如果table name的字节数大于128则报错OB_ERR_TOO_LONG_IDENT;
-   *  如果table name的最后一个字符是空格，则报错OB_WRONG_TABLE_NAME;
+  /* MYSQL mode
+   *  If the byte number of table name is greater than 64, report error OB_ERR_TOO_LONG_IDENT;
+   *  If the last character of table name is a space, report error OB_WRONG_NAME_FOR_INDEX
+   * ORACLE mode
+   *  If the byte number of table name is greater than 128, report error OB_ERR_TOO_LONG_IDENT;
+   *  If the last character of table name is a space, report error OB_WRONG_TABLE_NAME;
    *  */
   UNUSED(cs_type);
   int ret = OB_SUCCESS;
@@ -1081,8 +974,8 @@ int ObSQLUtils::check_index_name(const ObCollationType cs_type, ObString &name)
 }
 int ObSQLUtils::check_column_name(const ObCollationType cs_type, ObString &name, bool is_from_view)
 {
-  /*如果table name的字节数大于128则报错OB_ERR_TOO_LONG_IDENT;
-   *如果table name的最后一个字符是空格，则报错OB_WRONG_COLUMN_NAME */
+  /*If the byte count of table name is greater than 128, report error OB_ERR_TOO_LONG_IDENT;
+   *If the last character of table name is a space, report error OB_WRONG_COLUMN_NAME */
   UNUSED(cs_type);
   int ret = OB_SUCCESS;
   bool last_char_is_space = false;
@@ -1299,6 +1192,24 @@ int ObSQLUtils::get_odps_api_mode(const ObString &table_format_or_properties,
   return ret;
 }
 
+int ObSQLUtils::check_location_constraint(const ObTableSchema &table_schema)
+{
+  int ret = OB_SUCCESS;
+  bool is_odps_external_table = false;
+  if (OB_FAIL(ObSQLUtils::is_odps_external_table(&table_schema, is_odps_external_table))) {
+    LOG_WARN("failed to check is odps external table or not", K(ret));
+  } else if (is_odps_external_table) {
+    // do nothing
+  } else if ((!table_schema.get_external_file_location().empty()
+      && OB_INVALID_ID != table_schema.get_external_location_id())
+      || (table_schema.get_external_file_location().empty()
+          && OB_INVALID_ID == table_schema.get_external_location_id())) {
+    ret = OB_INVALID_ARGUMENT;
+    LOG_WARN("both file location and location id are valid", KR(ret), K(table_schema));
+  }
+  return ret;
+}
+
 int ObSQLUtils::check_ident_name(const ObCollationType cs_type, ObString &name,
                                  const bool check_for_path_char, const int64_t max_ident_len)
 {
@@ -1366,33 +1277,20 @@ int ObSQLUtils::check_enable_mysql_compatible_dates(const sql::ObSQLSessionInfo 
 {
   int ret = OB_SUCCESS;
   enabled = false;
-  uint64_t data_version = 0;
   if (!lib::is_mysql_mode()) {
     // only support mysql dates in mysql mode now.
   } else if (OB_ISNULL(session)) {
     ret = OB_INVALID_ARGUMENT;
     LOG_WARN("session is null", K(ret));
   } else if ((const_cast<sql::ObSQLSessionInfo *>(session))->is_enable_mysql_compatible_dates()) {
-    if (is_ddl_scenario) {
-      uint64_t data_version = 0;
-      if (OB_FAIL(GET_MIN_DATA_VERSION(session->get_effective_tenant_id(), data_version))) {
-        SQL_LOG(WARN, "fail to get data version", K(ret));
-      } else {
-        enabled = ((data_version >= MOCK_CLUSTER_VERSION_4_2_5_0 && data_version < CLUSTER_VERSION_4_3_0_0)
-           || data_version >= CLUSTER_VERSION_4_3_5_1);
-      }
-    } else {
-      enabled = ((GET_MIN_CLUSTER_VERSION() >= MOCK_CLUSTER_VERSION_4_2_5_0
-                  && GET_MIN_CLUSTER_VERSION() < CLUSTER_VERSION_4_3_0_0)
-                 || GET_MIN_CLUSTER_VERSION() >= CLUSTER_VERSION_4_3_5_1);
-    }
+    enabled = true;
   }
   return ret;
 }
 
 /***************************/
-/*   本处为不完全列举，是根据ObBasicStmt::virtual bool cause_implicit_commit()中提取出来 */
-/* 需要手动同步改列表     */
+/*   This is an incomplete list, extracted from ObBasicStmt::virtual bool cause_implicit_commit() */
+/* Need to manually synchronize this list */
 /***************************/
 bool ObSQLUtils::cause_implicit_commit(ParseResult &result)
 {
@@ -1481,8 +1379,7 @@ bool ObSQLUtils::is_modify_tenant_stmt(ParseResult &result)
   }
   return type == T_MODIFY_TENANT;
 }
-
-// 用于判断在mysql模式下prepare语句不支持的语句类型
+// Used to determine the statement types not supported by prepare statements in mysql mode
 bool ObSQLUtils::is_mysql_ps_not_support_stmt(const ParseResult &result)
 {
   bool ret = false;
@@ -1551,8 +1448,8 @@ int ObSQLUtils::make_field_name(const char *src,
                                 ObString &name)
 {
   /*
-   * select ' abc'; 显示的列名种左边的联系的非字母非数字非标点的字符将会被过滤掉。
-   * select 'acc' as ' adf';alias name 需要做同样的处理。此外，显示的列明最多保留256个字符。
+   * select ' abc'; The non-alphanumeric and non-punctuation characters on the left side of the column name will be filtered out.
+   * select 'acc' as ' adf'; alias name needs to undergo the same processing. In addition, the displayed column name will retain a maximum of 256 characters.
    */
   int ret = OB_SUCCESS;
   if (len < 0 || OB_ISNULL(allocator)) {
@@ -1824,7 +1721,7 @@ int ObSQLUtils::check_well_formed_str(const ObString &src_str,
                                                 well_formed_error))) {
     LOG_WARN("fail to check well_formed_len", K(ret), K(src_str), K(cs_type));
   } else if (well_formed_length < str_len) {
-    // mysql是这样判断的，其实用well_formed_error来判断也可以
+    // MySQL is such judged, actually it can also be judged by well_formed_error
     int32_t diff = static_cast<int32_t>(str_len - well_formed_length);
     diff = diff > 3 ? 3 : diff;
     char hex_buf[7] = {0};
@@ -1869,7 +1766,7 @@ int ObSQLUtils::check_well_formed_str(const ObObj &src,
     ObString src_str;
     ObString dst_str;
     bool is_null = false;
-    if (OB_FAIL(src.get_varchar(src_str))) { // 必须为varchar类型
+    if (OB_FAIL(src.get_varchar(src_str))) { // must be varchar type
       LOG_WARN("fail to get varchar", K(ret), K(src));
     } else if (OB_FAIL(check_well_formed_str(src_str, src.get_collation_type(),
                                              dst_str, is_null,
@@ -1886,8 +1783,7 @@ int ObSQLUtils::check_well_formed_str(const ObObj &src,
   }
   return ret;
 }
-
-//这个函数需要换一下，直接通过sql_id获取outline key。
+// This function needs to be changed, directly get the outline key through sql_id.
 int ObSQLUtils::get_outline_key(ObIAllocator &allocator,
                                 const ObSQLSessionInfo *session,
                                 const ObString &query_sql,
@@ -1928,7 +1824,7 @@ int ObSQLUtils::get_outline_key(ObIAllocator &allocator,
       // do nothing
     }
   } else {
-    //快速参数化后带？的sql
+    // Quick parameterization SQL with ?
     ObString no_param_sql;
     ParseResult parse_result;
     ObParser parser(allocator, session->get_sql_mode(), session->get_charsets4parser());
@@ -2067,7 +1963,7 @@ int ObSQLUtils::construct_outline_sql(ObIAllocator &allocator,
   UNUSED(is_need_filter_hint);
   ObString filter_sql;
   ObSqlString sql_helper;
-  // 该接口会将注释和hint均去掉
+  // This interface will remove both comments and hints
   if (OB_FAIL(filter_hint_in_query_sql(allocator, session, orig_sql, filter_sql))) {
     LOG_WARN("fail to filter hint", K(ret));
   } else if (OB_FAIL(filter_head_space(filter_sql))) {
@@ -2088,8 +1984,7 @@ int ObSQLUtils::construct_outline_sql(ObIAllocator &allocator,
   }
   return ret;
 }
-
-// 将sql中开头为' ', '\r', '\n', '\t', '\f'的字符去除
+// Remove characters at the beginning of sql that are ' ', '\r', '\n', '\t', '\f'
 int ObSQLUtils::filter_head_space(ObString &sql)
 {
   int ret = OB_SUCCESS;
@@ -2494,6 +2389,26 @@ int JsonObjectStarChecker::add_expr(ObRawExpr *&expr)
   return ret;
 }
 
+int SemanticVectorDistExprChecker::add_expr(ObRawExpr *&expr)
+{
+  int ret = OB_SUCCESS;
+  if (OB_ISNULL(expr)) {
+    ret = OB_ERR_UNEXPECTED;
+    LOG_WARN("expr is null", K(ret));
+  } else if (expr->get_expr_type() == T_FUN_SYS_SEMANTIC_VECTOR_DISTANCE) {
+    if (OB_FAIL(add_var_to_array_no_dup(rel_array_, expr))) {
+      LOG_WARN("failed to add semantic_distance expr to array", K(ret));
+    }
+  } else {
+    for (int64_t i = 0; OB_SUCC(ret) && i < expr->get_param_count(); ++i) {
+      if (OB_FAIL(SMART_CALL(add_expr(expr->get_param_expr(i))))) {
+        LOG_WARN("failed to check param expr", K(ret));
+      }
+    }
+  }
+  return ret;
+}
+
 //used for C module
 bool check_stack_overflow_c()
 {
@@ -2815,7 +2730,7 @@ int ObSQLUtils::choose_best_replica_for_estimation(
 }
 
 /*
- * 选择副本优先级： 本机-->本idc(随机)-->本region(随机) --> 其他region(随机)
+ * Select replica priority: local machine-->local idc(random)-->local region(random) --> other region(random)
  * */
 int ObSQLUtils::choose_best_partition_replica_addr(const ObAddr &local_addr,
                                                    const ObCandiTabletLoc &phy_part_loc_info,
@@ -2848,9 +2763,9 @@ int ObSQLUtils::choose_best_partition_replica_addr(const ObAddr &local_addr,
     for (int64_t i = 0 ;
          need_continue && OB_SUCC(ret) && i < candi_replicas.count();
          ++i) {
-      // 有本地选本地
-      // 否则从远程中选
-      // 优先级: same_idc, same_region
+      // Use local if available
+      // Otherwise select from remote
+      // Priority: same_idc, same_region
       ObServerLocality candi_locality;
       const ObAddr &candi_addr = candi_replicas.at(i).get_server();
       if (!is_est_block_count &&
@@ -3157,9 +3072,9 @@ void ObSQLUtils::init_type_ctx(const ObSQLSessionInfo *session, ObExprTypeCtx &t
     ObCollationType coll_type = CS_TYPE_INVALID;
     int64_t div_precision_increment = OB_INVALID_COUNT;
     int64_t ob_max_allowed_packet;
-    // 对于type_ctx的collation_type，我理解这里需要初始化一个默认值，
-    // 对于MySQL模式，我们代码中使用的是collation_connection，这也是常量的默认collation，
-    // 但是在Oracle模式下，常量都转换成了nls_collation，所以在Oracle模式下设置成nls_collation更合理
+    // For type_ctx's collation_type, I understand that a default value needs to be initialized here,
+    // For MySQL mode, we use collation_connection in our code, this is also the default collation of the constant,
+    // But in Oracle mode, all constants are converted to nls_collation, so setting it to nls_collation is more reasonable in Oracle mode
     if (lib::is_mysql_mode()) {
       if (OB_SUCCESS == (session->get_collation_connection(coll_type))) {
         type_ctx.set_coll_type(coll_type);
@@ -3193,8 +3108,8 @@ void ObSQLUtils::init_type_ctx(const ObSQLSessionInfo *session, ObExprTypeCtx &t
 
 bool ObSQLUtils::is_oracle_sys_view(const ObString &table_name)
 {
-  // 当前支持ALL_,USER_,DBA_,GV$,V$为前缀的SYS中的视图
-  // 如果有不是以这些开头的，可以再定义其他pattern，如固定字符串数组whitelist之类的
+  // Current support for views in SYS with prefixes ALL_, USER_, DBA_, GV$, V$
+  // If there are any that do not start with these, other patterns can be defined, such as a fixed string array whitelist
   return table_name.prefix_match("ALL_")
         || table_name.prefix_match("USER_")
         || table_name.prefix_match("DBA_")
@@ -3265,8 +3180,7 @@ int ObSQLUtils::make_whole_range(ObIAllocator &allocator,
   }
   return ret;
 }
-
-//获取pl array中每个obj对应的数据类型信息
+// Get the data type information of each obj in the pl array
 int ObSQLUtils::get_ext_obj_data_type(const ObObjParam &obj, ObDataType &data_type)
 {
   int ret = OB_SUCCESS;
@@ -3840,7 +3754,7 @@ int64_t ObSqlFatalErrExtraInfoGuard::to_string(char *buf, const int64_t buf_len)
   const ObIArray<ObSchemaObjVersion> *dep_tables = nullptr;
   ObString sys_var_values;
 
-  if (OB_NOT_NULL(plan_)) { //plan非空，处于执行期
+  if (OB_NOT_NULL(plan_)) { // plan is not null, in execution period
     dep_tables = &(plan_->get_dependency_table());
     sys_var_values = plan_->stat_.sys_vars_str_;
   } else if (OB_NOT_NULL(exec_ctx_)) {
@@ -3857,8 +3771,7 @@ int64_t ObSqlFatalErrExtraInfoGuard::to_string(char *buf, const int64_t buf_len)
       sys_var_values = exec_ctx_->get_my_session()->get_sys_var_in_pc_str();
     }
   }
-
-  //打印计划依赖的schema信息
+  // Print the schema information of the plan dependencies
   if (OB_NOT_NULL(dep_tables)) {
     OZ (databuff_printf(buf, buf_len, pos, ", \ndependency_table_def:"));
     for (int i = 0; i < dep_tables->count(); ++i) {
@@ -3875,8 +3788,7 @@ int64_t ObSqlFatalErrExtraInfoGuard::to_string(char *buf, const int64_t buf_len)
       }
     }
   }
-
-  //打印计划执行系统变量环境信息
+  // Print plan execution system variable environment information
   if (!sys_var_values.empty()) {
     OZ (databuff_printf(buf, buf_len, pos, ",\nsys_vars:{"));
     for (int i = 0; i < ObSysVarFactory::ALL_SYS_VARS_COUNT; ++i) {
@@ -3897,7 +3809,7 @@ int64_t ObSqlFatalErrExtraInfoGuard::to_string(char *buf, const int64_t buf_len)
     }
     OZ (databuff_printf(buf, buf_len, pos, "}"));
   }
-  //打印计划树
+  // Print plan tree
   //OX (plan_->print_tree(buf, buf_len, pos, plan_->get_main_query()));
 
 
@@ -4572,7 +4484,7 @@ int ObSQLUtils::transform_pl_ext_type(
 {
   int ret = OB_SUCCESS;
   ParamStore *ps_ab_params = NULL;
-  // 在这里折叠batch参数到SQL能识别的类型
+  // Fold batch parameter to SQL recognizable type
   if (OB_ISNULL(ps_ab_params = static_cast<ParamStore *>(alloc.alloc(sizeof(ParamStore))))) {
     ret = OB_ALLOCATE_MEMORY_FAILED;
     LOG_WARN("failed to allocate memory", K(ret));
@@ -4858,7 +4770,6 @@ int ObSQLUtils::async_recompile_view(const share::schema::ObTableSchema &old_vie
 {
   int ret = OB_SUCCESS;
   ObTableSchema new_view_schema(&alloc);
-  uint64_t data_version = 0;
   bool changed = false;
   if (reset_column_infos) {
     // failed to resolve view definition, do nothing
@@ -4869,10 +4780,6 @@ int ObSQLUtils::async_recompile_view(const share::schema::ObTableSchema &old_vie
   if (OB_FAIL(ret)) {
   } else if (OB_FAIL(new_view_schema.assign(old_view_schema))) {
     LOG_WARN("failed to assign table schema", K(ret));
-  } else if (OB_FAIL(GET_MIN_DATA_VERSION(old_view_schema.get_tenant_id(), data_version))) {
-    LOG_WARN("failed to get data version", K(ret));
-  } else if (data_version < DATA_VERSION_4_1_0_0) {
-    // do nothing
   } else if (OB_ISNULL(GCTX.sql_engine_)) {
     ret = OB_ERR_UNEXPECTED;
     LOG_WARN("failed to get sql engine", K(ret));
@@ -5062,42 +4969,6 @@ bool ObSQLUtils::check_json_expr(const ObRawExpr &expr)
     }
   }
   return res;
-}
-
-int ObSQLUtils::compatibility_check_for_mysql_role_and_column_priv(uint64_t tenant_id)
-{
-  int ret = OB_SUCCESS;
-  uint64_t data_version = 0;
-  OZ (GET_MIN_DATA_VERSION(tenant_id, data_version));
-  OV ((MOCK_DATA_VERSION_4_2_3_0 <= data_version && data_version < DATA_VERSION_4_3_0_0) || data_version >= DATA_VERSION_4_3_1_0 , OB_NOT_SUPPORTED, data_version);
-  return ret;
-}
-
-bool ObSQLUtils::is_data_version_ge_422_or_431(uint64_t data_version)
-{
-  return ((DATA_VERSION_4_2_2_0 <= data_version && data_version < DATA_VERSION_4_3_0_0) || data_version >= DATA_VERSION_4_3_1_0);
-}
-
-
-bool ObSQLUtils::is_data_version_ge_423_or_432(uint64_t data_version)
-{
-  return ((MOCK_DATA_VERSION_4_2_3_0 <= data_version && data_version < DATA_VERSION_4_3_0_0) || data_version >= DATA_VERSION_4_3_2_0);
-}
-
-bool ObSQLUtils::is_data_version_ge_424_or_433(uint64_t data_version)
-{
-  return ((MOCK_DATA_VERSION_4_2_4_0 <= data_version && data_version < DATA_VERSION_4_3_0_0) || data_version >= DATA_VERSION_4_3_3_0);
-}
-
-bool ObSQLUtils::is_min_cluster_version_ge_425_or_435()
-{
-  uint64_t version = GET_MIN_CLUSTER_VERSION();
-  return ((MOCK_CLUSTER_VERSION_4_2_5_0 <= version && version < CLUSTER_VERSION_4_3_0_0) || version >= CLUSTER_VERSION_4_3_5_0);
-}
-
-bool ObSQLUtils::is_opt_feature_version_ge_425_or_435(uint64_t opt_feature_version)
-{
-  return ((COMPAT_VERSION_4_2_5 <= opt_feature_version && opt_feature_version < COMPAT_VERSION_4_3_0) || opt_feature_version >= COMPAT_VERSION_4_3_5);
 }
 
 int ObSQLUtils::get_strong_partition_replica_addr(const ObCandiTabletLoc &phy_part_loc_info,

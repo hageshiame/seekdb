@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef __OB_DTL_INTERM_RESULT_MANAGER_H__
@@ -268,7 +272,7 @@ private:
   DISALLOW_COPY_AND_ASSIGN(ObDTLIntermResultGC);
 
 public:
-  const static int64_t CLEAR_TIME_THRESHOLD = 10 * 1000L * 1000L; // 超过10秒清理
+  const static int64_t CLEAR_TIME_THRESHOLD = 10 * 1000L * 1000L; // Exceeds 10 seconds to clear
 private:
   int64_t cur_time_;
   common::ObSEArray<ObDTLIntermResultKey, 1> expire_keys_;
@@ -388,7 +392,7 @@ public:
   ObDTLIntermResultGCTask() : dtl_interm_result_manager_(NULL), is_start_(false) {}
   virtual ~ObDTLIntermResultGCTask() {}
   virtual void runTimerTask() override;
-  const static int64_t REFRESH_INTERVAL = 10 * 1000L * 1000L; // 10秒间隔
+  const static int64_t REFRESH_INTERVAL = 10 * 1000L * 1000L; // 10 second interval
   ObDTLIntermResultManager *dtl_interm_result_manager_;
   bool is_start_;
 };
@@ -414,11 +418,11 @@ public:
                     ObDTLIntermResultInfo::StoreType store_type);
   int erase_interm_result_info(const ObDTLIntermResultKey &key, bool need_unregister_check_item_from_dm=true);
   int insert_interm_result_info(ObDTLIntermResultKey &key, ObDTLIntermResultInfo *&result_info);
-  // 以下两个接口会持有bucket读锁.
+  // The following two interfaces will hold the bucket read lock.
   int clear_timeout_result_info();
-  // atomic_get_interm_result_info接口.
-  // 将会持写锁标记result info为已读.
-  // 后台的dump线程遇到已读的row_store将不会dump.
+  // atomic_get_interm_result_info interface.
+  // Will hold write lock to mark result info as read.
+  // The background dump thread will not dump the already read row_store.
   int atomic_get_interm_result_info(ObDTLIntermResultKey &key, ObDTLIntermResultInfoGuard &guard);
   int atomic_append_block(ObDTLIntermResultKey &key, ObAtomicAppendBlockCall &call);
   int atomic_append_part_block(ObDTLIntermResultKey &key, ObAtomicAppendPartBlockCall &call);
@@ -466,7 +470,7 @@ private:
   int clear_mem_profile_map();
 
 private:
-  // 由于此中间结果管理器是全局结构, 基于性能考虑, 减少锁冲突设置bucket_num为50w.
+  // Since this intermediate result manager is a global structure, for performance considerations, reduce lock conflicts by setting bucket_num to 500k.
   static const int64_t DEFAULT_BUCKET_NUM = 500000; //50w
   static const int64_t BUCKET_NUM_LOWER_LIMIT = 10000; //1w
 

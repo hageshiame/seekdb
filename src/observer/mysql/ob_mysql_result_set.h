@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef _OB_MYSQL_RESULT_SET_H_
@@ -38,9 +42,9 @@ class ObMySQLResultSet
 {
 public:
   /**
-   * 构造函数
+   * Constructor
    *
-   * @param [in] obrs SQL执行起返回的数据集
+   * @param [in] obrs Dataset returned by SQL execution
    */
   ObMySQLResultSet(sql::ObSQLSessionInfo &session, common::ObIAllocator &allocator)
       : ObResultSet(session, allocator), field_index_(0), param_index_(0), has_more_result_(false)
@@ -49,16 +53,16 @@ public:
   }
 
   /**
-   * 析构函数
+   * Destructor
    */
   virtual ~ObMySQLResultSet() {};
 
   /**
-   * 返回下一个字段的信息
+   * Return the information of the next field
    *
-   * @param [out] obmf 下一个字段的信息
+   * @param [out] obmf Information of the next field
    *
-   * @return 成功返回OB_SUCCESS。如果没有数据，则返回Ob_ITER_END
+   * @return Returns OB_SUCCESS on success. If there is no data, returns Ob_ITER_END
    */
   int next_field(ObMySQLField &obmf);
 
@@ -71,7 +75,7 @@ public:
   int next_param(ObMySQLField &obmf);
 
   /**
-   * 对于Multi-Query，指示是否为最后一个resultset
+   * For Multi-Query, indicates whether it is the last resultset
    */
   bool has_more_result() const
   {
@@ -83,11 +87,11 @@ public:
   }
 
   /**
-   * 获取下一行的数据
+   * Get the data of the next row
    *
-   * @param [out] obmr 下一行数据
+   * @param [out] obmr Data of the next row
    *
-   * @return 成功返回OB_SUCCESS。如果没有数据，则返回Ob_ITER_END
+   * @return Returns OB_SUCCESS on success. If there is no data, returns Ob_ITER_END
    */
   int next_row(const ObNewRow *&obmr);
   int64_t to_string(char *buf, const int64_t buf_len) const;
@@ -98,8 +102,8 @@ public:
   static void switch_ps(ObPrecision &pre, ObScale &scale, EMySQLFieldType type);
 
 private:
-  int64_t field_index_;     /**< 下一个需要读取的字段的序号 */
-  int64_t param_index_;     /* < 下一个需要读取的参数的序号*/
+  int64_t field_index_;     /**< The index of the next field to be read */
+  int64_t param_index_;     /* < The index of the next parameter to be read */
   bool has_more_result_;
 }; // end class ObMySQLResultSet
 

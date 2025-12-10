@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX PALF
@@ -141,7 +145,7 @@ int ObLogHandler::stop()
   if (IS_INIT) {
     is_in_stop_state_ = true;
     common::TCWLockGuard deps_guard(deps_lock_);
-    //unregister_file_size_cb不能在apply status锁内, 可能会导致死锁
+    //unregister_file_size_cb cannot be inside the apply status lock, it may cause a deadlock
     apply_status_->unregister_file_size_cb();
     tg.click("unreg cb end");
     if (OB_FAIL(apply_status_->stop())) {
@@ -160,9 +164,8 @@ int ObLogHandler::stop()
   }
   return ret;
 }
-
-//判断is_apply_done依赖log handler不能再继续append
-//所以需要is_in_stop_state_置true表示stop阶段已经不能再提交日志
+//Determine if is_apply_done depends on log handler, no further append can be made
+//So need to set is_in_stop_state_ to true to indicate that no more logs can be submitted in the stop phase
 int ObLogHandler::safe_to_destroy(bool &is_safe_destroy)
 {
   int ret = OB_SUCCESS;
@@ -1707,7 +1710,7 @@ int ObLogHandler::get_max_decided_scn(SCN &scn)
   if (IS_NOT_INIT) {
     ret = OB_NOT_INIT;
   } else if (is_in_stop_state_) {
-    //和replay service统一返回4109
+    // and replay service return 4109 uniformly
     ret = OB_STATE_NOT_MATCH;
   } else if (is_offline()) {
     ret = OB_STATE_NOT_MATCH;
@@ -1722,7 +1725,7 @@ int ObLogHandler::get_max_decided_scn(SCN &scn)
       CLOG_LOG(WARN, "failed to get_max_replayed_scn, replay status is not enabled", K(ret), K(id));
     }
     if (OB_STATE_NOT_MATCH == ret && max_applied_scn.is_valid()) {
-      //回放尚未enable,但是apply service中拿到的最大连续回调位点合法
+      //Replay is not enabled, but the maximum consecutive callback point obtained in the apply service is valid
       ret = OB_SUCCESS;
       scn = max_applied_scn > SCN::min_scn() ? max_applied_scn : SCN::min_scn();
       if (palf_reach_time_interval(1000 * 1000, get_max_decided_scn_debug_time_)) {

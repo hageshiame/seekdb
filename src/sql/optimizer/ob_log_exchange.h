@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SQL_OB_LOG_EXCHANGE_H
@@ -226,9 +230,9 @@ private:
   // the 'partition key' expressions
   bool is_producer_;                                    /* true if the exchange the producer */
   bool is_rescanable_; /* true if this is exchange receive and can be rescan  */
-  int64_t dfo_id_; // 在 CG 之前就给 dfo 定下 id
-  int64_t px_id_; // 在 CG 之前就给多个 px 的 plan 定下每个 px 的 id
-  int64_t expected_worker_count_; // 仅供 QC 节点使用，其余 exchange 节点均为 0
+  int64_t dfo_id_; // Assign id to dfo before CG
+  int64_t px_id_; // Assign an id to each px's plan before CG
+  int64_t expected_worker_count_; // Only for QC node use, other exchange nodes are 0
 
   bool is_remote_; /* true if the exchange is remote single-server */
   bool is_task_order_; // true if the input data is task order
@@ -240,7 +244,7 @@ private:
   common::ObSEArray<int64_t, 4, common::ModulePageAllocator, true> wf_hybrid_pby_exprs_cnt_array_;
   common::ObSEArray<OrderItem, 4, common::ModulePageAllocator, true> sort_keys_;
 
-  int64_t slice_count_;//对于重分发之外的exchange, slice_count均为1
+  int64_t slice_count_;//For exchange other than redistribution, slice_count is always 1
   ObRepartitionType repartition_type_;
   int64_t repartition_ref_table_id_;
   int64_t repartition_table_id_;

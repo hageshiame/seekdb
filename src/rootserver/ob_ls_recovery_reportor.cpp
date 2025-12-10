@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX RS
@@ -131,8 +135,7 @@ void ObLSRecoveryReportor::run2()
           ret = OB_SUCCESS;
         }
       }
-
-      //更新受控回放位点到replayservice
+      //Update the controlled replay point to replay service
       ObDIActionGuard ag1("Replayable Point");
       if (OB_SUCCESS != (tmp_ret = update_replayable_point_())) {
         LOG_WARN("failed to update_replayable_point", KR(tmp_ret));
@@ -209,7 +212,7 @@ int ObLSRecoveryReportor::update_ls_recovery_stat_()
           } else if (OB_TMP_FAIL(ls->update_ls_replayable_point(replayable_scn))) {
             LOG_WARN("failed to update_ls_replayable_point", KR(tmp_ret), KPC(ls), K(replayable_scn));
           }
-          //兼容性和是否为leader的判断包在了接口中
+          //Compatibility and whether it is a leader are included in the interface
           if (OB_TMP_FAIL(ls->gather_replica_readable_scn())) {
             if (OB_NOT_MASTER == tmp_ret) {
             } else {
@@ -358,9 +361,9 @@ int ObLSRecoveryReportor::update_tenant_info_in_trans(
       //TODO replayable_scn is equal to sync_scn
     } else if (check_sync_valid && sync_scn != sys_ls_sync_scn) {
       //for double check, if has multi_source, sync_scn of SYS_LS is the smllest
-      //这里可能存在一种情况：日志流从CREATING变成NORMAL的多源事务，在检查用户日志流的同步位点的时候，不会参考这个日志流的同步位点。
-      //但是在计算tenant_info的位点时，由于这个日志流已经变成NORMAL的状态了，所以会看这个日志流
-      //所以这种情况也会出现租户的位点小于1号日志流的位点的情况，算是预期内的。
+      //There may be a situation: a multi-source transaction where the log stream changes from CREATING to NORMAL, when checking the synchronization point of the user's log stream, this log stream's synchronization point will not be referenced.
+      //but when calculating the position of tenant_info, since this log stream has already become NORMAL, it will look at this log stream
+      //So this situation will also occur where the tenant's position is less than the position of log stream 1, which is considered within expectations.
       ret = OB_NEED_RETRY;
       LOG_WARN("failed to check sync scn", KR(ret), K(sync_scn), K(sys_ls_sync_scn));
     } else if (OB_FAIL(info_proxy.update_tenant_recovery_status_in_trans(
@@ -380,7 +383,7 @@ int ObLSRecoveryReportor::update_replayable_point_()
     ret = OB_NOT_INIT;
     LOG_WARN("not init", KR(ret));
   } else if (OB_FAIL(update_replayable_point_from_tenant_info_())) {
-    //重启场景下从meta读取回放受控点,更新到replayservice
+    //In the restart scenario, read the replay control point from meta and update it to the replay service
     if (OB_FAIL(update_replayable_point_from_meta_())) {
       LOG_WARN("update_replayable_point_from_meta_ failed", KR(ret));
     } else {

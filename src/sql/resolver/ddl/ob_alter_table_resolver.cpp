@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_RESV
@@ -20,6 +24,8 @@
 #include "sql/resolver/mv/ob_alter_mview_utils.h"
 #include "share/table/ob_ttl_util.h"
 #include "rootserver/ob_partition_exchange.h"
+#include "share/vector_index/ob_vector_index_util.h"
+#include "share/external_table/ob_external_table_utils.h"
 
 namespace oceanbase
 {
@@ -147,7 +153,7 @@ int ObAlterTableResolver::resolve(const ParseNode &parse_tree)
                              index_schema_))) {
             LOG_WARN("fail to get index table schema", K(ret), K(table_name));
           } else if (OB_ISNULL(index_schema_)) {
-            // 获取到的 index_schema_ 为空，则说明当前 db 下没有对应的 index
+            // The obtained index_schema_ is empty, which means there is no corresponding index under the current db
             ret = OB_ERR_CANT_DROP_FIELD_OR_KEY;
             LOG_WARN("index not exists", K(ret), K(database_name), K(table_name));
             LOG_USER_ERROR(OB_ERR_CANT_DROP_FIELD_OR_KEY,
@@ -206,6 +212,8 @@ int ObAlterTableResolver::resolve(const ParseNode &parse_tree)
         OZ (alter_schema.set_external_file_location(table_schema_->get_external_file_location()));
         OZ (alter_schema.set_external_file_location_access_info(table_schema_->get_external_file_location_access_info()));
         OZ (alter_schema.set_external_file_pattern(table_schema_->get_external_file_pattern()));
+        alter_schema.set_external_location_id(table_schema_->get_external_location_id());
+        OZ (alter_schema.set_external_sub_path(table_schema_->get_external_sub_path()));
         if (OB_SUCC(ret) && table_schema_->is_user_specified_partition_for_external_table()) {
           alter_schema.set_user_specified_partition_for_external_table();
         }
@@ -225,7 +233,6 @@ int ObAlterTableResolver::resolve(const ParseNode &parse_tree)
       } else if ((table_schema_->required_by_mview_refresh() || table_schema_->is_mlog_table())
           && !alter_table_stmt->get_alter_table_arg().is_alter_mlog_attributes_
           && OB_FAIL(ObResolverUtils::check_allowed_alter_operations_for_mlog(
-              alter_table_stmt->get_tenant_id(),
               alter_table_stmt->get_alter_table_arg(),
               *table_schema_))) {
         LOG_WARN("failed to check allowed alter operations for mlog", KR(ret));
@@ -284,7 +291,7 @@ int ObAlterTableResolver::resolve(const ParseNode &parse_tree)
       }
     }
     if (OB_SUCC(ret)) {
-      // alter table 路径
+      // alter table path
       if (OB_SUCC(ret) && OB_NOT_NULL(table_schema_)) {
         if (OB_FAIL(alter_table_stmt->get_alter_table_arg().based_schema_object_infos_.
                     push_back(ObBasedSchemaObjectInfo(
@@ -309,7 +316,7 @@ int ObAlterTableResolver::resolve(const ParseNode &parse_tree)
                             get_part_option().set_part_func_type(table_schema_->get_part_option().get_part_func_type());
         }
       }
-      // alter index 路径
+      // alter index path
       if (OB_SUCC(ret) && OB_NOT_NULL(index_schema_)) {
         if (OB_FAIL(alter_table_stmt->get_alter_table_arg().based_schema_object_infos_.
                     push_back(ObBasedSchemaObjectInfo(
@@ -341,6 +348,13 @@ int ObAlterTableResolver::resolve(const ParseNode &parse_tree)
     if (OB_SUCC(ret)){
       if (OB_FAIL(deep_copy_string_in_part_expr(get_alter_table_stmt()))) {
         LOG_WARN("failed to deep copy string in part expr");
+      }
+    }
+
+    if (OB_SUCC(ret) && alter_table_stmt->get_alter_table_arg().alter_table_schema_.is_external_table()) {
+      ObTableSchema &table_schema = alter_table_stmt->get_alter_table_arg().alter_table_schema_;
+      if (OB_FAIL(ObSQLUtils::check_location_constraint(table_schema))) {
+        LOG_WARN("fail to check location constraint", K(ret), K(table_schema));
       }
     }
 
@@ -420,18 +434,6 @@ int ObAlterTableResolver::set_table_options()
       alter_table_schema.alter_option_bitset_ = alter_table_bitset_;
     }
 
-    if (OB_SUCC(ret) && alter_table_schema.get_compressor_type() == ObCompressorType::ZLIB_LITE_COMPRESSOR) {
-      uint64_t tenant_data_version = 0;
-      if (OB_FAIL(GET_MIN_DATA_VERSION(session_info_->get_effective_tenant_id(), tenant_data_version))) {
-        LOG_WARN("get tenant data version failed", K(ret));
-      } else if (tenant_data_version < DATA_VERSION_4_3_0_0) {
-        ret = OB_NOT_SUPPORTED;
-        LOG_WARN("tenant version is less than 4.3, zlib_lite compress method is not supported",
-                 K(ret), K(tenant_data_version));
-        LOG_USER_ERROR(OB_NOT_SUPPORTED, "version is less than 4.3, zlib_lite");
-      }
-    }
-
     if (OB_FAIL(ret)) {
       //do nothing
     }
@@ -465,7 +467,7 @@ int ObAlterTableResolver::resolve_set_interval(ObAlterTableStmt *stmt, const Par
       ret = OB_ERR_TABLE_IS_ALREADY_A_RANGE_PARTITIONED_TABLE;
       SQL_RESV_LOG(WARN, "table alreay a range partitionted table", K(ret));
     } else {
-      /* 设置为interval -> range */
+      /* Set to interval -> range */
       stmt->get_alter_table_arg().alter_part_type_ = ObAlterTableArg::INTERVAL_TO_RANGE;
     }
   } else if (OB_INVALID_ID != table_schema_->get_tablegroup_id()) {
@@ -477,7 +479,7 @@ int ObAlterTableResolver::resolve_set_interval(ObAlterTableStmt *stmt, const Par
 
     /* set interval (expr) */
     if (false == table_schema_->is_interval_part()) {
-      /* 设置为 range -> interval */
+      /* Set to range -> interval */
       stmt->get_alter_table_arg().alter_part_type_ = ObAlterTableArg::SET_INTERVAL;
     } else {
       stmt->get_alter_table_arg().alter_part_type_ = ObAlterTableArg::SET_INTERVAL;
@@ -670,7 +672,11 @@ int ObAlterTableResolver::resolve_add_external_partition(const ParseNode &part_e
       ObString tmp_str = ObString(location_element.str_len_, location_element.str_value_);
       OZ (ob_write_string(*allocator_, tmp_str, external_location));
       ObSqlString full_path;
-      OZ (full_path.append(table_schema_->get_external_file_location()));
+      ObSchemaGetterGuard *schema_guard = schema_checker_->get_schema_guard();
+      ObString file_location;
+      CK (OB_NOT_NULL(schema_guard));
+      OZ (ObExternalTableUtils::get_external_file_location(*table_schema_, *schema_guard, *allocator_, file_location));
+      OZ (full_path.append(file_location));
       if (OB_SUCC(ret)) {
         if (full_path.length() == 0) {
           ret = OB_INVALID_ARGUMENT;
@@ -680,7 +686,7 @@ int ObAlterTableResolver::resolve_add_external_partition(const ParseNode &part_e
         }
       }
       OZ (full_path.append(external_location));
-      OZ (alter_table_stmt->get_alter_table_arg().alter_table_schema_.set_external_file_location(full_path.string()));
+      OZ (alter_table_stmt->get_alter_table_arg().alter_table_schema_.set_external_file_location(table_schema_->get_external_file_location()));
       alter_table_stmt->get_alter_table_arg().alter_table_schema_.set_table_type(EXTERNAL_TABLE);
       partition.set_external_location(external_location);
       partition.set_is_empty_partition_name(true);
@@ -754,14 +760,7 @@ int ObAlterTableResolver::resolve_external_partition_options(const ParseNode &no
 {
   int ret = OB_SUCCESS;
   ObAlterTableStmt *alter_table_stmt = get_alter_table_stmt();
-  uint64_t tenant_data_version = 0;
-  if (OB_FAIL(GET_MIN_DATA_VERSION(session_info_->get_effective_tenant_id(), tenant_data_version))) {
-    LOG_WARN("get tenant data version failed", K(ret), K(session_info_->get_effective_tenant_id()));
-  } else if (tenant_data_version < DATA_VERSION_4_3_1_0) {
-    ret = OB_NOT_SUPPORTED;
-    LOG_WARN("alter refresh ext table is not supported in data version less than 4.3.1", K(ret), K(tenant_data_version));
-    LOG_USER_ERROR(OB_NOT_SUPPORTED, "refresh external table in data version less than 4.3.1");
-  } else if (OB_ISNULL(alter_table_stmt)) {
+  if (OB_ISNULL(alter_table_stmt)) {
     ret = OB_ERR_UNEXPECTED;
     LOG_WARN("alter table stmt is null", K(ret));
   } else if (!table_schema_->is_external_table()) {
@@ -782,6 +781,8 @@ int ObAlterTableResolver::resolve_external_partition_options(const ParseNode &no
     alter_table_stmt->get_alter_table_arg().alter_table_schema_.set_part_level(table_schema_->get_part_level());
     OZ (alter_table_stmt->get_alter_table_arg().alter_table_schema_.set_external_file_location_access_info(table_schema_->get_external_file_location_access_info()));
     OZ (alter_table_stmt->get_alter_table_arg().alter_table_schema_.set_external_file_pattern(table_schema_->get_external_file_pattern()));
+    alter_table_stmt->get_alter_table_arg().alter_table_schema_.set_external_location_id(table_schema_->get_external_location_id());
+    OZ (alter_table_stmt->get_alter_table_arg().alter_table_schema_.set_external_sub_path(table_schema_->get_external_sub_path()));
     CK (OB_LIKELY(node.type_ == T_ALTER_EXTERNAL_PARTITION_OPTION));
     if (T_ALTER_EXTERNAL_PARTITION_ADD == node.children_[0]->type_) {
       CK (OB_LIKELY(node.num_child_ == 2));
@@ -814,7 +815,7 @@ int ObAlterTableResolver::resolve_action_list(const ParseNode &node)
     ret = OB_ERR_UNEXPECTED;
     SQL_RESV_LOG(WARN, "alter table stmt should not be null", K(ret));
   } else {
-    // 获取表中已有的index name, 并初始化current_index_name_set_
+    // Get the existing index name in the table, and initialize current_index_name_set_
     ObSEArray<ObAuxTableMetaInfo, 16> simple_index_infos;
     // drop_col_act_position_list is only used in mysql mode
     // to resolve drop_column_nodes after drop constraint nodes resolved
@@ -832,7 +833,7 @@ int ObAlterTableResolver::resolve_action_list(const ParseNode &node)
         LOG_WARN("table schema should not be null", K(ret));
       } else if (index_table_schema->is_materialized_view()) {
         // bug: 
-        // index_tid_array: 包含index和mv, 这里只需要处理索引即可
+        // index_tid_array: contains index and mv, here we only need to process the index
         // so do-nothing for mv
       } else if (index_table_schema->is_built_in_fts_index()) {
         // skip built-in fts index
@@ -949,7 +950,7 @@ int ObAlterTableResolver::resolve_action_list(const ParseNode &node)
           }
         //deal with add index drop index rename index
         case T_ALTER_INDEX_OPTION: {
-            // mysql对应alter index
+            // mysql corresponds to alter index
             bool is_add_index = false;
             alter_table_stmt->set_alter_table_index();
             if (OB_FAIL(resolve_index_options(node, *action_node, is_add_index))) {
@@ -977,8 +978,8 @@ int ObAlterTableResolver::resolve_action_list(const ParseNode &node)
             }
             break;
           }
-        // 仅处理 mysql 模式下的 alter table add check constraint
-        // oracle 模式下的 alter table add check constraint 在 resolve_index_options 里面处理
+        // Only process alter table add check constraint in mysql mode
+        // oracle modeunderof alter table add check constraint in resolve_index_options handled inside
         case T_ALTER_CHECK_CONSTRAINT_OPTION: {
             if (OB_FAIL(resolve_constraint_options(*action_node, node.num_child_ > 1))) {
               SQL_RESV_LOG(WARN, "Resolve check constraint option in mysql mode failed!", K(ret));
@@ -1003,7 +1004,7 @@ int ObAlterTableResolver::resolve_action_list(const ParseNode &node)
             // drop check constraint/foreign key/index in oracle mode, drop check constraint/foreign key in mysql mode
             ObString constraint_name;
             uint64_t constraint_id = OB_INVALID_ID;
-            bool is_constraint = false; // 表示除去外键及唯一键以外的其他 constraint
+            bool is_constraint = false; // indicates other constraints except foreign keys and unique keys
             bool is_foreign_key = false;
             bool is_unique_key = false;
             bool is_primary_key = false;
@@ -1042,7 +1043,7 @@ int ObAlterTableResolver::resolve_action_list(const ParseNode &node)
                 }
               }
               if (OB_SUCC(ret) && (lib::is_mysql_mode() || !is_constraint)) { // drop foreign key
-                // 在 drop constraint 的时候检查约束类型是否是 foreign key 或者 unique constraint
+                // When dropping constraint check if the constraint type is foreign key or unique constraint
                 if (OB_FAIL(schema_guard->get_foreign_key_id(table_schema_->get_tenant_id(),
                                                              table_schema_->get_database_id(),
                                                              constraint_name,
@@ -1117,16 +1118,9 @@ int ObAlterTableResolver::resolve_action_list(const ParseNode &node)
             break;
         }
         case T_REMOVE_TTL: {
-          uint64_t tenant_data_version = 0;
           if (OB_ISNULL(session_info_)) {
             ret = OB_ERR_UNEXPECTED;
             LOG_WARN("unexpected null", K(ret));
-          } else if (OB_FAIL(GET_MIN_DATA_VERSION(session_info_->get_effective_tenant_id(), tenant_data_version))) {
-            LOG_WARN("get tenant data version failed", K(ret), K(session_info_->get_effective_tenant_id()));
-          } else if (tenant_data_version < DATA_VERSION_4_2_1_0) {
-            ret = OB_NOT_SUPPORTED;
-            LOG_WARN("REMOVE TTL is not supported in data version less than 4.2.1", K(ret), K(tenant_data_version));
-            LOG_USER_ERROR(OB_NOT_SUPPORTED, "REMOVE TTL in data version less than 4.2.1");
           } else {
             ttl_definition_.reset();
             if (OB_FAIL(alter_table_bitset_.add_member(ObAlterTableArg::TTL_DEFINITION))) {
@@ -1448,7 +1442,7 @@ int ObAlterTableResolver::resolve_column_options(const ParseNode &node,
             break;
           }
         //alter column attribute
-        //用来修改列的默认值
+        // used to modify the column's default value
         case T_COLUMN_ALTER: {
             if (OB_FAIL(resolve_alter_column(*column_node))) {
               SQL_RESV_LOG(WARN, "Resolve alter column error!", K(ret));
@@ -1456,7 +1450,7 @@ int ObAlterTableResolver::resolve_column_options(const ParseNode &node,
             break;
           }
         //change column name
-        //需要提供新旧两个column_name
+        // Need to provide new and old two column_name
         case T_COLUMN_CHANGE: {
             if (OB_FAIL(resolve_change_column(*column_node))) {
               SQL_RESV_LOG(WARN, "Resolve change column error!", K(ret));
@@ -1496,18 +1490,12 @@ int ObAlterTableResolver::resolve_column_options(const ParseNode &node,
             break;
           }
         case T_ALTER_TABLE_FORCE: { // alter table force.
-          uint64_t tenant_data_version = 0;
           if (OB_UNLIKELY(1 != node.num_child_)) {
             ret = OB_ERR_UNEXPECTED;
             LOG_WARN("unexpected error", KR(ret), K(node.num_child_));
           } else if (OB_ISNULL(session_info_)) {
             ret = OB_ERR_UNEXPECTED;
             LOG_WARN("session_info_ should not be null", KR(ret));
-          } else if (OB_FAIL(GET_MIN_DATA_VERSION(session_info_->get_effective_tenant_id(), tenant_data_version))) {
-            LOG_WARN("get tenant data version failed", KR(ret));
-          } else if (tenant_data_version < DATA_VERSION_4_3_5_2 && lib::is_mysql_mode()) {
-            LOG_WARN("alter table force less than 4_3_5_2 in mysql mode is not supported", KR(ret));
-            LOG_USER_ERROR(OB_NOT_SUPPORTED, "alter table force less than 4_3_5_2 in mysql mode");
           } else if (OB_FAIL(resolve_alter_table_force(*column_node))) {
             LOG_WARN("resolver alter table force failed", KR(ret));
           }
@@ -1557,12 +1545,6 @@ int ObAlterTableResolver::resolve_alter_table_force(const ParseNode& node)
     LOG_WARN("resolve drop unused columns failed", KR(ret));
   }
   return ret;
-}
-
-bool ObAlterTableResolver::can_add_column_instant(const uint64_t tenant_data_version)
-{
-  return ((tenant_data_version >= MOCK_DATA_VERSION_4_2_5_0 && tenant_data_version < DATA_VERSION_4_3_0_0)
-        || tenant_data_version >= DATA_VERSION_4_3_5_0);
 }
 
 int ObAlterTableResolver::resolve_drop_unused_columns(const ParseNode& node)
@@ -1665,15 +1647,9 @@ int ObAlterTableResolver::resolve_index_column_list(const ParseNode &node,
             LOG_USER_ERROR(OB_NOT_SUPPORTED, "create fulltext/multivalue/vector index on materialized view");
           }
         } else if (index_keyname_ == FTS_KEY) {
-          uint64_t tenant_data_version = 0;
           if (OB_ISNULL(session_info_)) {
             ret = OB_ERR_UNEXPECTED;
             LOG_WARN("unexpected null", K(ret));
-          } else if (OB_FAIL(GET_MIN_DATA_VERSION(session_info_->get_effective_tenant_id(), tenant_data_version))) {
-            LOG_WARN("get tenant data version failed", K(ret));
-          } else if (tenant_data_version < DATA_VERSION_4_3_5_0) {
-            LOG_WARN("there are the observers with version lower than 4.3.5 in cluster, build fulltext index afterward not supported", K(ret));
-            LOG_USER_ERROR(OB_NOT_SUPPORTED, "there are the observers with version lower than 4.3.5 in cluster, build fulltext index afterward");
           } else if (OB_FAIL(resolve_fts_index_constraint(*table_schema_,
                                                           sort_item.column_name_,
                                                           index_name_value))) {
@@ -1709,7 +1685,7 @@ int ObAlterTableResolver::resolve_index_column_list(const ParseNode &node,
         if (OB_FAIL(ret)) {
           //do nothing
         } else {
-          //兼容mysql5.7, 降序索引不生效且不报错
+          // Compatible with mysql5.7, descending index does not take effect and no error is reported
           sort_item.order_type_ = common::ObOrderType::ASC;
         }
 
@@ -1723,20 +1699,6 @@ int ObAlterTableResolver::resolve_index_column_list(const ParseNode &node,
             SQL_RESV_LOG(WARN, "add column name to input_index_columns_name failed",K(sort_item.column_name_), K(ret));
           }
         }
-      }
-    }
-
-    if (OB_SUCC(ret) && lib::is_mysql_mode() && cnt_func_index) {
-      uint64_t tenant_data_version = 0;
-      if (OB_ISNULL(session_info_)) {
-        ret = OB_ERR_UNEXPECTED;
-        LOG_WARN("unexpected null", K(ret));
-      } else if (OB_FAIL(GET_MIN_DATA_VERSION(session_info_->get_effective_tenant_id(), tenant_data_version))) {
-        LOG_WARN("get tenant data version failed", K(ret));
-      } else if (tenant_data_version < DATA_VERSION_4_2_0_0){
-        ret = OB_NOT_SUPPORTED;
-        LOG_WARN("tenant version is less than 4.2, functional index is not supported in mysql mode", K(ret), K(tenant_data_version));
-        LOG_USER_ERROR(OB_NOT_SUPPORTED, "version is less than 4.2, functional index in mysql mode not supported");
       }
     }
   }
@@ -1965,13 +1927,8 @@ int ObAlterTableResolver::resolve_add_index(const ParseNode &node)
             }
 
             if (OB_SUCC(ret)) {
-              uint64_t tenant_data_version = 0;
               create_index_arg->sql_mode_ = session_info_->get_sql_mode();
-              if (OB_FAIL(GET_MIN_DATA_VERSION(session_info_->get_effective_tenant_id(), tenant_data_version))) {
-                LOG_WARN("get tenant data version failed", K(ret));
-              } else if (tenant_data_version < DATA_VERSION_4_2_2_0) {
-                //do nothing
-              } else if (OB_FAIL(create_index_arg->local_session_var_.load_session_vars(session_info_))) {
+              if (OB_FAIL(create_index_arg->local_session_var_.load_session_vars(session_info_))) {
                 LOG_WARN("fail to fill session info into local_session_var", K(ret));
               }
             }
@@ -2033,18 +1990,6 @@ int ObAlterTableResolver::resolve_add_index(const ParseNode &node)
               if (OB_SUCC(ret)) {
                 if (OB_FAIL(create_index_arg->assign(index_arg))) {
                   LOG_WARN("fail to assign create index arg", K(ret));
-                } else if (share::schema::is_multivalue_index(index_arg.index_type_)) {
-                  uint64_t tenant_data_version = 0;
-                  if (OB_ISNULL(session_info_)) {
-                    ret = OB_ERR_UNEXPECTED;
-                    LOG_WARN("unexpected null", K(ret));
-                  } else if (OB_FAIL(GET_MIN_DATA_VERSION(session_info_->get_effective_tenant_id(), tenant_data_version))) {
-                    LOG_WARN("get tenant data version failed", K(ret));
-                  } else if (tenant_data_version < DATA_VERSION_4_3_4_0) {
-                    ret = OB_NOT_SUPPORTED;
-                    LOG_WARN("tenant data version is less than 4.3.4, create dynamic multivalue index not supported", K(ret), K(tenant_data_version));
-                    LOG_USER_ERROR(OB_NOT_SUPPORTED, "tenant data version is less than 4.3.3, multivalue index not support dynamic create.");
-                  }
                 }
                 if (OB_SUCC(ret)) {
                   create_index_arg->index_key_ = static_cast<int64_t>(index_keyname_);
@@ -2121,7 +2066,7 @@ int ObAlterTableResolver::resolve_add_partition(const ParseNode &node,
                                        alter_stmt->get_part_fun_exprs(), dummy_part_keys))) {
     LOG_WARN("resolve part func failed", K(ret));
   } else if (share::schema::PARTITION_LEVEL_ONE == orig_table_schema.get_part_level()) {
-    // 一级分区表加一级分区
+    // First-level partitioned table with first-level partitioning
     for (int64_t i = 0; OB_SUCC(ret) && i < part_elements_node->num_child_; ++i) {
       if (OB_ISNULL(part_elements_node->children_[i])) {
         ret = OB_ERR_UNEXPECTED;
@@ -2138,7 +2083,7 @@ int ObAlterTableResolver::resolve_add_partition(const ParseNode &node,
       }
     }
   } else {
-    // 非模板化二级分区表加一级分区, 支持显示定义一级分区下的二级分区
+    // Non-template secondary partition table plus one-level partition, supports user-defined secondary partitions under one-level partition
     // 1. no_subpart == true: subpart info is the template of table.
     // 2. no_subpart == false: subpart info is specified by clause.
     bool no_subpart = false;
@@ -2190,11 +2135,11 @@ int ObAlterTableResolver::resolve_add_partition(const ParseNode &node,
         // set sub_part_template_def to invalid, which is only used for schema printer
         alter_table_schema.unset_sub_part_template_def_valid();
       }
-      const ObPartitionOption &subpart_option = orig_table_schema.get_sub_part_option();
+      const ObSubPartitionOption &subpart_option = orig_table_schema.get_sub_part_option();
       const ObPartitionFuncType subpart_type = subpart_option.get_part_func_type();
       ParseNode *subpart_func_node = NULL;
       alter_stmt->set_use_def_sub_part(false);
-      // 先设置好sub part option, 解析二级分区的定义时依赖
+      // First set up sub part option, parsing the definition of secondary partition depends on
       alter_table_schema.get_sub_part_option() = orig_table_schema.get_sub_part_option();
       alter_table_schema.get_part_option() = orig_table_schema.get_part_option();
       if (no_subpart && orig_table_schema.is_hash_like_subpart()) {
@@ -2335,7 +2280,7 @@ int ObAlterTableResolver::resolve_add_subpartition(const ParseNode &node,
     ObPartition dummy_part;
     ObPartition *cur_partition = NULL;
     alter_stmt->set_use_def_sub_part(false);
-    // 先设置好sub part option, 解析二级分区的定义时依赖
+    // First set up sub part option, parsing the definition of secondary partition depends on
     alter_table_schema.get_sub_part_option() = orig_table_schema.get_sub_part_option();
     // resolve partition name
     ObString partition_name(static_cast<int32_t>(part_name_node->str_len_),
@@ -2497,12 +2442,9 @@ int ObAlterTableResolver::generate_index_arg(obrpc::ObCreateIndexArg &index_arg,
 {
   int ret = OB_SUCCESS;
   ObAlterTableStmt *alter_table_stmt = get_alter_table_stmt();
-  uint64_t tenant_data_version = 0;
   if (OB_ISNULL(session_info_) || OB_ISNULL(alter_table_stmt)) {
     ret = OB_ERR_UNEXPECTED;
     SQL_RESV_LOG(WARN, "session info should not be null", K(session_info_), K(alter_table_stmt));
-  } else if (OB_FAIL(GET_MIN_DATA_VERSION(session_info_->get_effective_tenant_id(), tenant_data_version))) {
-    LOG_WARN("get tenant data version failed", K(ret));
   } else {
     //add storing column
     for (int32_t i = 0; OB_SUCC(ret) && i < store_column_names_.count(); ++i) {
@@ -2560,42 +2502,12 @@ int ObAlterTableResolver::generate_index_arg(obrpc::ObCreateIndexArg &index_arg,
           type = INDEX_TYPE_UNIQUE_MULTIVALUE_LOCAL;
           if (global_) {
             ret = OB_NOT_SUPPORTED;
-            LOG_WARN("global index, multivalue index not supported", K(ret), K(tenant_data_version));
+            LOG_WARN("global index, multivalue index not supported", K(ret));
             LOG_USER_ERROR(OB_NOT_SUPPORTED, "global multivalue index");
           }
         }
       } else {
-        if (tenant_data_version < DATA_VERSION_4_1_0_0 && index_keyname_ == SPATIAL_KEY) {
-          ret = OB_NOT_SUPPORTED;
-          LOG_WARN("tenant data version is less than 4.1, spatial index is not supported", K(ret), K(tenant_data_version));
-          LOG_USER_ERROR(OB_NOT_SUPPORTED, "tenant data version is less than 4.1, spatial index");
-#ifdef OB_BUILD_SHARED_STORAGE
-        } else if (GCTX.is_shared_storage_mode() &&
-                   FTS_KEY == index_keyname_ &&
-                   tenant_data_version < DATA_VERSION_4_3_5_2) {
-          ret = OB_NOT_SUPPORTED;
-          LOG_WARN("fulltext search index isn't supported in shared storage mode", K(ret));
-          LOG_USER_ERROR(OB_NOT_SUPPORTED, "fulltext search index in shared storage mode is");
-        } else if (GCTX.is_shared_storage_mode() && VEC_KEY == index_keyname_) {
-          ret = OB_NOT_SUPPORTED;
-          LOG_WARN("vector index search index isn't supported in shared storage mode", K(ret));
-          LOG_USER_ERROR(OB_NOT_SUPPORTED, "vector index search index in shared storage mode is");
-        } else if (GCTX.is_shared_storage_mode() 
-                   && (MULTI_KEY == index_keyname_ || MULTI_UNIQUE_KEY == index_keyname_)
-                   && tenant_data_version < DATA_VERSION_4_3_5_2) {
-          ret = OB_NOT_SUPPORTED;
-          LOG_WARN("multivalue search index isn't supported in shared storage mode", K(ret));
-          LOG_USER_ERROR(OB_NOT_SUPPORTED, "multivalue search index in shared storage mode is");
-#endif
-        } else if (tenant_data_version < DATA_VERSION_4_3_1_0 && index_keyname_ == FTS_KEY) {
-          ret = OB_NOT_SUPPORTED;
-          LOG_WARN("tenant data version is less than 4.3.1, fulltext index not supported", K(ret), K(tenant_data_version));
-          LOG_USER_ERROR(OB_NOT_SUPPORTED, "tenant data version is less than 4.3.1, fulltext index");
-        } else if (tenant_data_version < DATA_VERSION_4_3_1_0 && index_keyname_ == MULTI_KEY) {
-          ret = OB_NOT_SUPPORTED;
-          LOG_WARN("tenant data version is less than 4.3.1, multivalue index not supported", K(ret), K(tenant_data_version));
-          LOG_USER_ERROR(OB_NOT_SUPPORTED, "tenant data version is less than 4.3.1, multivalue index");
-        } else if (global_) {
+        if (global_) {
           if (index_keyname_ == SPATIAL_KEY) {
             type = INDEX_TYPE_SPATIAL_GLOBAL;
           } else if (index_keyname_ == FTS_KEY) {
@@ -2605,7 +2517,7 @@ int ObAlterTableResolver::generate_index_arg(obrpc::ObCreateIndexArg &index_arg,
           } else if (index_keyname_ == MULTI_KEY) {
             ret = OB_NOT_SUPPORTED;
             LOG_WARN("global multivalue index not supported", K(ret));
-            LOG_USER_ERROR(OB_NOT_SUPPORTED, "tenant data version is less than 4.3.1, multivalue index");
+            LOG_USER_ERROR(OB_NOT_SUPPORTED, "multivalue index");
           } else {
             type = INDEX_TYPE_NORMAL_GLOBAL;
           }
@@ -2656,10 +2568,10 @@ int ObAlterTableResolver::resolve_drop_index(const ParseNode &node)
       //push drop index arg
       if (OB_SUCC(ret)) {
         ObAlterTableStmt *alter_table_stmt = get_alter_table_stmt();
-        // 删除索引列的时候需要检查索引相关的列是否是外键列,如果是外键列则不允许删除，包含情况：
-        // 1. 索引的主表是父表
-        // 2. 索引的主表是子表
-        // 在 fetch_foreign_key_info 的时候，会把 parent/child table 的 foreign key info 都带过来
+        // Delete the index column when you need to check if the index-related columns are foreign key columns, if they are foreign key columns then deletion is not allowed, including cases:
+        // 1. The main table of the index is the parent table
+        // 2. The main table of the index is the subtable
+        // When fetching foreign key info, it will bring over the foreign key info of parent/child tables
         if (OB_ISNULL(alter_table_stmt)) {
           ret = OB_ERR_UNEXPECTED;
           SQL_RESV_LOG(WARN, "alter table stmt should not be null", K(ret));
@@ -2926,10 +2838,6 @@ int ObAlterTableResolver::resolve_exchange_partition(const ParseNode &node,
     LOG_WARN("session info and alter table stmt should not be null", K(ret), KP(session_info_));
   } else if (OB_FAIL(GET_MIN_DATA_VERSION(session_info_->get_effective_tenant_id(), tenant_data_version))) {
     LOG_WARN("get data version failed", K(ret), K(session_info_->get_effective_tenant_id()));
-  } else if (OB_UNLIKELY(tenant_data_version < DATA_VERSION_4_3_1_0)) {
-    ret = OB_NOT_SUPPORTED;
-    LOG_WARN("version lower than 4.3.1.0 does not support partition exchange", KR(ret), K(tenant_data_version));
-    LOG_USER_ERROR(OB_NOT_SUPPORTED, "partition exchange of version lower than 4.3.1.0 is");
   } else if (OB_UNLIKELY(PARTITION_LEVEL_ZERO == orig_table_schema.get_part_level())) {
     ret = OB_ERR_PARTITION_MGMT_ON_NONPARTITIONED;
     LOG_USER_ERROR(OB_ERR_PARTITION_MGMT_ON_NONPARTITIONED);
@@ -3086,7 +2994,6 @@ int ObAlterTableResolver::resolve_rename_partition(const ParseNode &node,
 {
   int ret = OB_SUCCESS;
   const ObPartitionLevel part_level = orig_table_schema.get_part_level();
-  uint64_t tenant_data_version = 0;
   ObAlterTableStmt *alter_table_stmt = get_alter_table_stmt();
   if (T_ALTER_PARTITION_RENAME != node.type_
       || OB_ISNULL(node.children_)) {
@@ -3098,11 +3005,6 @@ int ObAlterTableResolver::resolve_rename_partition(const ParseNode &node,
   } else if (OB_ISNULL(session_info_)) {
     ret = OB_ERR_UNEXPECTED;
     LOG_WARN("session_info is null", KR(ret), KP(this));
-  } else if (OB_FAIL(GET_MIN_DATA_VERSION(session_info_->get_effective_tenant_id(), tenant_data_version))) {
-    LOG_WARN("get data version failed", KR(ret), K(session_info_->get_effective_tenant_id()));
-  } else if (tenant_data_version < DATA_VERSION_4_2_1_0) {
-    ret = OB_NOT_SUPPORTED;
-    LOG_WARN("cluster version and feature mismatch", KR(ret));
   } else if (!orig_table_schema.is_user_table()) {
     ret = OB_NOT_SUPPORTED;
     LOG_WARN("unsupport behavior on not user table", KR(ret), K(orig_table_schema));
@@ -3158,7 +3060,6 @@ int ObAlterTableResolver::resolve_rename_subpartition(const ParseNode &node,
 {
   int ret = OB_SUCCESS;
   const ObPartitionLevel part_level = orig_table_schema.get_part_level();
-  uint64_t tenant_data_version = 0;
   ObAlterTableStmt *alter_table_stmt = get_alter_table_stmt();
   if (T_ALTER_SUBPARTITION_RENAME != node.type_
   || OB_ISNULL(node.children_)) {
@@ -3170,11 +3071,6 @@ int ObAlterTableResolver::resolve_rename_subpartition(const ParseNode &node,
   } else if (OB_ISNULL(session_info_)) {
     ret = OB_ERR_UNEXPECTED;
     LOG_WARN("session_info is null", KR(ret), KP(this));
-  } else if (OB_FAIL(GET_MIN_DATA_VERSION(session_info_->get_effective_tenant_id(), tenant_data_version))) {
-    LOG_WARN("get data version failed", KR(ret), K(session_info_->get_effective_tenant_id()));
-  } else if (tenant_data_version < DATA_VERSION_4_2_1_0) {
-    ret = OB_NOT_SUPPORTED;
-    LOG_WARN("cluster version and feature mismatch", KR(ret));
   } else if (!orig_table_schema.is_user_table()) {
     ret = OB_NOT_SUPPORTED;
     LOG_WARN("unsupport behavior on not user table", KR(ret), K(orig_table_schema));
@@ -3344,8 +3240,8 @@ int ObAlterTableResolver::resolve_alter_index_parallel_oracle(const ParseNode &n
       } else {
         alter_index_parallel_arg = new (tmp_ptr)ObAlterIndexParallelArg();
         alter_index_parallel_arg->tenant_id_ = session_info_->get_effective_tenant_id();
-        alter_index_parallel_arg->new_parallel_ = index_dop; // update以后的index dop
-        alter_index_parallel_arg->index_name_ = index_name; // update的索引的name
+        alter_index_parallel_arg->new_parallel_ = index_dop; // updateafterofindex dop
+        alter_index_parallel_arg->index_name_ = index_name; // update the index name
       }
       if (OB_SUCC(ret)) {
         ObAlterTableStmt *alter_table_stmt = get_alter_table_stmt();
@@ -3404,7 +3300,7 @@ int ObAlterTableResolver::resolve_alter_index_parallel_mysql(const ParseNode &no
         alter_index_parallel_arg = new (tmp_ptr)ObAlterIndexParallelArg();
         alter_index_parallel_arg->tenant_id_ = session_info_->get_effective_tenant_id();
         alter_index_parallel_arg->new_parallel_ = parallel_node->children_[0]->value_;
-        alter_index_parallel_arg->index_name_ = index_name; // update的索引的name
+        alter_index_parallel_arg->index_name_ = index_name; // update the index name
       }
       if (OB_SUCC(ret)) {
         ObAlterTableStmt *alter_table_stmt = get_alter_table_stmt();
@@ -3515,6 +3411,22 @@ int ObAlterTableResolver::resolve_alter_primary(const ParseNode &action_node_lis
     ret = OB_ERR_CANT_DROP_FIELD_OR_KEY;
     LOG_WARN("can't DROP 'PRIMARY', check primary key exists", K(ret), KPC(table_schema_));
     LOG_USER_ERROR(OB_ERR_CANT_DROP_FIELD_OR_KEY, pk_name.length(), pk_name.ptr());
+  } else {
+    // check if table has HNSW index with extra info
+    share::schema::ObSchemaGetterGuard *schema_guard = schema_checker_->get_schema_guard();
+    bool has_hnsw_with_extra_info = false;
+    if (OB_ISNULL(schema_guard)) {
+      ret = OB_ERR_UNEXPECTED;
+      LOG_WARN("schema guard is null", K(ret));
+    } else if (OB_FAIL(ObVectorIndexUtil::check_has_extra_info(*table_schema_, *schema_guard, has_hnsw_with_extra_info))) {
+      LOG_WARN("fail to check has hnsw index with extra info", K(ret), KPC(table_schema_));
+    } else if (has_hnsw_with_extra_info) {
+      ret = OB_NOT_SUPPORTED;
+      LOG_WARN("can't drop primary key when table has HNSW index with extra info", K(ret), KPC(table_schema_));
+      LOG_USER_ERROR(OB_NOT_SUPPORTED, "dropping primary key when table has HNSW index with extra info is");
+    }
+  }
+  if (OB_FAIL(ret)) {
   } else {
     obrpc::ObAlterPrimaryArg *alter_pk_arg = NULL;
     void *tmp_ptr = NULL;
@@ -3723,16 +3635,13 @@ int ObAlterTableResolver::resolve_drop_primary(const ParseNode &action_node_list
   bool is_drop_primary_key = false;
   ObAlterPrimaryArg *drop_pk_arg = nullptr;
   ObAlterTableStmt *alter_table_stmt = get_alter_table_stmt();
-  uint64_t tenant_data_version = 0;
   if (OB_ISNULL(alter_table_stmt)) {
     ret = OB_ERR_UNEXPECTED;
     LOG_WARN("alter table stmt should not be null", K(ret));
   } else if (OB_ISNULL(table_schema_)) {
     ret = OB_ERR_UNEXPECTED;
     LOG_WARN("table_schema is null", K(ret));
-  } else if (OB_FAIL(GET_MIN_DATA_VERSION(table_schema_->get_tenant_id(), tenant_data_version))) {
-    LOG_WARN("get tenant data version failed", K(ret));
-  } else if (tenant_data_version >= DATA_VERSION_4_3_5_1 && table_schema_->is_heap_organized_table()) {
+  } else if (table_schema_->is_heap_organized_table()) {
     const ObString pk_name = "PRIMAY";
     ret = OB_NOT_SUPPORTED;
     LOG_WARN("can't DROP 'PRIMARY', feature is not supported in the heap organized table", K(ret), KPC(table_schema_));
@@ -3813,8 +3722,7 @@ int ObAlterTableResolver::resolve_index_options_oracle(const ParseNode &node)
   }
   return ret;
 }
-
-// 这里不只处理 index，还会处理 oracle 模式下 alter table 时追加约束
+// Here not only index is processed, but also constraints are appended when altering table in oracle mode
 int ObAlterTableResolver::resolve_index_options(const ParseNode &action_node_list,
                                                 const ParseNode &node,
                                                 bool &is_add_index)
@@ -4559,8 +4467,7 @@ int ObAlterTableResolver::resolve_modify_check_constraint_state_oracle(const Par
 
   return ret;
 }
-
-// 用于解析 add/drop check constraint
+// Used to parse add/drop check constraint
 int ObAlterTableResolver::resolve_constraint_options(const ParseNode &node, const bool is_multi_actions)
 {
   int ret = OB_SUCCESS;
@@ -4902,7 +4809,7 @@ int ObAlterTableResolver::resolve_split_partition(const ParseNode *node,
     ParseNode *name_list = node->children_[0];
     AlterTableSchema &alter_table_schema =
         alter_table_stmt->get_alter_table_arg().alter_table_schema_;
-    //保存原table_name在assign之前
+    // Save original table_name before assign
     if (OB_FAIL(ob_write_string(alloc,
                                 alter_table_schema.get_origin_table_name(),
                                 origin_table_name))) {
@@ -4918,7 +4825,7 @@ int ObAlterTableResolver::resolve_split_partition(const ParseNode *node,
     }
 
     if (OB_SUCC(ret)) {
-      //解析被分裂的分区名
+      // Parse the split partition name
       if (OB_ISNULL(name_list)) {
         ret = OB_INVALID_ARGUMENT;
         LOG_WARN("invalid argument", K(ret), K(node));
@@ -4959,7 +4866,7 @@ int ObAlterTableResolver::resolve_split_partition(const ParseNode *node,
     /*T_SPLIT_ACTION
      *  - T_PARTITION_LIST
      *  - T_EXPR_LIST
-     *  - T_SPLIT_LIST/T_SPLIT_RANGE(标记必须有)
+     *  - T_SPLIT_LIST/T_SPLIT_RANGE(must have a mark)
      * */
     if (OB_FAIL(ret)) {
     } else if (OB_FAIL(check_split_type_valid(split_node,
@@ -4992,7 +4899,7 @@ int ObAlterTableResolver::resolve_split_partition(const ParseNode *node,
         LOG_WARN("failed to resolve split at partition", K(ret));
       }
     } else {
-      //不能即没有at也没有partition说明
+      // Cannot be that there is neither at nor partition specified
       ret = OB_ERR_MISS_AT_VALUES;
       LOG_WARN("miss at and less than values", K(ret));
       LOG_USER_ERROR(OB_ERR_MISS_AT_VALUES);
@@ -5077,11 +4984,11 @@ int ObAlterTableResolver::resolve_reorganize_partition(const ParseNode *node,
       ret = OB_ERR_UNEXPECTED;
       SQL_RESV_LOG(WARN, "alter table stmt should not be null", K(ret));
     } else {
-      // 处理第一个节点为分裂后的分区
+      // Process the first node as the partition after split
       ParseNode *name_list = node->children_[1];
       AlterTableSchema &alter_table_schema =
         alter_table_stmt->get_alter_table_arg().alter_table_schema_;
-      //保存原table_name在assign之前
+      // Save original table_name before assign
       if (OB_FAIL(ob_write_string(alloc,
                                   alter_table_schema.get_origin_table_name(),
                                   origin_table_name))) {
@@ -5095,9 +5002,9 @@ int ObAlterTableResolver::resolve_reorganize_partition(const ParseNode *node,
       } else {
         alter_table_schema.reset_partition_schema();
       }
-      //解析添加的节点
+      // Parse the added node
       if (OB_SUCC(ret)) {
-        //解析被分裂的分区名
+        // Parse the split partition name
         if (OB_ISNULL(name_list)) {
           ret = OB_INVALID_ARGUMENT;
           LOG_WARN("invalid argument", K(ret), K(node));
@@ -5194,8 +5101,6 @@ int ObAlterTableResolver::resolve_convert_to_character(const ParseNode &node)
       if (CHARSET_INVALID == charset_type) {
         ret = OB_ERR_UNKNOWN_CHARSET;
         LOG_USER_ERROR(OB_ERR_UNKNOWN_CHARSET, charset.length(), charset.ptr());
-      } else if (OB_FAIL(sql::ObSQLUtils::is_charset_data_version_valid(charset_type, session_info_->get_effective_tenant_id()))) {
-        LOG_WARN("failed to check charset data version valid", K(ret));
       } else {
         charset_type_ = charset_type;
       }
@@ -5210,13 +5115,7 @@ int ObAlterTableResolver::resolve_convert_to_character(const ParseNode &node)
     if (CS_TYPE_INVALID == collation_type) {
       ret = OB_ERR_UNKNOWN_COLLATION;
       LOG_USER_ERROR(OB_ERR_UNKNOWN_COLLATION, collation.length(), collation.ptr());
-    } else if (OB_FAIL(sql::ObSQLUtils::is_charset_data_version_valid(common::ObCharset::charset_type_by_coll(collation_type),
-                                                                      session_info_->get_effective_tenant_id()))) {
-      LOG_WARN("failed to check charset data version valid", K(ret));
-    } else if (OB_FAIL(sql::ObSQLUtils::is_collation_data_version_valid(collation_type,
-                                                                        session_info_->get_effective_tenant_id()))) {
-      LOG_WARN("failed to check collation data version valid", K(ret));
-    } else {
+   } else {
       collation_type_ = collation_type;
     }
   }
@@ -5356,7 +5255,6 @@ int ObAlterTableResolver::resolve_add_column(const ParseNode &node, ObColumnName
       alter_column_schema.reset();
       alter_column_schema.alter_type_ = OB_DDL_ADD_COLUMN;
       alter_table_stmt->get_alter_table_arg().alter_algorithm_ = lib::is_mysql_mode()
-                                                                 && can_add_column_instant(tenant_data_version)
                                                                  ? obrpc::ObAlterTableArg::AlterAlgorithm::INSTANT : obrpc::ObAlterTableArg::AlterAlgorithm::INPLACE;
       if (OB_ISNULL(node.children_[i])) {
         ret = OB_ERR_UNEXPECTED;
@@ -5569,7 +5467,7 @@ int ObAlterTableResolver::set_column_collation(AlterColumnSchema &alter_column_s
     ObCollationType collation_type = alter_column_schema.get_collation_type();
     if (CHARSET_INVALID == charset_type && CS_TYPE_INVALID == collation_type) {
       //do nothing
-      //在rootserver会根据表的schema设置正确的collation和charset
+      // In rootserver will set the correct collation and charset according to the table's schema
     } else if (OB_FAIL(ObCharset::check_and_fill_info(charset_type, collation_type))){
       SQL_RESV_LOG(WARN, "fail to fill charset collation info", K(ret));
     } else {
@@ -5630,16 +5528,11 @@ int ObAlterTableResolver::resolve_alter_column(const ParseNode &node)
           SQL_RESV_LOG(WARN, "failed to resolve default value!", K(ret));
         }
         if (OB_SUCC(ret) && !resolve_res.is_literal_) {
-          uint64_t data_version = 0;
           if (OB_FAIL(ret)) {
           } else if (OB_ISNULL(session_info_)) {
             ret = OB_ERR_UNEXPECTED;
             LOG_WARN("session info is NULL", KR(ret));
-          } else if (OB_FAIL(GET_MIN_DATA_VERSION(session_info_->get_effective_tenant_id(), data_version))) {
-            LOG_WARN("fail to get tenant data version", KR(ret), K(session_info_->get_effective_tenant_id()), K(data_version));
-          } else if ((MOCK_DATA_VERSION_4_2_4_0 <= data_version &&
-                      data_version < DATA_VERSION_4_3_0_0) ||
-                     data_version >= DATA_VERSION_4_3_3_0) {
+          } else {
             ObString expr_str(default_node->str_len_, default_node->str_value_);
             if (OB_FAIL(ObSQLUtils::convert_sql_text_to_schema_for_storing(
                                   *allocator_, session_info_->get_dtc_params(), expr_str))) {
@@ -5649,9 +5542,6 @@ int ObAlterTableResolver::resolve_alter_column(const ParseNode &node)
               default_value.set_collation_type(CS_TYPE_UTF8MB4_BIN);
               default_value.set_param_meta();
             }
-          } else {
-            ret = OB_ERR_ILLEGAL_TYPE;
-            SQL_RESV_LOG(WARN, "Illegal type of default value",K(ret));
           }
         }
 
@@ -5913,14 +5803,14 @@ int ObAlterTableResolver::resolve_change_column(const ParseNode &node)
     if (OB_SUCC(ret)) {
       ObColumnResolveStat stat;
       alter_column_schema.set_column_flags(origin_col_schema->get_column_flags());
-      //alter column的generated column flag应该自己解析，
-      //所以需要清空掉自己以前拷贝的generated column flag
+      //alter column's generated column flag should be parsed by itself,
+      // So need to clear the generated column flag that was previously copied
       alter_column_schema.erase_generated_column_flags();
       alter_column_schema.drop_not_null_cst();
       alter_column_schema.set_tenant_id(origin_col_schema->get_tenant_id());
       alter_column_schema.set_table_id(origin_col_schema->get_table_id());
       alter_column_schema.set_column_id(origin_col_schema->get_column_id());
-      // alter table change col 是 mysql 模式下的语法，oracle 模式不会走到这里
+      // alter table change col is MySQL mode syntax, oracle mode will not reach here
       bool is_modify_column_visibility = false;
       alter_column_schema.alter_type_ = OB_DDL_CHANGE_COLUMN;
       ObSEArray<ObColumnSchemaV2 *, 8> resolved_cols;
@@ -5973,8 +5863,8 @@ int ObAlterTableResolver::resolve_change_column(const ParseNode &node)
       }
       if (OB_SUCC(ret)) {
         if ((origin_col_schema->get_data_type()) != (alter_column_schema.get_data_type())) {
-          // alter table change column 的时候，如果只改列名字，不改列类型，就无需检查外键约束，允许改成功
-          // 如果改了列的类型，就需要检查外键约束
+          // alter table change column when, if only changing column name, not column type, then no need to check foreign key constraints, allow change to succeed
+          // If the column type is changed, you need to check the foreign key constraints
           if (OB_FAIL(check_column_in_foreign_key(*table_schema_,
                                                   alter_column_schema.get_origin_column_name(),
                                                   false /* is_drop_column */))) {
@@ -6127,9 +6017,8 @@ int ObAlterTableResolver::resolve_modify_column(const ParseNode &node,
           //identity column->generated column,NO
           //other column->identity colum,NO
           is_identity_column = alter_column_schema.is_identity_column();
-
-          //alter column的generated column flag应该自己解析，
-          //所以需要清空掉自己以前拷贝的generated column flag
+          //alter column's generated column flag should be parsed by itself,
+          // So need to clear the generated column flag that was previously copied
           alter_column_schema.set_column_flags(origin_col_schema->get_column_flags());
           alter_column_schema.erase_generated_column_flags();
           alter_column_schema.erase_string_lob_flag();
@@ -6497,10 +6386,7 @@ int ObAlterTableResolver::is_exist_item_type(const ParseNode &node,
 int ObAlterTableResolver::resolve_rename_column(const ParseNode &node)
 {
   int ret = OB_SUCCESS;
-  if (lib::is_mysql_mode() && GET_MIN_CLUSTER_VERSION() < CLUSTER_VERSION_4_2_1_0) {
-    ret = OB_NOT_SUPPORTED;
-    LOG_USER_ERROR(OB_NOT_SUPPORTED, "mysql rename column in current version");
-  } else if (T_COLUMN_RENAME != node.type_ || OB_ISNULL(node.children_) ||
+  if (T_COLUMN_RENAME != node.type_ || OB_ISNULL(node.children_) ||
       OB_ISNULL(node.children_[0]) || T_COLUMN_REF != node.children_[0]->type_ ||
       OB_ISNULL(node.children_[1]) || T_IDENT != node.children_[1]->type_) {
     ret = OB_ERR_UNEXPECTED;
@@ -6548,7 +6434,7 @@ int ObAlterTableResolver::resolve_rename_column(const ParseNode &node)
                                                     *alter_table_stmt))) {
       LOG_WARN("check rename mysql columns failed", K(ret));
     } else {
-      //rs端复用ddl_change_column
+      //rs end reuse ddl_change_column
       alter_column_schema.alter_type_ = OB_DDL_CHANGE_COLUMN;
       if (OB_FAIL(alter_table_stmt->add_column(alter_column_schema))) {
         SQL_RESV_LOG(WARN, "add alter column schema failed", K(ret));
@@ -6585,14 +6471,10 @@ int ObAlterTableResolver::resolve_column_group_for_column()
   int ret = OB_SUCCESS;
   bool is_normal_column_store_table = false;
   ObAlterTableStmt *alter_table_stmt = get_alter_table_stmt();
-  uint64_t compat_version = 0;
   const uint64_t tenant_id = table_schema_->get_tenant_id();
   if (OB_ISNULL(alter_table_stmt)) {
     ret = OB_ERR_UNEXPECTED;
     LOG_WARN("unexpected null alter_table_stmt", K(ret));
-  } else if (OB_FAIL(GET_MIN_DATA_VERSION(tenant_id, compat_version))) {
-    LOG_WARN("fail to get min data version", KR(ret), K(tenant_id));
-  } else if (compat_version < DATA_VERSION_4_3_0_0) { //skip resolve cg
   } else if (table_schema_->get_column_group_count() > 0) {
     // TODO, wait to support table update from 4.1 or less
     ObColumnGroupSchema column_group;
@@ -6648,7 +6530,6 @@ int ObAlterTableResolver::resolve_alter_column_groups(const ParseNode &node)
   } else {
     const ParseNode *column_group_node = node.children_[0];
     const ParseNode *delayed_node = nullptr;
-    uint64_t compat_version = 0;
 
     ObAlterTableArg &alter_table_arg = alter_table_stmt->get_alter_table_arg();
     share::schema::AlterTableSchema &alter_table_schema = alter_table_arg.alter_table_schema_;
@@ -6659,12 +6540,6 @@ int ObAlterTableResolver::resolve_alter_column_groups(const ParseNode &node)
       ret = OB_ERR_UNEXPECTED;
       SQL_RESV_LOG(WARN, "invalid parse tree, column group node is null or have no children!",
                    K(ret), KP(column_group_node));
-    } else if (OB_FAIL(GET_MIN_DATA_VERSION(tenant_id, compat_version))) {
-      SQL_RESV_LOG(WARN, "fail to get min data version", K(ret));
-    } else if (compat_version < DATA_VERSION_4_3_0_0) {
-      ret = OB_NOT_SUPPORTED;
-      SQL_RESV_LOG(WARN, "data_version not support for altering column group", K(ret), K(compat_version));
-      LOG_USER_ERROR(OB_NOT_SUPPORTED, "tenant data version is less than 4.3, alter column group");
     } else if (!need_column_group(*table_schema_)) {
       ret = OB_NOT_SUPPORTED;
       SQL_RESV_LOG(WARN, "table don't support alter column group", K(ret));
@@ -6681,11 +6556,7 @@ int ObAlterTableResolver::resolve_alter_column_groups(const ParseNode &node)
 
       if (OB_FAIL(ret)) {
       } else if (node.num_child_ > 1) {
-        if (compat_version < DATA_VERSION_4_3_5_0 && OB_NOT_NULL(node.children_[1])) {
-          ret = OB_NOT_SUPPORTED;
-          SQL_RESV_LOG(WARN, "alter column group delayed gets unsupported data_version", K(ret), K(compat_version), K(node.num_child_));
-          LOG_USER_ERROR(OB_NOT_SUPPORTED, "tenant data version is less than 4.3.5, alter column group delayed");
-        } else if (FALSE_IT(delayed_node = node.children_[1])) {
+        if (FALSE_IT(delayed_node = node.children_[1])) {
         } else if (OB_ISNULL(delayed_node)) {
           alter_table_stmt->get_alter_table_arg().is_alter_column_group_delayed_ = false;
         } else if (T_ALTER_COLUMN_GROUP_DELAYED == delayed_node->type_) {
@@ -6805,7 +6676,7 @@ int ObAlterTableResolver::check_drop_column_is_partition_key(const ObTableSchema
     const ObColumnSchemaV2 *origin_column = table_schema.get_column_schema(column_name);
     if (OB_ISNULL(origin_column)) {
       // do nothing
-      // 根据列名查不到列是因为表中不存在该列，后面会在 RS 端再检查一遍表中是否存在该列，并在 RS 端根据操作的不同报不同的错误
+      // According to the column name, the column cannot be found because it does not exist in the table. Later, it will be checked again on the RS side whether the column exists in the table, and different errors will be reported on the RS side according to different operations
     } else if (origin_column->is_tbl_part_key_column()){
       ret = OB_ERR_DEPENDENT_BY_PARTITION_FUNC;
       LOG_USER_ERROR(OB_ERR_DEPENDENT_BY_PARTITION_FUNC,

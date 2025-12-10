@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SQL_OB_FD_ITEM_H
@@ -71,7 +75,7 @@ public:
   VIRTUAL_TO_STRING_KV(K_(parent_exprs), K_(is_unique));
 protected:
   ObRawExprSet *parent_exprs_;
-  // 表示parent exprs在当前logical operator/join order中是否是unique的，主要用来加速一些判断
+  // Indicates whether parent exprs are unique in the current logical operator/join order, mainly used to accelerate some judgments
   bool is_unique_;
 };
 
@@ -166,8 +170,7 @@ public:
                           const ObExprFdItem &other);
 
   int copy_fd_item(ObFdItem *&fd_item, const ObFdItem &other);
-
-  //利用已有 fd_item_set/const/equal_set 推导添加新 fd/const
+  // Utilize existing fd_item_set/const/equal_set to derive and add new fd/const
   int deduce_fd_item_set(const EqualSets &equal_sets,
                          ObIArray<ObRawExpr *> &column_exprs,
                          ObIArray<ObRawExpr *> &const_exprs,

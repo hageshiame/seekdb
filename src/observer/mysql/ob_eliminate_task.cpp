@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SERVER
@@ -52,8 +56,7 @@ int ObEliminateTask::init(const ObMySQLRequestManager *request_manager)
   }
   return ret;
 }
-
-// 检查配置内存限时是否更改：mem_limit = tenant_mem_limit * ob_sql_audit_percentage
+// Check if the configuration memory limit has changed: mem_limit = tenant_mem_limit * ob_sql_audit_percentage
 int ObEliminateTask::check_config_mem_limit(bool &is_change)
 {
   const int64_t MINIMUM_LIMIT = 64 * 1024 * 1024;   // at lease 64M
@@ -67,7 +70,7 @@ int ObEliminateTask::check_config_mem_limit(bool &is_change)
     LOG_WARN("invalid argument", K(request_manager_), K(ret));
   } else if (FALSE_IT(tenant_id = request_manager_->get_tenant_id())) {
   } else if (tenant_id > OB_SYS_TENANT_ID && tenant_id <= OB_MAX_RESERVED_TENANT_ID) {
-    // 50x租户在没有对应的tenant schema，查询配置一定失败
+    // 50x tenant does not have a corresponding tenant schema, the query configuration will definitely fail
     // do nothing
   } else if (OB_FAIL(ObMySQLRequestManager::get_mem_limit(tenant_id, mem_limit))) {
     // if memory limit is not retrivable
@@ -87,13 +90,12 @@ int ObEliminateTask::check_config_mem_limit(bool &is_change)
   }
   return ret;
 }
-
-//剩余内存淘汰曲线图,当mem_limit在[64M, 100M]时, 内存剩余20M时淘汰;
-//               当mem_limit在[100M, 5G]时, 内存甚于mem_limit*0.2时淘汰;
-//               当mem_limit在[5G, +∞]时, 内存剩余1G时淘汰;
-//高低水位线内存差曲线图，当mem_limit在[64M, 100M]时, 内存差为:20M;
-//                        当mem_limit在[100M, 5G]时，内存差：mem_limit*0.2;
-//                        当mem_limit在[5G, +∞]时, 内存差是：1G,
+//Remaining memory eviction curve chart, when mem_limit is in [64M, 100M], evict when 20M memory remains;
+//               When mem_limit is in [100M, 5G], evict when memory usage exceeds mem_limit * 0.2;
+//               When mem_limit is in [5G, +∞], evict when 1G of memory remains;
+//High and low water level memory difference curve chart, when mem_limit is in [64M, 100M], the memory difference is: 20M;
+//                        When mem_limit is in [100M, 5G], memory difference: mem_limit*0.2;
+//                        When mem_limit is in [5G, +∞], the memory difference is: 1G,
 //        ______
 //       /
 // _____/
@@ -176,7 +178,7 @@ void ObEliminateTask::runTimerTask()
   if (OB_SUCC(ret)) {
     int64_t start_time = ObTimeUtility::current_time();
     int64_t evict_batch_count = 0;
-    //按内存淘汰
+    //Evict by memory
     if (evict_high_mem_level < allocator->allocated()) {
       LOG_INFO("sql audit evict mem start",
                K(request_manager_->get_tenant_id()),
@@ -209,8 +211,7 @@ void ObEliminateTask::runTimerTask()
         last_time_allocated = allocator->allocated();
       }
     }
-
-    //如果sql_audit_memory_limit改变, 则需要将ObConcurrentFIFOAllocator中total_limit_更新;
+    //If sql_audit_memory_limit changes, then total_limit_ in ObConcurrentFIFOAllocator needs to be updated;
     if (true == is_change) {
       allocator->set_total_limit(config_mem_limit_);
     }

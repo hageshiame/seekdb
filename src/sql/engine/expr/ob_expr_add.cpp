@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -37,7 +41,7 @@ ObExprAdd::ObExprAdd(ObIAllocator &alloc, ObExprOperatorType type)
   param_lazy_eval_ = false;
 }
 
-/* Note: precision, scale计算需要考虑： 字符串，整数，浮点数，十进制数等混合相加的情况 */
+/* Note: precision, scale calculation needs to consider: string, integer, float, decimal, etc., mixed addition situations */
 int ObExprAdd::calc_result_type2(ObExprResType &type,
                                  ObExprResType &type1,
                                  ObExprResType &type2,
@@ -133,9 +137,9 @@ int ObExprAdd::calc_result_type2(ObExprResType &type,
       } else {
         if (ObRawExprUtils::decimal_int_need_cast(type1.get_accuracy(), type.get_accuracy()) ||
               ObRawExprUtils::decimal_int_need_cast(type2.get_accuracy(), type.get_accuracy())) {
-          // 如果参数的scale和结果类型不一致，或者是参数精度和结果类型跨了一个decimal int类型（int32->int64)
-          // 需要将参数进行cast，此外还需设置DECIMAL_INT_ADJUST_FLAG，标记参数(P, S)已经调整避免下次类型
-          // 推导重复调整
+          // If the scale of the parameter and the result type are inconsistent, or if the precision of the parameter and the result type span a decimal int type (int32->int64)
+          // Need to cast the parameters, in addition, DECIMAL_INT_ADJUST_FLAG needs to be set, marking that the parameter (P, S) has been adjusted to avoid type issues next time
+          // Derive duplicate adjustment
           type.set_result_flag(DECIMAL_INT_ADJUST_FLAG);
         }
         type1.set_calc_accuracy(type.get_accuracy());

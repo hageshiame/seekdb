@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -160,9 +164,8 @@ int ObSqlExpression::generate_idx_for_regexp_ops(int16_t &cur_regexp_op_count)
 
 OB_DEF_SERIALIZE(ObSqlExpression) {
   int ret = OB_SUCCESS;
-
-  // TODO: 当master的升级前置版本改为223后，去掉post_expr_结构，
-  // 序列化和反序列化是mock一个空的post_expr数组即可
+  // TODO: When the pre-upgrade version of master is changed to 223, remove the post_expr_ structure,
+  // Serialization and deserialization is mock an empty post_expr arrayis sufficient
   OB_UNIS_ENCODE(post_expr_);
 
   int idx_v = -1;

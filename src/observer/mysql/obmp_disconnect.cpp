@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SERVER
@@ -42,13 +46,13 @@ int ObMPDisconnect::kill_unfinished_session(uint32_t sessid)
     LOG_ERROR("fail to get session info", K(session), K(sessid), K(ret));
   } else {
     /* NOTE:
-     * 在Disconnect的上下文中，两种可能：
-     * (1) 长SQL先执行，并且正在执行，那么它已经能够检测到IS_KILLED标记
-     *     此时disconnect_session会等待长SQL执行退出后才结束session中的事务
-     * (2) disconnect_session先执行，它会结束事务并返回，然后执行后面的free_session
-     *     (free_session 并不是释放 session 内存，只是一个逻辑删除的动作）。
-     *     当长SQL拿到query_lock锁，它会立即检测IS_KILLED状态，检测到后立即退出处理流程。
-     *     最终引用计数减为0，session被物理回收。
+     * In the context of Disconnect, there are two possibilities:
+     * (1) The long SQL is executed first and is currently running, so it can already detect the IS_KILLED flag
+     *     At this point, disconnect_session will wait for the long SQL to exit before ending the transaction in the session
+     * (2) disconnect_session is executed first, it will end the transaction and return, then execute the subsequent free_session
+     *     (free_session does not release session memory, it is just a logical deletion action).
+     *     When the long SQL acquires the query_lock lock, it will immediately check the IS_KILLED status, and exit the processing flow upon detection.
+     *     Ultimately, the reference count is reduced to 0, and the session is physically recycled.
      */
     if (OB_FAIL(GCTX.session_mgr_->disconnect_session(*session))) {
       LOG_WARN("fail to disconnect session", K(session), K(sessid), K(ret));

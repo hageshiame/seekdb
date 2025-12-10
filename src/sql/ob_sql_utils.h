@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef _OCEANBASE_SQL_OB_SQL_UTILS_H
@@ -166,9 +170,9 @@ public:
   const static int64_t WITHOUT_FUNC_REGEXP = 1;
   const static int64_t WITHOUT_FUNC_ADDR_TO_PARTITION_ID = 2;
   const static int64_t OB_MYSQL50_TABLE_NAME_PREFIX_LENGTH = 9;
-  const static int64_t NO_VALUES = -1;        //表示没有values()
-  const static int64_t VALUE_LIST_LEVEL = 0;  //表示在parse的T_VALUE_LIST层
-  const static int64_t VALUE_VECTOR_LEVEL = 1;//表示在parse的T_VALUE_VECTOR层
+  const static int64_t NO_VALUES = -1;        // indicates no values()
+  const static int64_t VALUE_LIST_LEVEL = 0;  // indicates the T_VALUE_LIST level in parse
+  const static int64_t VALUE_VECTOR_LEVEL = 1;//indicates the T_VALUE_VECTOR level in parse
 
   static bool is_trans_commit_need_disconnect_err(int err);
 
@@ -283,8 +287,7 @@ public:
     //   expr_idx++;
     // }
   }
-  static int is_charset_data_version_valid(ObCharsetType charset_type, const int64_t tenant_id);
-  static int is_collation_data_version_valid(ObCollationType collation_type, const int64_t tenant_id);
+
   static int calc_calculable_expr(ObSQLSessionInfo *session,
                                   const ObRawExpr *expr,
                                   common::ObObj &result,
@@ -356,7 +359,7 @@ public:
                                    common::ObCastMode &cast_mode);
   static int get_default_cast_mode(const ObSQLSessionInfo *session, common::ObCastMode &cast_mode);
   static void get_default_cast_mode(const ObSQLMode sql_mode, ObCastMode &cast_mode);
-  // 比上面三个方法多了一些cast mode的设置，例如:
+  // More cast mode settings compared to the above three methods, for example:
   // CM_EXPLICIT_CAST, CM_ZERO_FILL, CM_STRICT_MODE
   static int get_default_cast_mode(const bool is_explicit_cast,
                                     const uint32_t result_flag,
@@ -569,7 +572,7 @@ public:
   static int convert_escape_char(common::ObIAllocator &allocator,
                                  const ObString &in,
                                  ObString &out);
-  //检查参数是否为Oracle模式下的''
+  // Check if the parameter is '' in Oracle mode
   static bool is_oracle_empty_string(const common::ObObjParam &param);
   static bool is_oracle_null_with_normal_type(const common::ObObjParam &param);
   static int convert_sql_text_from_schema_for_resolve(common::ObIAllocator &allocator,
@@ -715,16 +718,10 @@ public:
                                     bool &is_odps_external_table);
   static int is_odps_external_table(const ObString &table_format_or_properties, 
                                     bool &is_odps_external_table);
+  static int check_location_constraint(const ObTableSchema &table_schema);
   static int extract_odps_part_spec(const ObString &all_part_spec, ObIArray<ObString> &part_spec_list);
   static int check_ident_name(const common::ObCollationType cs_type, common::ObString &name,
                               const bool check_for_path_char, const int64_t max_ident_len);
-
-  static int compatibility_check_for_mysql_role_and_column_priv(uint64_t tenant_id);
-  static bool is_data_version_ge_422_or_431(uint64_t data_version);
-  static bool is_data_version_ge_423_or_432(uint64_t data_version);
-  static bool is_data_version_ge_424_or_433(uint64_t data_version);
-  static bool is_min_cluster_version_ge_425_or_435();
-  static bool is_opt_feature_version_ge_425_or_435(uint64_t opt_feature_version);
 
   static int check_enable_mysql_compatible_dates(const sql::ObSQLSessionInfo *session,
                                                  const bool is_ddl_scenario,
@@ -877,9 +874,23 @@ private:
   int64_t init_size_;
 };
 
+class SemanticVectorDistExprChecker : public RelExprCheckerBase
+{
+public:
+  SemanticVectorDistExprChecker(common::ObIArray<ObRawExpr *> &rel_array)
+      : RelExprCheckerBase(), rel_array_(rel_array), init_size_(rel_array.count())
+  {
+  }
+  virtual ~SemanticVectorDistExprChecker() {}
+  int add_expr(ObRawExpr *&expr);
+private:
+  common::ObIArray<ObRawExpr *> &rel_array_;
+  int64_t init_size_;
+};
+
 struct ObSqlTraits
 {
-  char sql_id_[common::OB_MAX_SQL_ID_LENGTH + 1];// sql id //最后一个字节存放'\0'
+  char sql_id_[common::OB_MAX_SQL_ID_LENGTH + 1];// sql id //the last byte stores '\0'
   bool is_readonly_stmt_;
   bool is_modify_tenant_stmt_;
   bool is_cause_implicit_commit_;
@@ -955,9 +966,8 @@ public:
 private:
     int err_ret_code_;
 };
-
-//用uint64_t存储的flag集合，最多有63个flag
-//T是enum类型
+// Use uint64_t to store a set of flags, with a maximum of 63 flags
+// T is enum type
 // enum class A {
 //    F1,
 //    F2,
@@ -1015,8 +1025,7 @@ private:
 };
 
 OB_SERIALIZE_MEMBER_TEMP(template<typename T>, ObEnumBitSet<T>, flag_);
-
-//隐式游标信息
+// Implicit cursor information
 struct ObImplicitCursorInfo
 {
   OB_UNIS_VERSION(1);

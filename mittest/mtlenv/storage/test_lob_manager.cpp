@@ -1,16 +1,20 @@
 // owner: luohongdi.lhd
 // owner group: storage2
 
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX STORAGE
@@ -947,12 +951,12 @@ TEST_F(TestLobManager, basic)
   // do ...
   //
   // ObObj str1;
-  // str1.set_varchar("发生什么事了");
+  // str1.set_varchar("What happened");
   // str1.set_collation_type(CS_TYPE_UTF8MB4_GENERAL_CI);
   // ObString data;
   // str1.get_string(data);
   // // test for charset lob
-  // // check "生什么事"
+  // // check "what happened"
   // size_t st = ObCharset::charpos(CS_TYPE_UTF8MB4_GENERAL_CI, data.ptr(), data.length(), 1);
   // size_t len = ObCharset::charpos(CS_TYPE_UTF8MB4_GENERAL_CI, data.ptr() + st, data.length() - st, 4);
   // char buf[100];
@@ -1260,7 +1264,7 @@ TEST_F(TestLobManager, inrow_bin_test)
   param.offset_ = 0;
   param.len_ = 900;
   ASSERT_EQ(OB_SUCCESS, mgr->query(param, query_str));
-  // 对应关系
+  // Corresponding relationship
   // query   [0,50]  [50,100]   [100,250]
   // tmpbuf  [0,50]  [400,450]  [250,400]
   ASSERT_EQ(250, query_str.length());
@@ -1277,7 +1281,7 @@ TEST_F(TestLobManager, inrow_bin_test)
   param.offset_ = 0;
   param.len_ = 900;
   ASSERT_EQ(OB_SUCCESS, mgr->query(param, query_str));
-  // 对应关系
+  // Corresponding relationship
   // query   [0,50]  [50,100]   [100,200]  [200,300]
   // tmpbuf  [0,50]  [400,450]  [250,350]  [800,900]
   ASSERT_EQ(300, query_str.length());
@@ -1295,7 +1299,7 @@ TEST_F(TestLobManager, inrow_bin_test)
   param.offset_ = 0;
   param.len_ = 2000;
   ASSERT_EQ(OB_SUCCESS, mgr->query(param, query_str));
-  // 对应关系
+  // correspondence relationship
   // query   [0,50]  [50,100]   [100,200]  [200,300] [300,1000] [1000,1100]
   // tmpbuf  [0,50]  [400,450]  [250,350]  [800,900] [0x00]     [600,700]
   ASSERT_EQ(1100, query_str.length());
@@ -1456,7 +1460,7 @@ TEST_F(TestLobManager, inrow_tmp_full_locator)
   param.offset_ = 0;
   param.len_ = 900;
   ASSERT_EQ(OB_SUCCESS, mgr->query(param, query_str));
-  // 对应关系
+  // correspondence relationship
   // query   [0,50]  [50,100]   [100,250]
   // tmpbuf  [0,50]  [400,450]  [250,400]
   ASSERT_EQ(250, query_str.length());
@@ -1473,7 +1477,7 @@ TEST_F(TestLobManager, inrow_tmp_full_locator)
   param.offset_ = 0;
   param.len_ = 900;
   ASSERT_EQ(OB_SUCCESS, mgr->query(param, query_str));
-  // 对应关系
+  // correspondence relationship
   // query   [0,50]  [50,100]   [100,200]  [200,300]
   // tmpbuf  [0,50]  [400,450]  [250,350]  [800,900]
   ASSERT_EQ(300, query_str.length());
@@ -1491,7 +1495,7 @@ TEST_F(TestLobManager, inrow_tmp_full_locator)
   param.offset_ = 0;
   param.len_ = 2000;
   ASSERT_EQ(OB_SUCCESS, mgr->query(param, query_str));
-  // 对应关系
+  // Corresponding relationship
   // query   [0,50]  [50,100]   [100,200]  [200,300] [300,1000] [1000,1100]
   // tmpbuf  [0,50]  [400,450]  [250,350]  [800,900] [0x00]     [600,700]
   ASSERT_EQ(1100, query_str.length());
@@ -1603,7 +1607,7 @@ TEST_F(TestLobManager, inrow_tmp_delta_locator)
   param.offset_ = 0;
   param.len_ = 900;
   ASSERT_EQ(OB_SUCCESS, mgr->query(param, query_str));
-  // 对应关系
+  // Corresponding relationship
   // query   [0,50]  [50,100]   [100,250]
   // tmpbuf  [0,50]  [400,450]  [250,400]
   ASSERT_EQ(250, query_str.length());
@@ -1629,7 +1633,7 @@ TEST_F(TestLobManager, inrow_tmp_delta_locator)
   param.offset_ = 0;
   param.len_ = 900;
   ASSERT_EQ(OB_SUCCESS, mgr->query(param, query_str));
-  // 对应关系
+  // correspondence relationship
   // query   [0,50]  [50,100]   [100,200]  [200,300]
   // tmpbuf  [0,50]  [400,450]  [250,350]  [800,900]
   ASSERT_EQ(300, query_str.length());
@@ -1658,7 +1662,7 @@ TEST_F(TestLobManager, inrow_tmp_delta_locator)
   param.offset_ = 0;
   param.len_ = 2000;
   ASSERT_EQ(OB_SUCCESS, mgr->query(param, query_str));
-  // 对应关系
+  // correspondence relationship
   // query   [0,50]  [50,100]   [100,200]  [200,300] [300,1000] [1000,1100]
   // tmpbuf  [0,50]  [400,450]  [250,350]  [800,900] [0x00]     [600,700]
   ASSERT_EQ(1100, query_str.length());

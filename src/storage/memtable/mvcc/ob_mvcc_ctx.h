@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_MEMTABLE_MVCC_OB_MVCC_CTX_
@@ -65,9 +69,9 @@ class ObIMvccCtx
 public:
   ObIMvccCtx()
     : alloc_type_(0),
-    //记录一个事务内第一次执行的table version
+    // Record the table version of the first execution within a transaction
     min_table_version_(0),
-    //记录一个事务内存最大的一次table version
+    // Record the maximum table version of a transaction in memory
     max_table_version_(0),
     trans_version_(share::SCN::max_scn()),
     commit_version_(share::SCN::min_scn()),
@@ -131,17 +135,17 @@ public:
   inline void set_table_version(const int64_t table_version)
   {
     if (INT64_MAX == min_table_version_) {
-      //第一次更新，需要防御入参为INT64_MAX
+      //First update, need to defend against input parameter being INT64_MAX
       if (INT64_MAX == table_version) {
         TRANS_LOG_RET(WARN, common::OB_ERR_UNEXPECTED, "unexpected table version", K(table_version), K(*this));
       } else {
         min_table_version_ = table_version;
         max_table_version_ = table_version;
       }
-      //table version取最小值
+      //table version take minimum value
     } else if (table_version < max_table_version_) {
       TRANS_LOG(DEBUG, "current table version lower the last one", K(table_version), K(*this));
-      //非第一次更新table version，预期不会是int64_max
+      //Not the first update of table version, expected not to be int64_max
     } else if (INT64_MAX == table_version) {
       TRANS_LOG_RET(ERROR, common::OB_ERR_UNEXPECTED, "unexpected table version", K(table_version), K(*this));
     } else {

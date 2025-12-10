@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef _OB_JOIN_ORDER_H
@@ -70,7 +74,7 @@ namespace sql
     );
   };
   /*
-   * 用于指示inner join未来的连接条件
+   * Used to indicate the future join condition for inner join
    */
   struct JoinInfo;
 
@@ -212,13 +216,13 @@ namespace sql
   common::ObSEArray<ObRawExpr*, 4, common::ModulePageAllocator, true> rexprs_;
   // all hash join's join keys, maybe count greater than lexpr's count
   common::ObSEArray<ObRawExpr*, 4, common::ModulePageAllocator, true> all_join_key_left_exprs_;
-  ObShardingInfo *sharding_;      //join filter use基表的sharding
-  ObRawExpr *calc_part_id_expr_;  //partition join filter计算分区id的表达式
-  uint64_t ref_table_id_;         //join filter use基表的ref table id
+  ObShardingInfo *sharding_;      // join filter use base table's sharding
+  ObRawExpr *calc_part_id_expr_;  // partition join filter calculation partition id expression
+  uint64_t ref_table_id_;         // join filter use reference table id
   uint64_t index_id_;             //index id for join filter use
-  uint64_t table_id_;             //join filter use基表的table id
-  uint64_t filter_table_id_;        //join filter use实际受hint控制的table id
-  double row_count_;              //join filter use基表的output rows
+  uint64_t table_id_;             // join filter use base table's table id
+  uint64_t filter_table_id_;        // join filter use table id actually controlled by hint
+  double row_count_;              // join filter use base table's output rows
   double join_filter_selectivity_;
   double right_distinct_card_;
   bool need_partition_join_filter_;
@@ -301,6 +305,8 @@ struct DomainIndexAccessInfo
       index_scan_index_ids_(),
       func_lookup_exprs_(),
       func_lookup_index_ids_(),
+      match_exprs_(),
+      match_index_ids_(),
       domain_idx_type_(DomainIndexType::NON_DOMAIN_INDEX) {}
 
   void reset()
@@ -310,27 +316,27 @@ struct DomainIndexAccessInfo
     index_scan_index_ids_.reset();
     func_lookup_exprs_.reset();
     func_lookup_index_ids_.reset();
+    match_exprs_.reset();
+    match_index_ids_.reset();
   }
 
   bool has_ir_scan() const { return index_scan_exprs_.count() != 0 && domain_idx_type_ == DomainIndexType::FTS_INDEX; }
   bool has_func_lookup() const { return func_lookup_exprs_.count() != 0 && domain_idx_type_ == DomainIndexType::FTS_INDEX; }
-
-  bool has_vec_index() const { return domain_idx_type_ == DomainIndexType::VEC_INDEX;}
+  bool has_es_match() const { return match_exprs_.count() != 0 && domain_idx_type_ == DomainIndexType::FTS_INDEX; }
   void set_domain_idx_type(DomainIndexType domain_idx_type) { domain_idx_type_ = domain_idx_type;}
-
   TO_STRING_KV(K_(index_scan_exprs), K_(index_scan_filters), K_(index_scan_index_ids),
-      K_(func_lookup_exprs), K_(func_lookup_index_ids), K_(domain_idx_type), K_(vec_extra_info));
+      K_(func_lookup_exprs), K_(func_lookup_index_ids), K_(match_exprs), K_(match_index_ids), K_(domain_idx_type));
 
   common::ObSEArray<ObRawExpr *, 2, common::ModulePageAllocator, true> index_scan_exprs_;
   common::ObSEArray<ObRawExpr *, 2, common::ModulePageAllocator, true> index_scan_filters_;
   common::ObSEArray<uint64_t, 2, common::ModulePageAllocator, true> index_scan_index_ids_;
   common::ObSEArray<ObRawExpr *, 4, common::ModulePageAllocator, true> func_lookup_exprs_;
   common::ObSEArray<uint64_t, 4, common::ModulePageAllocator, true> func_lookup_index_ids_;
-  // 新增成员
+  common::ObSEArray<ObRawExpr *, 4, common::ModulePageAllocator, true> match_exprs_;
+  common::ObSEArray<uint64_t, 4, common::ModulePageAllocator, true> match_index_ids_;
+  // Add member
   DomainIndexType domain_idx_type_;
-  share::ObVecIdxExtraInfo vec_extra_info_;
 };
-
 
 class Path
 {
@@ -528,15 +534,15 @@ class Path
                  K_(inherit_sharding_index));
   public:
     /**
-     * 表示当前join order最终的父join order节点
-     * 为了在生成下层join order时能够窥探后续outer join, semi join的连接条件, 需要递归地设置parent_
+     * Indicates the final parent join order node of the current join order
+     * In order to be able to peek at subsequent outer join, semi join conditions when generating lower-level join orders, parent_ needs to be set recursively
      */
     ObJoinOrder* parent_;
     bool is_local_order_;
     bool is_range_order_;
-    common::ObSEArray<OrderItem, 8, common::ModulePageAllocator, true> ordering_;//Path的输出序，不一定来自于Stmt上的expr
-    int64_t interesting_order_info_;  // 记录path的序在stmt中的哪些地方用到 e.g. join, group by, order by
-    common::ObSEArray<ObRawExpr*, 4, common::ModulePageAllocator, true> filter_;//基类的过滤条件：对于scan和subquery是scan_filter_，对于join是join_qual_
+    common::ObSEArray<OrderItem, 8, common::ModulePageAllocator, true> ordering_;//Output order of Path, not necessarily from expr on Stmt
+    int64_t interesting_order_info_;  // Record where the path's order is used in the stmt e.g. join, group by, order by
+    common::ObSEArray<ObRawExpr*, 4, common::ModulePageAllocator, true> filter_;//base class filter condition: for scan and subquery it is scan_filter_, for join it is join_qual_
     double cost_;
     double op_cost_;
     ObLogicalOperator *log_op_;
@@ -755,7 +761,7 @@ class Path
     common::ObSEArray<ObRawExpr*, 4, common::ModulePageAllocator, true> index_keys_; // index keys
     ObPreRangeGraph* pre_range_graph_; // pre_query_graph for each access path
     bool is_get_;
-    ObOrderDirection order_direction_;//序的方向（升序or倒序）
+    ObOrderDirection order_direction_;//order direction (ascending or descending)
     bool force_direction_;
     bool is_hash_index_;  // is hash index (virtual table and is index)
     ObCostTableScanInfo est_cost_info_; // estimate cost info
@@ -765,6 +771,7 @@ class Path
     int64_t range_prefix_count_; // prefix count
     BaseTableOptInfo *table_opt_info_;
     DomainIndexAccessInfo domain_idx_info_;
+    VecIndexAccessInfo vec_idx_info_;
     bool for_update_;
     OptSkipScanState use_skip_scan_;
     bool use_column_store_;
@@ -1163,7 +1170,7 @@ class Path
       return ret;
     }
   public:
-    uint64_t subquery_id_;//该subquery所在TableItem的table_id_
+    uint64_t subquery_id_;//the table_id_ of the TableItem where this subquery resides
     ObLogicalOperator* root_;
 
   private:
@@ -1376,7 +1383,7 @@ struct NullAwareAntiJoinInfo {
         inv_idx_id_(common::OB_INVALID_ID),
         query_range_(NULL),
         query_range_row_count_(-1),
-        selectivity_(-1.0) 
+        selectivity_(-1.0)
       {}
 
       ObMatchFunRawExpr *match_expr_;
@@ -1423,7 +1430,7 @@ struct NullAwareAntiJoinInfo {
       // when generate subquery path, save filters can not pushdown
       common::ObSEArray<ObRawExpr *, 4> filters_;
       common::ObSEArray<ObRawExpr *, 4> subquery_exprs_;
-      common::ObSEArray<Path*, 8> inner_paths_;  //生成的inner path
+      common::ObSEArray<Path*, 8> inner_paths_;  // generated inner path
       BaseTableOptInfo *table_opt_info_;
       ObSEArray<ObPCParamEqualInfo, 4> equal_param_constraints_;
       ObSEArray<ObPCConstParamInfo, 4> const_param_constraints_;
@@ -1543,7 +1550,9 @@ struct NullAwareAntiJoinInfo {
     int get_matched_inv_index_tid(ObMatchFunRawExpr *match_expr, 
                                   uint64_t ref_table_id,
                                   uint64_t &inv_idx_tid);
-    
+    int get_matched_inv_index_tids(ObMatchFunRawExpr *match_expr,
+                                   uint64_t ref_table_id,
+                                   ObIArray<uint64_t> &inv_idx_tids);
     int get_vector_index_tid_from_expr(ObSqlSchemaGuard *schema_guard,
                                       ObRawExpr *vector_expr,
                                       const uint64_t table_id,
@@ -1570,7 +1579,7 @@ struct NullAwareAntiJoinInfo {
                                         ObIArray<ObRawExpr *> &subquery_exprs,
                                         ObRawExpr*& default_expr);
     /**
-     * 为本节点增加一条路径，代价竞争过程在这里实现
+     * Add a path to this node, the cost competition process is implemented here
      * @param path
      * @return
      */
@@ -1655,8 +1664,7 @@ struct NullAwareAntiJoinInfo {
 
     int fill_path_index_meta_info(ObIArray<AccessPath *> &access_paths);
     int fill_path_index_meta_info_for_one_ap(AccessPath *access_path);
-
-    // 用于更新统计信息
+    // Used to update statistics
     int init_est_sel_info_for_access_path(const uint64_t table_id,
                                           const uint64_t ref_table_id,
                                           const share::schema::ObTableSchema &table_schema);
@@ -1749,6 +1757,11 @@ struct NullAwareAntiJoinInfo {
                               PathHelper &helper,
                               AccessPath &access_path,
                               const QueryRangeInfo &range_info);
+    int process_basic_vec_info_for_index_merge_node(const ObDMLStmt *stmt,
+                                                  const uint64_t table_id,
+                                                  const uint64_t ref_table_id,
+                                                  IndexMergePath* index_merge_path,
+                                                  ObIndexMergeNode* root_node);
     int create_access_paths(const uint64_t table_id,
                             const uint64_t ref_table_id,
                             PathHelper &helper,
@@ -2012,12 +2025,12 @@ struct NullAwareAntiJoinInfo {
                                              bool &match);
 
     /**
-     * 判断连接条件是否匹配索引前缀
-     * @keys 索引列
-     * @inner_join_infos 内连接等值条件
-     * @outer_join_info 外连接条件
-     * @match_prefix_count 匹配索引前缀的长度
-     * @sort_match 是否匹配
+     * Determine if the connection conditions match the index prefix
+     * @keys Index columns
+     * @inner_join_infos Inner join equality conditions
+     * @outer_join_info Outer join conditions
+     * @match_prefix_count Length of the matched index prefix
+     * @sort_match Whether it matches
      */
     int is_join_match(const ObIArray<OrderItem> &ordering,
                       int64_t &match_prefix_count,
@@ -2028,10 +2041,10 @@ struct NullAwareAntiJoinInfo {
                       bool &sort_match);
 
     /**
-     * 检查是否是interesting order
-     * @keys 索引列
+     * Check if it is an interesting order
+     * @keys Index columns
      * @stmt
-     * @interest_column_ids 匹配的索引列的id
+     * @interest_column_ids IDs of matching index columns
      */
     int check_all_interesting_order(const ObIArray<OrderItem> &ordering,
                                     const ObDMLStmt *stmt,
@@ -2052,11 +2065,11 @@ struct NullAwareAntiJoinInfo {
                                             ObIArray<uint64_t> &restrict_ids);
 
     /*
-     * 看能否在索引前缀上抽取query range
+     * Try to extract query range from index prefix
      * @table_id
      * @index_table_id
-     * @index_keys 索引列
-     * @prefix_range_ids 索引前缀id
+     * @index_keys index columns
+     * @prefix_range_ids index prefix ids
      * */
     int check_and_extract_query_range(const uint64_t table_id,
                                       const uint64_t index_table_id,
@@ -2068,8 +2081,8 @@ struct NullAwareAntiJoinInfo {
                                       ObIArray<ObRawExpr *> &restrict_infos);
 
     /**
-     * 生成所有的一级表（包括基表，subqueryscan，和用户指定的join），
-     * 这一步只生成相应的ObJoinOrder，不生成具体路径——因为条件还没有下推。
+     * Generate all the first-level tables (including base tables, subqueryscan, and user-specified joins),
+     * this step only generates the corresponding ObJoinOrder, not the specific path——because conditions have not been pushed down.
      * @param jo
      * @param from_item
      * @return
@@ -2093,9 +2106,9 @@ struct NullAwareAntiJoinInfo {
 
     /**
      * @brief generate_subquery_path
-     * 生成子查询路径
-     * 如果pushdown_filters为空，则是生成普通的子查询路径，
-     * 如果pushdown_filters不为空，则是生成条件下推的子查询路径
+     * Generate subquery path
+     * If pushdown_filters is empty, then it is generating a normal subquery path,
+     * If pushdown_filters is not empty, then it is generating a subquery path with predicate pushdown
      */
 
     int generate_normal_subquery_paths();
@@ -2154,11 +2167,11 @@ struct NullAwareAntiJoinInfo {
     int get_explicit_dop_for_path(const uint64_t index_id, int64_t &parallel);
     int prune_paths_due_to_parallel(ObIArray<AccessPath *> &access_paths);
     /**
-     * 根据输入的左右树，生成连接之后的树。
-     * 此过程会生成一个ObJoinOrder输出，ObJoinOrder中包含若干个JoinOrder，每个JoinOrder是一个确定的连接方法。
-     * 一般情况下left_tree会比right_tree包含的表多，但是不排除相反的情况（right_tree是一个join或subquery），
-     * 因为我们要尽量生成左深树，当right_tree包含的表多时，交换输入的左右分支。
-     * 如果左右分支的表数相等，我们同时生成两种情况。
+     * Generate the connected tree based on the input left and right trees.
+     * This process will generate an ObJoinOrder output, which contains several JoinOrders, each JoinOrder is a specific join method.
+     * Generally, left_tree will contain more tables than right_tree, but the opposite situation is not ruled out (right_tree is a join or subquery),
+     * because we want to generate left-deep trees as much as possible, when right_tree contains more tables, we switch the input left and right branches.
+     * If the number of tables in the left and right branches is equal, we generate both cases.
      * @param left_tree
      * @param right_tree
      * @param join_info
@@ -2454,16 +2467,15 @@ struct NullAwareAntiJoinInfo {
                                       common::ObIArray<ObRawExpr*> &other_join_condition,
                                       common::ObIArray<ObRawExpr*> &filters);
     /**
-     * 从join_quals里解析出equal_join_conditions和other_join_conditions。
-     * 传入的join_quals肯定是满足能够让left和right进行join的条件，完全不满足join的条件是不会传入的。
-     * 例如：left=A，right=B，a=c是不可能在这里传入的。
-     * 但是这里可能会传入a+b=c，这个条件能够使得A和B做Join，但是这个条件却不能放在这一层，必须等到条件中涉及的表都join完之后
-     * 才能运算这个条件。
-     * 提取策略是：join_quals是and连接的表达式，逐个检查join_qual_。
-     * 如果是var_left=var_right， 或者var_right=var_left类型的表达式，则提取出来作为merge join condition，
-     * 其他的类型分别作为merge join other condition。
-     * 特别的，如果一个单表条件放在了join quals里，也认为可以作为merge join other condition。
-     * 如果需要更复杂的提取策略，如Expr(var_left)=Expr(var_right)，今后再添加。
+     * Parse out equal_join_conditions and other_join_conditions from join_quals.
+     * The join_quals passed in must satisfy the conditions that allow left and right to join; conditions that completely do not allow a join will not be passed in.
+     * For example: left=A, right=B, a=c would not be passed here.
+     * However, a+b=c might be passed here, this condition allows A and B to join, but this condition cannot be evaluated at this level; it must wait until all tables involved in the condition have been joined.
+     * The extraction strategy is: join_quals is an expression connected by and, check each join_qual individually.
+     * If the expression is of type var_left=var_right, or var_right=var_left, then extract it as a merge join condition,
+     * other types are separately treated as merge join other conditions.
+     * Specifically, if a single-table condition is placed in join quals, it is also considered to be a merge join other condition.
+     * If more complex extraction strategies are needed, such as Expr(var_left)=Expr(var_right), they can be added later.
      * @param join_quals
      * @param equal_join_conditions
      * @param other_join_conditions
@@ -2775,7 +2787,8 @@ struct NullAwareAntiJoinInfo {
     static double calc_single_parallel_rows(double rows, int64_t parallel);
     int init_basic_text_retrieval_info(uint64_t table_id,
                                        uint64_t ref_table_id,
-                                       PathHelper &helper);
+                                       PathHelper &helper,
+                                       bool &is_es_match);
     int extract_fts_preliminary_query_range(const ObIArray<ColumnItem> &range_columns,
                                             const ObIArray<ObRawExpr*> &predicates,
                                             const ObTableSchema *table_schema,
@@ -2804,6 +2817,9 @@ struct NullAwareAntiJoinInfo {
     int add_valid_fts_index_ids_for_dml(const PathHelper &helper, 
                                         const uint64_t table_id,
                                         ObIArray<uint64_t> &valid_index_ids);
+    int add_valid_fts_index_ids_for_dml_and_es_match(const PathHelper &helper,
+                                         const uint64_t table_id,
+                                         ObIArray<uint64_t> &valid_index_ids);
     int add_valid_vec_index_ids(const ObDMLStmt &stmt,
                                 ObSqlSchemaGuard *schema_guard,
                                 const uint64_t table_id,
@@ -2829,6 +2845,9 @@ struct NullAwareAntiJoinInfo {
     int find_match_expr_info(const ObIArray<MatchExprInfo> &match_expr_infos,
                             ObRawExpr *match_expr,
                             const MatchExprInfo *&match_expr_info);
+    int find_match_expr_infos(const ObIArray<MatchExprInfo> &match_expr_infos,
+                              ObRawExpr *match_expr,
+                              ObIArray<const MatchExprInfo *> &found_match_expr_infos);
     int find_least_selective_expr_on_index(const ObIArray<ObMatchFunRawExpr*> &match_exprs,
                                           const ObIArray<MatchExprInfo> &match_expr_infos,
                                           uint64_t index_id,
@@ -3034,17 +3053,17 @@ struct NullAwareAntiJoinInfo {
     common::ObIAllocator *allocator_;
     ObLogPlan *plan_;
     PathType type_;
-    uint64_t table_id_; //如果是基表（Base table/Generated table/Joined table）记录table id
-    ObRelIds table_set_; //存在这里的是TableItem所在的下标
-    ObRelIds output_table_set_; //需要输出的table item下表, 经过semi join时只输出左枝
+    uint64_t table_id_; // If it is a base table (Base table/Generated table/Joined table) record table id
+    ObRelIds table_set_; //The indices where TableItem resides are stored here
+    ObRelIds output_table_set_; // need to output the table item subscripts, only output the left branch during semi join
     double output_rows_;
     double output_row_size_;
     ObTablePartitionInfo *table_partition_info_; // only for base table
     ObShardingInfo *sharding_info_; // only for base table and local index
     ObTableMetaInfo table_meta_info_; // only for base table
-    JoinInfo* join_info_; //记录连接信息
-    common::ObSEArray<ObConflictDetector*, 8, common::ModulePageAllocator, true> used_conflict_detectors_; //记录当前join order用掉了哪些冲突检测器
-    common::ObSEArray<ObRawExpr*, 16, common::ModulePageAllocator, true> restrict_info_set_; //对于基表（SubQuery）记录单表条件；对于普通Join为空
+    JoinInfo* join_info_; // record connection information
+    common::ObSEArray<ObConflictDetector*, 8, common::ModulePageAllocator, true> used_conflict_detectors_; // record which conflict detectors are used by the current join order
+    common::ObSEArray<ObRawExpr*, 16, common::ModulePageAllocator, true> restrict_info_set_; // For base table (SubQuery) record single-table conditions; for ordinary Join it is empty
     common::ObSEArray<Path*, 32, common::ModulePageAllocator, true> interesting_paths_;
     bool is_at_most_one_row_;
     EqualSets output_equal_sets_;
@@ -3060,7 +3079,7 @@ struct NullAwareAntiJoinInfo {
     common::ObSEArray<DeducedExprInfo, 4, common::ModulePageAllocator, true> deduced_exprs_info_;
     uint64_t total_path_num_;
     common::ObSEArray<double, 8, common::ModulePageAllocator, true> ambient_card_;
-    double current_join_output_rows_; // 记录对当前连接树估计的输出行数
+    double current_join_output_rows_; // Record the estimated output row count for the current join tree
   private:
     DISALLOW_COPY_AND_ASSIGN(ObJoinOrder);
   };

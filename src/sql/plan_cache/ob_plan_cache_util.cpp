@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_PC
@@ -95,10 +99,9 @@ int ObPhyLocationGetter::get_phy_locations(const common::ObIArray<ObTablePartiti
   }
   return ret;
 }
-
-//包含复制表的情况下, 选择完副本后调整复制表的副本选择使和非复制表的location一致(前提是非复制表都在同一server)
-//好处是可以使得计划类型从 DIST --> REMOTE; 不能在ObSqlPlanSet::calc_phy_plan_type_by_proj计算
-//的原因是get_phy_locations就会将物理位置赋值给task_exec_ctx; (实现参考了is_partition_in_same_server_by_proj)
+// Including the case of copying tables, after selecting the copy, adjust the copy selection of the copying table to be consistent with the location of non-copying tables (assuming all non-copying tables are on the same server)
+// The benefit is that it allows the plan type to change from DIST --> REMOTE; cannot be calculated in ObSqlPlanSet::calc_phy_plan_type_by_proj
+// The reason is that get_phy_locations will assign the physical location to task_exec_ctx; (implementation reference is is_partition_in_same_server_by_proj)
 int ObPhyLocationGetter::reselect_duplicate_table_best_replica(const ObIArray<ObCandiTableLoc> &phy_locations,
                                                                bool &on_same_server)
 {
@@ -173,7 +176,7 @@ int ObPhyLocationGetter::reselect_duplicate_table_best_replica(const ObIArray<Ob
       }
     }
   }
-  //如果无复制表或者非复制表就已经无法保证在同一server, 是分布式计划, 就没要必要在这里更改复制表的副本idx了
+  // If there is no replication table or the non-replication table cannot guarantee to be on the same server, it is a distributed plan, so there is no need to change the replica idx of the replication table here
   if (OB_SUCC(ret) && !candi_addrs.empty()) {
     is_same = false;
     if (OB_FAIL(new_replic_idxs.prepare_allocate(proj_cnt))) {
@@ -182,7 +185,7 @@ int ObPhyLocationGetter::reselect_duplicate_table_best_replica(const ObIArray<Ob
     for (int64_t i = 0; OB_SUCC(ret) && !is_same && i < candi_addrs.count(); ++i) {
       bool is_valid = true;
       const ObAddr &addr = candi_addrs.at(i);
-      //a, 是否在同一server上有副本
+      //a, whether there is a replica on the same server
       for (int64_t j = 0; OB_SUCC(ret) && is_valid && j < proj_cnt; ++j) {
         const ObCandiTableLoc &ptli = phy_locations.at(j);
         if (ptli.is_duplicate_table_not_in_dml()) {
@@ -190,7 +193,7 @@ int ObPhyLocationGetter::reselect_duplicate_table_best_replica(const ObIArray<Ob
                        addr, new_replic_idxs.at(j));
         }
       }
-      //b, 所有复制表都有在 addr 上的副本, 一起更改之
+      //b, all copy tables have a copy at addr, change them together
       for (int64_t j = 0; OB_SUCC(ret) && is_valid && j < proj_cnt; ++j) {
         ObCandiTableLoc &ptli = const_cast<ObCandiTableLoc&>(phy_locations.at(j));
         if (!ptli.is_duplicate_table_not_in_dml()) {
@@ -239,8 +242,8 @@ int ObPhyLocationGetter::get_phy_locations(const ObIArray<ObTableLocation> &tabl
         const ObTableLocation &table_location = table_locations.at(i);
         ObCandiTableLoc &candi_table_loc = candi_table_locs.at(i);
         NG_TRACE(calc_partition_location_begin);
-        // 这里认为materialized view的复制表是每个server都有副本的，
-        // 因此这里不判断是否能生成materialized view了，一定都能生成
+        // Here it is assumed that the materialized view's replica table has a copy on each server,
+        // Therefore here we do not check if materialized view can be generated, it is guaranteed to be generated
         if (OB_FAIL(table_location.calculate_candi_tablet_locations(exec_ctx,
                                                                     params,
                                                                     candi_table_loc.get_phy_part_loc_info_list_for_update(),

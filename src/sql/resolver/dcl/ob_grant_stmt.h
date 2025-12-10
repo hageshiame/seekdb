@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SQL_RESOLVER_DCL_OB_GRANT_STMT_
@@ -101,7 +105,7 @@ private:
   common::ObString masked_sql_;
   bool need_create_user_;
   bool need_create_user_priv_; // grant user identified by pwd
-  obrpc::ObGrantArg grant_arg_; // 用于返回exec_tenant_id_
+  obrpc::ObGrantArg grant_arg_; // used to return exec_tenant_id_
   common::hash::ObPlacementHashSet<common::ObString, common::MAX_ENABLED_ROLES> user_name_set_;
   common::hash::ObPlacementHashSet<common::ObString, common::MAX_ENABLED_ROLES> role_name_set_;
   share::schema::ObObjectType object_type_;
@@ -114,7 +118,7 @@ private:
   ObSEArray<uint64_t, 4, common::ModulePageAllocator, true> ins_col_ids_;
   ObSEArray<uint64_t, 4, common::ModulePageAllocator, true> upd_col_ids_;
   ObSEArray<uint64_t, 4, common::ModulePageAllocator, true> ref_col_ids_;
-  ObSelectStmt *ref_query_; // 用于grant 视图时，对视图依赖的table,view等做递归权限check.
+  ObSelectStmt *ref_query_; // Used for grant view to recursively check permissions on dependent tables, views, etc.
   bool is_grant_all_tab_priv_;
 
   ObSEArray<std::pair<ObString, ObPrivType>, 4> column_names_priv_;

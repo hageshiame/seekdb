@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_REWRITE
@@ -247,9 +251,9 @@ int ObTransformAggrSubquery::check_need_spj(ObDMLStmt *stmt, bool &is_valid)
 
 /**
  * @brief ObTransformAggrSubquery::do_aggr_first_transform
- * STEP 1: 找到一个可改写的子查询
- * STEP 2: 根据子查询的特点，决定改写的方式（OUTER JOIN/INNER JOIN）
- * STEP 3: 执行改写
+ * STEP 1: Find a rewritable subquery
+ * STEP 2: Decide the rewriting method based on the characteristics of the subquery (OUTER JOIN/INNER JOIN)
+ * STEP 3: Execute the rewrite
  * @return
  */
 int ObTransformAggrSubquery::do_aggr_first_transform(ObDMLStmt *&stmt,
@@ -508,14 +512,14 @@ int ObTransformAggrSubquery::check_aggr_first_validity(ObDMLStmt &stmt,
                                                                             limit_to_aggr,
                                                                             equal_param_info))) {
     LOG_WARN("failed to check select validity for limit 1", K(ret));
-  } else if (opt_version >= COMPAT_VERSION_4_3_2 && is_select_item_expr &&
+  } else if (is_select_item_expr &&
              OB_FAIL(check_can_trans_any_all_as_scalar_subquery(stmt,
                                                                 subquery, 
                                                                 &parent_expr, 
                                                                 root_expr,
                                                                 any_all_to_aggr))) {
     LOG_WARN("failed to check can trans any all as aggr subquery", K(ret));
-  } else if (opt_version >= COMPAT_VERSION_4_3_2 && is_select_item_expr &&
+  } else if (is_select_item_expr &&
              OB_FAIL(check_can_trans_exists_as_scalar_subquery(query_ref, 
                                                               parent_expr,
                                                               limit_value,
@@ -817,15 +821,8 @@ int ObTransformAggrSubquery::check_subquery_conditions(ObQueryRefRawExpr &query_
         OPT_TRACE("subquery`s condition has subquery");
       } else if (cond->is_const_expr()) {
         // filter of upper stmt
-        if (subquery.get_query_ctx()->check_opt_compat_version(COMPAT_VERSION_4_2_1_BP8, COMPAT_VERSION_4_2_2,
-                                                               COMPAT_VERSION_4_2_4, COMPAT_VERSION_4_3_0,
-                                                               COMPAT_VERSION_4_3_2)) {
-          if (OB_FAIL(upper_filters.push_back(cond))) {
-            LOG_WARN("failed to add upper filter", K(ret));
-          }
-        } else {
-          is_valid = false;
-          OPT_TRACE("subquery`s condition has pure upper filters");
+        if (OB_FAIL(upper_filters.push_back(cond))) {
+          LOG_WARN("failed to add upper filter", K(ret));
         }
       } else if (OB_FAIL(ObTransformUtils::is_equal_correlation(query_ref.get_exec_params(),
                                                                 cond,
@@ -1034,9 +1031,9 @@ int ObTransformAggrSubquery::transform_child_stmt(ObDMLStmt *stmt,
 
 /**
  * @brief ObTransformAggrSubquery::transform_upper_stmt
- * 1. 把子查询作为视图添加到主查询中
- * 2. 根据视图的输出列，推导原始子查询结果的表达式 real_values, 用 real_values 替换掉原始子查询表达式的引用
- * 3. 根据 pullup 的相关条件构造连接条件，使用恰当的方式连接提升产生的视图。
+ * 1. Add the subquery as a view to the main query
+ * 2. Derive the expressions of the original subquery result based on the output columns of the view, replace the references of the original subquery expressions with real_values
+ * 3. Construct join conditions based on the relevant conditions of pullup, use an appropriate method to connect the generated view.
  * @return
  */
 int ObTransformAggrSubquery::transform_upper_stmt(ObDMLStmt &stmt, TransformParam &param)
@@ -1075,7 +1072,7 @@ int ObTransformAggrSubquery::transform_upper_stmt(ObDMLStmt &stmt, TransformPara
   if (OB_SUCC(ret)) {
     ObSEArray<ObRawExpr*, 2> from_exprs;
     ObSEArray<ObRawExpr*, 2> to_exprs;
-    // 2. 推导原始的子查询计算结果
+    // 2. Derive the original subquery computation result
     if (param.any_all_to_aggr_ || param.exists_to_aggr_) {
       if (OB_FAIL(deduce_query_values_for_exists(*ctx_,
                                                  stmt,
@@ -1105,7 +1102,7 @@ int ObTransformAggrSubquery::transform_upper_stmt(ObDMLStmt &stmt, TransformPara
   }
 
   if (OB_SUCC(ret)) {
-    // 3. 构造连接条件，连接视图
+    // 3. Construct connection conditions, connect view
     if (OB_FAIL(ObTransformUtils::replace_exprs(select_exprs, view_columns, pullup_conds))) {
       LOG_WARN("failed to replace pullup conditions", K(ret));
     } else if (OB_FAIL(ObTransformUtils::decorrelate(pullup_conds, query_expr->get_exec_params()))) {
@@ -1167,9 +1164,9 @@ int ObTransformAggrSubquery::transform_from_list(ObDMLStmt &stmt,
 
 /**
  * @brief ObTransformAggrSubquery::do_join_first_transform
- * STEP 1: 找到一个可改写的子查询 (同时确定改写的策略 INNER JON/ OUTER JOIN)
- * STEP 2: 从 STMT 上构造一个 SPJ 查询
- * STEP 3: 在 SPJ 查询上执行改写
+ * STEP 1: Find a rewritable subquery (and determine the rewrite strategy INNER JOIN/OUTER JOIN)
+ * STEP 2: Construct an SPJ query from STMT
+ * STEP 3: Perform the rewrite on the SPJ query
  * @return
  */
 int ObTransformAggrSubquery::transform_with_join_first(ObDMLStmt *&stmt,
@@ -1366,10 +1363,10 @@ int ObTransformAggrSubquery::get_trans_param(ObDMLStmt &stmt,
 
 /**
  * @brief ObTransformAggrSubquery::get_trans_view
- * @param stmt 待改写的查询
- * @param view_stmt 分离后可改写的视图
- * @param root_expr 包含子查询的表达式
- * @param post_group_by 当前表达式是否需要在 group-by 之后处理
+ * @param stmt query to be rewritten
+ * @param view_stmt rewritable view after separation
+ * @param root_expr expression containing subquery
+ * @param post_group_by whether the current expression needs to be processed after group-by
  * @return
  */
 int ObTransformAggrSubquery::get_trans_view(ObDMLStmt &stmt,
@@ -1850,7 +1847,7 @@ int ObTransformAggrSubquery::modify_vector_comparison_expr_if_necessary(ObSelect
 }
 
 /**
- * 获取from list中所有基表的primary key
+ * Get all primary keys of base tables from the from list
  */
 int ObTransformAggrSubquery::get_unique_keys(ObDMLStmt &stmt,
                                              ObIArray<ObRawExpr *> &pkeys,
@@ -1865,7 +1862,7 @@ int ObTransformAggrSubquery::get_unique_keys(ObDMLStmt &stmt,
     ret = OB_ERR_UNEXPECTED;
     LOG_WARN("transform context is invalid", K(ret), K(ctx_), K(query_hint));
   } else if (is_first_trans) {
-    // 第一次改写时需要生成所有from table的unique 可以
+    // First rewrite requires generating all unique from table entries can
     StmtUniqueKeyProvider unique_key_provider(false);
     if (OB_FAIL(unique_key_provider.generate_unique_key(ctx_, &stmt, empty_ignore_tables, pkeys))) {
       LOG_WARN("failed to generate unique key", K(ret));
@@ -1879,7 +1876,7 @@ int ObTransformAggrSubquery::get_unique_keys(ObDMLStmt &stmt,
     ret = OB_ERR_UNEXPECTED;
     LOG_WARN("get unexpected table itemc", K(ret), K(cur_table));
   } else {
-    // 已经改写过了，可以直接取改写视图中的group by列
+    // Already rewritten, can directly take the group by column from the rewritten view
     ObSelectStmt *view_stmt = NULL;
     ObSEArray<ObRawExpr *, 4> select_list;
     ObSEArray<ObRawExpr *, 4> column_list;
@@ -1923,7 +1920,7 @@ int ObTransformAggrSubquery::transform_from_list(ObDMLStmt &stmt,
     // create outer join
     TableItem *joined_table_main = NULL;
     TableItem *joined_table_sub = NULL;
-    // 会生成一个新的joined table, 不需要append subquery的joined table
+    // Will generate a new joined table, no need to append subquery joined table
     if (OB_FAIL(ObTransformUtils::merge_from_items_as_inner_join(
                   ctx_, stmt, joined_table_main))) {
       LOG_WARN("failed to merge from items as inner join", K(ret));
@@ -2444,9 +2441,9 @@ int ObTransformAggrSubquery::get_filters(ObDMLStmt &stmt,
 }
 
 /**
- * 获取不需要改写的子查询
- * 目前暂时不支持join reorder, select item中的子查询如果做了JA改写可能会出现无法走nest loop 条件下推的问题
- * 因此如果select item中子查询的相关连接条件中内表的列上有索引可用, 就不做JA改写了。
+ * Get subqueries that do not need to be rewritten
+ * Currently, join reorder is not supported. If subqueries in the select item are rewritten with JA, it may cause issues with nest loop condition pushdown.
+ * Therefore, if there is an index available on the columns of the inner table in the relevant join conditions of the subqueries in the select item, JA rewriting will not be performed.
  */
 int ObTransformAggrSubquery::extract_no_rewrite_select_exprs(ObDMLStmt *&stmt)
 {

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 #pragma once
 
@@ -27,8 +31,7 @@ public:
   virtual ~ObIDirectLoadDataBlockFlushCallback() = default;
   virtual int write(char *buf, int64_t buf_size, int64_t offset) = 0;
 };
-
-// align: 是否对齐写. 当前的索引文件必须对齐写, 数据文件可以不对齐写.
+// align: whether to write aligned. The current index file must be written aligned, the data file can be written unaligned.
 template <typename Header, typename T, bool align = false>
 class ObDirectLoadDataBlockWriter : public ObDirectLoadExternalWriter<T>
 {
@@ -255,7 +258,7 @@ int ObDirectLoadDataBlockWriter<Header, T, align>::close()
     } else if (OB_FAIL(file_io_handle_.seal())) {
       STORAGE_LOG(WARN, "failed to seal tmp file", KR(ret));
     } else {
-      max_block_size_ = ALIGN_UP(max_block_size_, DIO_ALIGN_SIZE); // 这个值目前没什么用了, 这里是为了过参数检查
+      max_block_size_ = ALIGN_UP(max_block_size_, DIO_ALIGN_SIZE); // this value is currently not used, here it is just to pass the parameter check
       is_opened_ = false;
     }
   }

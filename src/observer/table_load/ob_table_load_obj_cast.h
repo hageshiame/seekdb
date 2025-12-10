@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #pragma once
@@ -242,22 +246,22 @@ private:
     }
 
     const int32_t decimal_len = precision - scale;
-    // precision-scale>0时，整数部分的位数不能超过precision-scale
-    // precision-scale<=0时，整数部分必须为0，小数点后-(precision-scale)位也必须为0
+    // when precision-scale>0, the number of digits in the integer part cannot exceed precision-scale
+    // when precision-scale<=0, the integer part must be 0, and the -(precision-scale) digits after the decimal point must also be 0
     if ((decimal_len > 0 && integer_count <= decimal_len) ||
         (decimal_len <= 0 && n1 == 0 &&
          n2 / ROUND_POWS[(number::ObNumber::DIGIT_LEN + decimal_len)] == 0)) {
-      // scale>0时，精度限制在小数点后scale位
+      // when scale>0, precision is limited to scale decimal places
       if (scale > 0) {
         if (n2 > 0 && decimal_count > scale) {
           return OB_EAGAIN;
         }
-        // scale=0时，小数部分被舍去
+        // scale=0 when, the fractional part is discarded
       } else if (scale == 0) {
         if (n2 > 0) {
           return OB_EAGAIN;
         }
-        // scale<0时，小数部分被舍去且精度限制在小数点前-scale位
+        // when scale<0, the fractional part is discarded and precision is limited to -scale digits before the decimal point
       } else {
         if (n2 > 0 || -scale >= number::ObNumber::DIGIT_LEN || n1 % ROUND_POWS[-scale] == 0) {
           return OB_EAGAIN;

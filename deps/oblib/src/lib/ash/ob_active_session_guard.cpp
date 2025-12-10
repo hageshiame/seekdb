@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
  #define USING_LOG_PREFIX SHARE
@@ -431,10 +435,10 @@ ObBackgroundSessionIdGenerator &ObBackgroundSessionIdGenerator::get_instance() {
 // |                         Local Seq                          |1|2|3|4|
 // +---------------------------+----------------------------------------+
 //
-// Local Seq: 从0递增的int64原子变量
-// 1: rpc请求置为1
-// 2: 后台会话置为1
-// 3: inner sql置为1
+// Local Seq: an int64 atomic variable that increments from 0
+// 1: rpc request set to 1
+// 2: Set background session to 1
+// 3: set inner sql to 1
 // 4: reserved
 // Roughly speaking, over 500k ids would be consumed over 1 minutes.
 uint64_t ObBackgroundSessionIdGenerator::get_next_rpc_session_id() {

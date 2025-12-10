@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2023 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 #ifdef DEF_INNER_SQL_WAIT
 DEF_INNER_SQL_WAIT(NULL_INNER_SQL, 0)
@@ -45,7 +49,6 @@ DEF_INNER_SQL_WAIT(LOG_GET_LS_PRIMARY_ZONE_INFO, 50005)
 DEF_INNER_SQL_WAIT(LOG_GET_TENANT_RECOVERY_STAT, 50006)
 //***************  end of log   ***************
 
-
 //***************  start of observer ***************
 DEF_INNER_SQL_WAIT(OMT_FETCH_ALL_SRS, 60001)
 //***************  end of observer   ***************
@@ -55,16 +58,15 @@ DEF_INNER_SQL_WAIT(SQL_DYNAMIC_SAMPLING_ESTIMATE_ROWCOUNT, 70001)
 //***************  end of sql   ***************
 
 //***************  start of location ***************
-DEF_INNER_SQL_WAIT(RENEW_TABLET_LOCATION, 80001)  // 获取location
-DEF_INNER_SQL_WAIT(GET_TABLET_LOCATION, 80002)  // 刷新location
+DEF_INNER_SQL_WAIT(RENEW_TABLET_LOCATION, 80001)  // get location
+DEF_INNER_SQL_WAIT(GET_TABLET_LOCATION, 80002)  // refresh location
 //***************  end of location   ***************
 
 //***************  start of schema ***************
-DEF_INNER_SQL_WAIT(WAIT_REFRESH_SCHEMA, 90001)  // 同步等待schema刷新到指定版本
-DEF_INNER_SQL_WAIT(ASYNC_REFRESH_SCHEMA, 90002)  // 刷新schema任务
-DEF_INNER_SQL_WAIT(REFRESH_SCHEMA, 90003)  // 后台刷新schema任务
+DEF_INNER_SQL_WAIT(WAIT_REFRESH_SCHEMA, 90001)  // synchronous wait for schema refresh to specified version
+DEF_INNER_SQL_WAIT(ASYNC_REFRESH_SCHEMA, 90002)  // schema refresh task
+DEF_INNER_SQL_WAIT(REFRESH_SCHEMA, 90003)  // background schema refresh task
 //***************  end of schema   ***************
-
 
 #endif // DEF_INNER_SQL_WAIT
 

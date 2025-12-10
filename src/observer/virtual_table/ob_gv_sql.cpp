@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "observer/virtual_table/ob_gv_sql.h"
@@ -67,7 +71,7 @@ int ObGVSql::inner_open()
 int ObGVSql::get_row_from_specified_tenant(uint64_t tenant_id, bool &is_end)
 {
   int ret = OB_SUCCESS;
-  // !!! 引用plan cache资源前必须加ObReqTimeGuard
+  // !!! Must add ObReqTimeGuard before referencing plan cache resources
   ObReqTimeGuard req_timeinfo_guard;
   is_end = false;
   if (OB_INVALID_ID == static_cast<uint64_t>(plan_id_array_idx_)) {
@@ -105,9 +109,8 @@ int ObGVSql::get_row_from_specified_tenant(uint64_t tenant_id, bool &is_end)
         uint64_t plan_id= plan_id_array_.at(plan_id_array_idx_);
         ++plan_id_array_idx_;
         ObCacheObjGuard guard(PC_DIAG_HANDLE);
-        int tmp_ret = plan_cache_->ref_alloc_obj(plan_id, guard); //plan引用计数加1
-
-        //如果当前plan_id对应的plan已被淘汰, 则忽略继续获取下一个plan
+        int tmp_ret = plan_cache_->ref_alloc_obj(plan_id, guard); // increment plan reference count by 1
+        // If the plan corresponding to the current plan_id has been phased out, then ignore and continue to get the next plan
         if (OB_HASH_NOT_EXIST == tmp_ret) {
           //do nothing;
         } else if (OB_SUCCESS != tmp_ret) {

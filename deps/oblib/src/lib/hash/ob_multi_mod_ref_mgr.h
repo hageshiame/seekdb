@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_OB_REF_MGR_
@@ -65,8 +69,8 @@ public:
   {
     ObRef ref_info_[static_cast<int>(T::TOTAL_MAX_MOD)];
   };
-  // inc 需要在应用层保证安全，虽然这里检查了is_delete但是和inc操作并不原子
-  // 依然会有is_delete之后，增加引用计数的可能，需要应用保证inc一定是在引用计数不为0下执行
+  // inc needs to be guaranteed safe at the application layer, although here we check is_delete it is not atomic with the inc operation
+  // There will still be a possibility of increasing the reference count after is_delete, the application needs to ensure that inc is executed only when the reference count is not 0
   int inc(const T t) {
     int ret = OB_SUCCESS;
     const int mod = static_cast<int>(t);

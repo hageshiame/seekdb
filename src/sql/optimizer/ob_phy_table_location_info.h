@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SQL_OPTIMIZER_OB_PHY_TABLE_LOCATION_INFO_
@@ -115,9 +119,9 @@ public:
 
 private:
   ObOptTabletLoc opt_tablet_loc_;
-  //对所有partition求完交集后的结果，是最终选定的replica的index
+  // The result after computing the intersection of all partitions is the index of the finally selected replica
   int64_t selected_replica_idx_;
-  //对当前partition的所有副本进行优先级判断后，将最高优先级的replica index存到这里
+  // After priority judgment of all replicas for the current partition, store the replica index with the highest priority here
   common::ObSEArray<int64_t, 2, common::ModulePageAllocator, true> priority_replica_idxs_;
 private:
   DISALLOW_COPY_AND_ASSIGN(ObCandiTabletLoc);
@@ -163,13 +167,13 @@ public:
                K_(duplicate_type));
 
 private:
-  /* 用于表ID(可能是generated alias id)寻址location */
+  /* Used for addressing location by table ID (possibly generated alias id) */
   uint64_t table_location_key_;
-  /* 用于获取实际的物理表ID */
+  /* Used to get the actual physical table ID */
   uint64_t ref_table_id_;
   /* locations */
   ObCandiTabletLocSEArray candi_tablet_locs_;
-  //复制表类型, 如果是复制表且未被更改则可以在分配exg算子时挑选更合适的副本
+  // Copy table type, if it is a copy table and has not been modified, then a more suitable copy can be selected when allocating exg operator
   ObDuplicateType duplicate_type_;
 private:
   /* functions */

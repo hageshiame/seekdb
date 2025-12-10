@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OB_RECURSIVE_INNER_DATA_OP_
@@ -90,24 +94,24 @@ private:
   int try_format_output_row(int64_t &read_rows);
   int try_format_output_batch(int64_t batch_size, int64_t &read_rows);
   /**
-   * recursive union的左儿子被称为plan a，右儿子被称为plan b
-   * plan a会产出初始数据，recursive union本身控制递归的进度,
-   * 右儿子是递归执行的plan
+   * The left son of the recursive union is called plan a, the right son is called plan b
+   * plan a will produce the initial data, the recursive union itself controls the progress of the recursion,
+   * the right son is the plan for recursive execution
    */
   int get_all_data_from_left_child();
   int get_all_data_from_left_batch();
   int get_all_data_from_right_child();
   int get_all_data_from_right_batch();
-  // 广度优先递归中，进行行的UNION ALL操作
+  // Breadth-first recursive, performing UNION ALL operation on the row
   int breadth_first_union(bool left_branch, bool &continue_search);
-  // 广度优先批量搜索递归中，进行行的UNION ALL操作
+  // Breadth-first batch search recursion, performing UNION ALL operation on rows
   int breadth_first_bulk_union(bool left_branch);
   int start_new_level(bool left_branch);
-  // 将一行数据吐给fake cte table算子，它将作为下一次plan b的输入
+  // Feed a row of data to the fake cte table operator, it will serve as the input for the next plan b
   int fake_cte_table_add_row(ObTreeNode &node);
-  // 将一批数据吐给fake cte table算子，它将作为下一次plan b的输入
+  // Feed a batch of data to the fake cte table operator, it will serve as the input for the next plan b
   int fake_cte_table_add_bulk_rows(bool left_branch);
-  // 设置cte table column expr的值
+  // Set cte table column expr value
   int assign_to_cur_row(ObChunkDatumStore::StoredRow *stored_row);
   ObSearchMethodOp * get_search_method_bump() {
     if (SearchStrategyType::BREADTH_FIRST_BULK == search_type_) {
@@ -126,14 +130,14 @@ private:
   ObFakeCTETableOp* pump_operator_;
   ObOperator* left_op_;
   ObOperator* right_op_;
-  // 标记深度优先或者广度优先
+  // Mark depth-first or breadth-first
   SearchStrategyType search_type_;
-  // 将要输出给下一个算子的数据，伪代码中的R
+  // The data to be output to the next operator, R in the pseudocode
   common::ObList<ObTreeNode, common::ObIAllocator> result_output_;
   common::ObIArray<ObExpr *> *cte_columns_;
-  // 广度优先
+  // Breadth-first
   ObBreadthFirstSearchOp bfs_pump_;
-  // 广度优先批量搜索
+  // Breadth-first batch search
   ObBreadthFirstSearchBulkOp bfs_bulk_pump_;
   ObEvalCtx &eval_ctx_;
   ObExecContext &ctx_;

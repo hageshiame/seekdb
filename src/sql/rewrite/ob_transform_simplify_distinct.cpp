@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_REWRITE
@@ -155,8 +159,7 @@ int ObTransformSimplifyDistinct::remove_distinct_on_unique_exprs(ObSelectStmt *s
   }
   return ret;
 }
-
-//消除distinct set op left/right query中的distinct
+// Eliminate distinct in set op left/right query
 int ObTransformSimplifyDistinct::remove_child_stmt_distinct(ObSelectStmt *set_stmt,
                                                             bool &trans_happened)
 {
@@ -182,10 +185,9 @@ int ObTransformSimplifyDistinct::remove_child_stmt_distinct(ObSelectStmt *set_st
   }
   return ret;
 }
-
-//递归消除disticnt条件：
-//  1.stmt 为非 recursive 的 set op, 无 limit, 尝试向下递归删除
-//  2.stmt 非 set, 无 sequence/limit, 可消除distinct
+// Recursively eliminate distinct condition:
+//  1.stmt is a non-recursive set op, no limit, attempt to recursively delete downwards
+//  2.stmt not set, no sequence/limit, can eliminate distinct
 int ObTransformSimplifyDistinct::try_remove_child_stmt_distinct(ObSelectStmt *stmt,
                                                                 bool &trans_happened)
 {

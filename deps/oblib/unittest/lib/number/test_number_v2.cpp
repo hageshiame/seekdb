@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "lib/utility/utility.h"
@@ -946,8 +950,7 @@ TEST(ObNumberParseHelper, from_format)
   ret = nph.fill("888888888888888888888888888");
   EXPECT_EQ(OB_SUCCESS, ret);
   EXPECT_STREQ("888888888888888888888888888", format(nph.number_, 0));
-
-  //代码中限制补零的个数为60为上限，否则报4002错误，所以下面的执行format后，返回错误码为4002
+  // The code limits the number of zeros to be padded to a maximum of 60, otherwise it returns error code 4002, so after the following execution of format, the error code returned is 4002
   //ret = nph.fill("0.000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001");
   //EXPECT_EQ(OB_SUCCESS, ret);
   //EXPECT_STREQ("0.000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001", format(nph.number_, 135));
@@ -2067,8 +2070,7 @@ TEST(ObNumberCalc, div)
   DIV("1", "3000000000", "0.000000000333333333333333333333333333333333333333333333", 54);
   DIV("1", "3000000000000000000", "0.000000000000000000333333333333333333333333333333333333333333333", 63);
    DIV("1", "3000000000000000000000000000", "0.000000000000000000000000000333333333333333333333333333333333333333333333", 72);
-
-   //代码中限制补零的个数为60为上限，否则报4002错误，所以下面的执行format后，返回错误码为4002
+   // The code limits the number of zeros to be padded to a maximum of 60, otherwise it returns error code 4002, so after the following execution of format, the error code returned is 4002
   //DIV("1",
   //    "300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
   //    "0.000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003333333333333333333333333333333333333", 171);

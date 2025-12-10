@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SHARE_SCHEMA
@@ -16,6 +20,7 @@
 #include "share/schema/ob_partition_sql_helper.h"
 #include "observer/omt/ob_tenant_timezone_mgr.h"
 #include "src/share/vector_index/ob_vector_index_util.h"
+#include "share/external_table/ob_external_table_utils.h"
 #include "share/storage_cache_policy/ob_storage_cache_partition_sql_helper.h"
 
 namespace oceanbase
@@ -2155,7 +2160,7 @@ int ObTableSqlService::check_table_history_matched_(
         } else {
           ret = OB_STATE_NOT_MATCH;
           LOG_WARN("__all_table_history's row not match with __all_table's",
-                   KR(ret), K(tenant_id), K(table_id), K(schema_version));
+                   KR(ret), K(sql), K(tenant_id), K(table_id), K(schema_version));
         }
       } // end SMART_VAR
       }
@@ -2198,7 +2203,7 @@ int ObTableSqlService::update_table_options(ObISQLClient &sql_client,
   // rename constraint name while drop/truncate table and recyclebin is on.
   if (OB_SUCC(ret)) {
     if (OB_DDL_DROP_TABLE_TO_RECYCLEBIN == operation_type){
-      // 这里遍历表上所有约束，逐一改掉内部表信息, update __all_constraint 里面改表中的各个约束名，并在 __all_constraint_history 里面增加一条记录
+      // Here traverse all constraints on the table, and modify the internal table information one by one, update the constraint names in __all_constraint, and add a record in __all_constraint_history
       // TODO:@xiaofeng.lby, this interface is independent of 'truncate table', modify it later.
       if (OB_FAIL(rename_csts_in_inner_table(sql_client, new_table_schema, new_table_schema.get_schema_version()))) {
         LOG_WARN("failed to delete constraint", K(ret));
@@ -2264,8 +2269,9 @@ int ObTableSqlService::update_table_options(ObISQLClient &sql_client,
         || new_table_schema.is_aux_vp_table()
         || new_table_schema.is_aux_lob_table()
         || new_table_schema.is_mlog_table()) {
+      // use new_table_schema.get_in_offline_ddl_white_list() here for drop index when offline ddl failed, there is no foreign key on index table.
       if (OB_FAIL(update_data_table_schema_version(sql_client, tenant_id,
-                  new_table_schema.get_data_table_id(), table_schema.get_in_offline_ddl_white_list()))) {
+                  new_table_schema.get_data_table_id(), new_table_schema.get_in_offline_ddl_white_list()))) {
         LOG_WARN("update data table schema version failed", K(ret));
       }
     }
@@ -3069,7 +3075,7 @@ int ObTableSqlService::gen_table_dml_without_check(
   int ret = OB_SUCCESS;
   ObString empty_str("");
   const ObPartitionOption &part_option = table.get_part_option();
-  const ObPartitionOption &sub_part_option = table.get_sub_part_option();
+  const ObSubPartitionOption &sub_part_option = table.get_sub_part_option();
   const char *expire_info = table.get_expire_info().length() <= 0 ?
     "" : table.get_expire_info().ptr();
   const char *part_func_expr = part_option.get_part_func_expr_str().length() <= 0 ?
@@ -3080,9 +3086,7 @@ int ObTableSqlService::gen_table_dml_without_check(
     "" : table.get_encryption_str().ptr();
   const int64_t INVALID_REPLICA_NUM = -1;
   const int64_t part_num = part_option.get_part_num();
-  const int64_t sub_part_num = PARTITION_LEVEL_TWO == table.get_part_level()
-    && table.has_sub_part_template_def() ?
-    sub_part_option.get_part_num() : 0;
+  const int64_t sub_part_num = sub_part_option.get_part_num();
   const char *ttl_definition = table.get_ttl_definition().empty() ?
     "" : table.get_ttl_definition().ptr();
   const char *kv_attributes = table.get_kv_attributes().empty() ?
@@ -3203,6 +3207,8 @@ int ObTableSqlService::gen_table_dml_without_check(
       || (OB_FAIL(dml.add_column("semistruct_encoding_type", table.get_semistruct_encoding_flags())))
       || (OB_FAIL(dml.add_column("dynamic_partition_policy", ObHexEscapeSqlStr(dynamic_partition_policy))))
       || (OB_FAIL(dml.add_column("merge_engine_type", table.get_merge_engine_type())))
+      || (OB_FAIL(dml.add_column("external_location_id", table.get_external_location_id())))
+      || (OB_FAIL(dml.add_column("external_sub_path", ObHexEscapeSqlStr(table.get_external_sub_path()))))
       ) {
         LOG_WARN("add column failed", K(ret));
       }
@@ -3219,12 +3225,6 @@ int ObTableSqlService::gen_table_dml(
   int ret = OB_SUCCESS;
   if (OB_FAIL(check_ddl_allowed(table))) {
     LOG_WARN("check ddl allowd failed", K(ret), K(table));
-  } else if (OB_FAIL(sql::ObSQLUtils::is_charset_data_version_valid(table.get_charset_type(),
-                                                                    exec_tenant_id))) {
-    LOG_WARN("failed to check charset data version valid", K(table.get_charset_type()), K(ret));
-  } else if (OB_FAIL(sql::ObSQLUtils::is_collation_data_version_valid(table.get_collation_type(),
-                                                                      exec_tenant_id))) {
-    LOG_WARN("failed to check collation data version valid", K(table.get_collation_type()), K(ret));
   } else if (OB_FAIL(check_table_options(table))) {
     LOG_WARN("fail to check table option", K(ret), K(table));
   } else if (OB_FAIL(gen_table_dml_without_check(exec_tenant_id, table,
@@ -3312,7 +3312,7 @@ int ObTableSqlService::gen_partition_option_dml(const ObTableSchema &table, ObDM
   const uint64_t table_id = table.get_table_id();
   const uint64_t exec_tenant_id = ObSchemaUtils::get_exec_tenant_id(table.get_tenant_id());
   const ObPartitionOption &part_option = table.get_part_option();
-  const ObPartitionOption &sub_part_option = table.get_sub_part_option();
+  const ObSubPartitionOption &sub_part_option = table.get_sub_part_option();
   const char *part_func_expr = part_option.get_part_func_expr_str().length() <= 0 ?
   "" : part_option.get_part_func_expr_str().ptr();
   const char *sub_part_func_expr = sub_part_option.get_part_func_expr_str().length() <= 0 ?
@@ -4267,12 +4267,6 @@ int ObTableSqlService::gen_column_dml(
   if (OB_FAIL(ObCompatModeGetter::get_table_compat_mode(
                column.get_tenant_id(), column.get_table_id(), compat_mode))) {
       LOG_WARN("fail to get tenant mode", K(ret), K(column));
-  } else if (OB_FAIL(sql::ObSQLUtils::is_charset_data_version_valid(column.get_charset_type(),
-                                                                    exec_tenant_id))) {
-    LOG_WARN("failed to check charset data version valid",  K(column.get_charset_type()), K(ret));
-  } else if (OB_FAIL(sql::ObSQLUtils::is_collation_data_version_valid(column.get_collation_type(),
-                                                                      exec_tenant_id))) {
-    LOG_WARN("failed to check collation data version valid",  K(column.get_collation_type()), K(ret));
   } else if (OB_FAIL(gen_column_dml_without_check(exec_tenant_id, column, compat_mode, dml))) {
     LOG_WARN("failed to gen_column_dml_without_check", KR(ret), K(compat_mode));
   }

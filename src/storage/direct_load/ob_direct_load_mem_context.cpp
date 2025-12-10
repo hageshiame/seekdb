@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2023 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX STORAGE
@@ -56,8 +60,8 @@ int ObMemDumpQueue::pop(void *&p)
       p = item_ptr->ptr_;
       op_free(item_ptr);
       break;
-    } else if (ret == OB_ENTRY_NOT_EXIST) { //queue超时返回的错误码是这个，只能将错就错了
-      ret = OB_SUCCESS; //防止超时
+    } else if (ret == OB_ENTRY_NOT_EXIST) { // queue timeout returns this error code, can only go with it
+      ret = OB_SUCCESS; // prevent timeout
       count ++;
       STORAGE_LOG(WARN, "the pop operation has been timeout n times", K(count));
       continue;
@@ -198,7 +202,7 @@ void ObDirectLoadMemContext::reset()
   for (int64_t i = 0; i < loader_array.count(); i ++) {
     ObDirectLoadMemWorker *tmp = loader_array.at(i);
     if (tmp != nullptr) {
-      tmp->~ObDirectLoadMemWorker(); //是由area_allocator分配的，所以不需要free
+      tmp->~ObDirectLoadMemWorker(); // is allocated by area_allocator, so no need to free
     }
   }
   loader_array.reset();

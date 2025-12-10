@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2024 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SERVER
@@ -118,7 +122,7 @@ int ObTableLoadStoreTransPXWriter::init(ObTableLoadStoreCtx *store_ctx,
       single_tablet_id_ = store_ctx_->write_ctx_.single_tablet_id_;
       single_tablet_id_vector_ = store_ctx_->write_ctx_.single_tablet_id_vector_;
     }
-    // dag路径统一通过store_writer写
+    // DAG path uniformly writes through store_writer
     if (!store_ctx_->enable_dag_ && store_ctx_->write_ctx_.enable_pre_sort_) {
       if (OB_ISNULL(pre_sort_writer_ = OB_NEWx(ObTableLoadPreSortWriter, &allocator_))) {
         ret = OB_ALLOCATE_MEMORY_FAILED;
@@ -145,8 +149,8 @@ int ObTableLoadStoreTransPXWriter::prepare_write(const ObIArray<uint64_t> &colum
     ret = OB_NOT_INIT;
     LOG_WARN("ObTableLoadStoreTransPXWriter not init", KR(ret), KP(this));
   }
-  // 不要在这里检查column_ids.count()与column_count_的关系
-  // 旁路导入与DDL并发的场景, 两个值就是可能不一样的
+  // Do not check the relationship between column_ids.count() and column_count_ here
+  // Bypass import and DDL concurrent scenario, the two values may be different
   else if (OB_UNLIKELY(column_ids.empty())) {
     ret = OB_INVALID_ARGUMENT;
     LOG_WARN("invalid args", KR(ret), K(column_ids));
@@ -244,7 +248,12 @@ int ObTableLoadStoreTransPXWriter::check_status()
   const int64_t cycle = row_count_ / CHECK_STATUS_CYCLE;
   if (cycle > last_check_status_cycle_) {
     last_check_status_cycle_ = cycle;
-    if (OB_FAIL(store_ctx_->check_status(ObTableLoadStatusType::LOADING))) {
+    transaction::ObTxDesc *tx_desc = nullptr;
+    if (OB_NOT_NULL(tx_desc = store_ctx_->ctx_->session_info_->get_tx_desc()) &&
+        OB_UNLIKELY(tx_desc->is_tx_timeout())) {
+      ret = OB_TRANS_TIMEOUT;
+      LOG_WARN("trans timeout", KR(ret), KPC(tx_desc));
+    } else if (OB_FAIL(store_ctx_->check_status(ObTableLoadStatusType::LOADING))) {
       LOG_WARN("fail to check status", KR(ret));
     } else if (OB_FAIL(trans_->check_trans_status(ObTableLoadTransStatusType::RUNNING))) {
       LOG_WARN("fail to check trans status", KR(ret));
@@ -292,18 +301,18 @@ int ObTableLoadStoreTransPXWriter::write_vector(ObIVector *tablet_id_vector,
     const bool all_rows_active =
       (brs.all_rows_active_ || 0 == brs.skip_->accumulate_bit_cnt(brs.size_));
     if (all_rows_active) {
-      // 单分区场景, 检查分区是否一致
+      // Single partition scenario, check if the partition is consistent
       if (is_single_part_ && OB_UNLIKELY(!ObDirectLoadVectorUtils::check_is_same_tablet_id(
                                single_tablet_id_, tablet_id_vector, brs.size_))) {
         ret = OB_TABLET_NOT_EXIST;
         LOG_WARN("unexpected tablet id not same", KR(ret), K(single_tablet_id_),
                  KPC(tablet_id_vector));
       }
-      // buffer不为空则先刷下去
+      // if buffer is not empty, flush it first
       else if (!batch_ctx_->batch_rows_.empty() && OB_FAIL(flush_buffer())) {
         LOG_WARN("fail to flush buffer", KR(ret));
       }
-      // 浅拷贝数据直接刷下去
+      // Shallow copy data and flush directly
       else if (!is_single_part_ &&
                OB_FAIL(batch_ctx_->tablet_id_vector_->shallow_copy(tablet_id_vector, brs.size_))) {
         LOG_WARN("fail to shallow copy", KR(ret));
@@ -318,7 +327,7 @@ int ObTableLoadStoreTransPXWriter::write_vector(ObIVector *tablet_id_vector,
       uint16_t *selector = batch_ctx_->selector_;
       int64_t size = 0;
       make_selector(brs, batch_ctx_->selector_, size);
-      // 单分区场景, 检查分区是否一致
+      // Single partition scenario, check if the partitions are consistent
       if (is_single_part_ && OB_UNLIKELY(!ObDirectLoadVectorUtils::check_is_same_tablet_id(
                                single_tablet_id_, tablet_id_vector, selector, size))) {
         ret = OB_TABLET_NOT_EXIST;
@@ -377,18 +386,18 @@ int ObTableLoadStoreTransPXWriter::write_batch(const ObDatumVector &tablet_id_da
     const bool all_rows_active =
       brs.all_rows_active_ || 0 == brs.skip_->accumulate_bit_cnt(brs.size_);
     if (all_rows_active) {
-      // 单分区场景, 检查分区是否一致
+      // Single partition scenario, check if the partition is consistent
       if (is_single_part_ && OB_UNLIKELY(!ObDirectLoadVectorUtils::check_is_same_tablet_id(
                                single_tablet_id_, tablet_id_datum_vector, brs.size_))) {
         ret = OB_TABLET_NOT_EXIST;
         LOG_WARN("unexpected tablet id not same", KR(ret), K(single_tablet_id_),
                  K(tablet_id_datum_vector));
       }
-      // buffer不为空则先刷下去
+      // if buffer is not empty, flush it first
       else if (!batch_ctx_->batch_rows_.empty() && OB_FAIL(flush_buffer())) {
         LOG_WARN("fail to flush buffer", KR(ret));
       }
-      // 浅拷贝数据直接刷下去
+      // Shallow copy data and flush directly
       else if (!is_single_part_ &&
                OB_FAIL(batch_ctx_->tablet_id_vector_->shallow_copy(tablet_id_datum_vector, brs.size_))) {
         LOG_WARN("fail to shallow copy", KR(ret));
@@ -403,7 +412,7 @@ int ObTableLoadStoreTransPXWriter::write_batch(const ObDatumVector &tablet_id_da
       uint16_t *selector = batch_ctx_->selector_;
       int64_t size = 0;
       make_selector(brs, batch_ctx_->selector_, size);
-      // 单分区场景, 检查分区是否一致
+      // Single partition scenario, check if the partitions are consistent
       if (is_single_part_ && OB_UNLIKELY(!ObDirectLoadVectorUtils::check_is_same_tablet_id(
                                single_tablet_id_, tablet_id_datum_vector, selector, size))) {
         ret = OB_TABLET_NOT_EXIST;
@@ -529,11 +538,11 @@ int ObTableLoadStoreTransPXWriter::flush_buffer()
     } else if (OB_FAIL(pre_sort_writer_->px_write(tablet_id_vector, batch_rows))) {
       LOG_WARN("fail to px write", KR(ret));
     }
-  } else if (is_single_part_) { // 单分区场景
+  } else if (is_single_part_) { // single partition scenario
     if (OB_FAIL(writer_->px_write(single_tablet_id_, batch_rows))) {
       LOG_WARN("fail to px write", KR(ret));
     }
-  } else { // 多分区场景
+  } else { // multi-partition scenario
     const ObTableLoadStoreWriteCtx::TabletIdxMap &tablet_idx_map =
       store_ctx_->write_ctx_.tablet_idx_map_;
     const int64_t size = batch_rows.size();
@@ -541,7 +550,7 @@ int ObTableLoadStoreTransPXWriter::flush_buffer()
       static_cast<ObFixedLengthBase *>(batch_ctx_->tablet_id_vector_->get_vector())->get_data());
     const bool all_tablet_id_is_same =
       ObDirectLoadVectorUtils::check_all_tablet_id_is_same(tablet_ids, size);
-    if (all_tablet_id_is_same) { // 数据属于同一个分区
+    if (all_tablet_id_is_same) { // Data belongs to the same partition
       const uint64_t tablet_id = tablet_ids[0];
       const int64_t *tablet_idx = tablet_idx_map.get(tablet_id);
       if (OB_ISNULL(tablet_idx)) {
@@ -550,7 +559,7 @@ int ObTableLoadStoreTransPXWriter::flush_buffer()
       } else if (OB_FAIL(writer_->px_write(ObTabletID(tablet_id), batch_rows))) {
         LOG_WARN("fail to px write", KR(ret));
       }
-    } else { // 数据属于多个分区
+    } else { // Data belongs to multiple partitions
       const int64_t tablet_cnt = tablet_idx_map.size();
       uint16_t *selector = batch_ctx_->selector_;
       uint16_t *tablet_offsets = batch_ctx_->tablet_offsets_;

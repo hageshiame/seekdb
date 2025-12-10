@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef _OCEABASE_LIB_WORKER_H_
@@ -140,9 +144,9 @@ public:
   common::ObDLinkNode<Worker*> worker_node_;
   void *group_;
 protected:
-  // 线程运行时内存从此分配器分配
-  // 初始tenant_id=500, 在处理request时，tenant_id被更新成request的租户id
-  // 可单独指定ctx_id, 此ctx_id保持不变
+  // Thread runtime memory is allocated from this allocator
+  // Initial tenant_id=500, in processing request, tenant_id is updated to the tenant id of the request
+  // You can specify ctx_id individually, this ctx_id remains unchanged
   ObIAllocator *allocator_;
   int64_t st_current_priority_;
   sql::ObSQLSessionInfo *session_;
@@ -187,7 +191,7 @@ inline Worker &Worker::self()
 
 inline ObIAllocator &Worker::get_allocator()
 {
-  // 预期只在处理请求过程中调用
+  // Expected to be called only during request processing
   abort_unless(allocator_ != nullptr);
   return *allocator_;
 }

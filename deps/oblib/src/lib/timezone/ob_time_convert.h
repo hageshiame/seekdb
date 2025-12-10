@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_LIB_TIMEZONE_OB_TIME_CONVERT_
@@ -143,7 +147,7 @@ extern const int64_t USECS_PER_MIN;
 #define DATE_MIN_LENGTH 10
 #define DAYNAME_MAX_LENGTH 9 //Wednesday is longest
 #define MONTHNAME_MAX_LENGTH 9 //September is longest
-//max timestamp最大值为253402272000 12位
+//max timestamp maximum value is 253402272000 12 digits
 #define TIMESTAMP_VALUE_LENGTH 12
 #define SEC_TO_USEC(secs)   ((secs) * USECS_PER_SEC)
 #define USEC_TO_SEC(usec)   ((usec) / USECS_PER_SEC)
@@ -816,9 +820,9 @@ enum ObNLSFormatEnum {
 
 /**
  * @brief The ObDataTypeCastParams struct
- * 传递用于SQL解析的session环境变量，
- * 特别是用于oracle模式
- * 包括时区/时间格式/字符集等信息
+ * pass the session environment variables used for SQL parsing,
+ * especially for oracle mode
+ * including timezone/time format/character set etc. information
  */
 
 class ObDataTypeCastParams
@@ -989,7 +993,7 @@ OB_INLINE void ObTimeConverter::days_to_year_ydays(DateType days, YearType &year
 
 /// @fn get month and dt_mday from dt_yday and year, ZERO_DATE NOT allowed to run in this function
 /// @brief Instead of comparing 12 months one by one,
-///  here divide 32 first to get an appproximate value，
+///  here divide 32 first to get an approximate value,
 ///  since there are only 12 months, the cumulative error does not exceed 1.
 /// @param [in]  year    the year corresponding to the given date.
 /// @param [in]  dt_yday the day of the year to the given date, say xxxx-1-1 is 1, xxxx-1-2 is 2.

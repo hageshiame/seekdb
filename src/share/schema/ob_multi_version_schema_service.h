@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OB_OCEANBASE_SCHEMA_MULTI_VERSION_SCHEMS_SERVICE_H_
@@ -320,7 +324,8 @@ public:
 
   // new schema refresh interface
   int refresh_and_add_schema(const common::ObIArray<uint64_t> &tenant_ids,
-                             bool check_bootstrap = false);
+                             bool check_bootstrap = false,
+                             common::ObIArray<share::schema::ObTableSchema> *table_schemas = nullptr);
   // Trigger an asynchronous refresh task and wait for the refresh result
   int async_refresh_schema(const uint64_t tenant_id,
                            const int64_t schema_version);
@@ -366,7 +371,8 @@ private:
   int init_original_schema();
   int init_sys_tenant_user_schema();
 
-  int refresh_tenant_schema(const uint64_t tenant_id);
+  int refresh_tenant_schema(const uint64_t tenant_id,
+                            common::ObIArray<share::schema::ObTableSchema> *table_schemas = nullptr);
 
   virtual int add_schema_mgr_info(
               ObSchemaGetterGuard &schema_guard,

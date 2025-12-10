@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX RS
@@ -82,7 +86,7 @@ int ObPLDDLService::create_routine(const obrpc::ObCreateRoutineArg &arg,
           routine_info.get_routine_type(), is_or_replace, conflict_schema_types))) {
         LOG_WARN("fail to check oracle_object exist", K(ret), K(routine_info.get_routine_name()));
       } else if (conflict_schema_types.count() > 0) {
-        // 这里检查 oracle 模式下新对象的名字是否已经被其他对象占用了
+        // Here we check if the name of the new object in oracle mode is already occupied by another object
         ret = OB_ERR_EXIST_OBJECT;
         LOG_WARN("Name is already used by an existing object in oralce mode",
                   K(ret), K(routine_info.get_routine_name()),
@@ -356,7 +360,7 @@ int ObPLDDLService::drop_routine(const ObDropRoutineArg &arg,
     ObSchemaGetterGuard schema_guard;
     const ObDatabaseSchema *db_schema = NULL;
     /*!
-     * 兼容mysql行为:
+     * Compatible with MySQL behavior:
      * create database test;
      * use test;
      * drop database test;
@@ -588,14 +592,14 @@ int ObPLDDLService::create_package(const obrpc::ObCreatePackageArg &arg,
     }
     if (OB_SUCC(ret)) {
       ObArray<ObSchemaType> conflict_schema_types;
-      // package body 查重只比较有没有重复的 package body，package 查重需要比较除 package body 以外的对象
+      // package body duplicate check only compares for duplicate package bodies, package duplicate check needs to compare objects other than package body
       if (ObPackageType::PACKAGE_TYPE == new_package_info.get_type()
           && OB_FAIL(schema_guard.check_oracle_object_exist(tenant_id,
              db_schema->get_database_id(), new_package_info.get_package_name(), PACKAGE_SCHEMA,
              INVALID_ROUTINE_TYPE, arg.is_replace_, conflict_schema_types))) {
         LOG_WARN("fail to check object exist", K(ret), K(new_package_info.get_package_name()));
       } else if (conflict_schema_types.count() > 0) {
-        // 这里检查 oracle 模式下新对象的名字是否已经被其他对象占用了
+        // Here we check if the name of the new object in oracle mode is already occupied by another object
         ret = OB_ERR_EXIST_OBJECT;
         LOG_WARN("Name is already used by an existing object in oralce mode",
                  K(ret), K(new_package_info.get_package_name()),
@@ -609,7 +613,7 @@ int ObPLDDLService::create_package(const obrpc::ObCreatePackageArg &arg,
         LOG_WARN("failed to check package info exist", K(new_package_info), K(ret));
       } else if (OB_ISNULL(old_package_info) || arg.is_replace_) {
         bool need_create = true;
-        // 对于系统包, 为了避免多次重建, 比较下新的系统包与已经存在的系统包是否相同
+        // For system packages, to avoid multiple rebuilds, compare the new system package with the existing system package to see if they are the same
         if (OB_NOT_NULL(old_package_info) && OB_SYS_TENANT_ID == tenant_id) {
           if (old_package_info->get_source().length() == new_package_info.get_source().length()
               && (0 == MEMCMP(old_package_info->get_source().ptr(),
@@ -1520,7 +1524,7 @@ int ObPLDDLService::drop_trigger_in_drop_table(ObMySQLTransaction &trans,
     OV (OB_NOT_NULL(trigger_info), OB_ERR_UNEXPECTED, trigger_id);
     OV (!trigger_info->is_in_recyclebin(), OB_ERR_UNEXPECTED, trigger_id);
     if (to_recyclebin && !table_schema.is_view_table()) {
-      // 兼容oracle, drop view的时候trigger不进回收站
+      // Compatible with Oracle, trigger does not go to the recycle bin when dropping a view
       OZ (pl_operator.drop_trigger_to_recyclebin(*trigger_info, schema_guard, trans));
     } else {
       OZ (pl_operator.drop_trigger(*trigger_info,

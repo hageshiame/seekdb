@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SQL_ENGINE_CMD_LOAD_DATA_RPC_H_
@@ -89,9 +93,7 @@ enum class ObTaskResFlag {
 
 
 typedef ObBitSet<32> ErrRowBitset;
-
-
-// 单线程调用 on_next_task_id 多线程调用 on_task_finished 时，是无锁的
+// Single-threaded call to on_next_task_id multi-threaded call to on_task_finished is lock-free
 class ObParallelTaskController
 {
 public:
@@ -189,16 +191,15 @@ struct ObInsertTask
   int64_t row_count_;
   int64_t column_count_;
   common::ObString insert_stmt_head_; //insert into xxx (xxx)
-
-  //insert_values_data_ 总共包括了row_count_行数据，这些数据存储在几个buff中，buff数据用ObString存储
-  //每个buff是若干行数据的序列化块，每行数据的序列化格式：
+  //insert_values_data_ totally includes row_count_ rows of data, these data are stored in several buffs, buff data is stored using ObString
+  // Each buff is a serialization block of several lines of data, the serialization format of each line of data:
   //1. length of 2           int64_t
   //2. values for one row    ObSEArray<ObString>  using string as buf
   // + for serialize
   common::ObSEArray<common::ObString, COMMON_SIZE> insert_value_data_;
 
   //no serialized data
-  common::ObSEArray<void *, COMMON_SIZE> source_frag_;//一一对应insert_value_data_，表达数据来源
+  common::ObSEArray<void *, COMMON_SIZE> source_frag_;//one-to-one correspondence with insert_value_data_, indicating data source
   ObPartDataFragMgr *part_mgr;
   ObInsertResult result_;
   int64_t result_recv_ts_;

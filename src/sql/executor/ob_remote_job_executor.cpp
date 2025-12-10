@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_EXE
@@ -35,31 +39,31 @@ ObRemoteJobExecutor::~ObRemoteJobExecutor()
 int ObRemoteJobExecutor::execute(ObExecContext &query_ctx)
 {
   int ret = OB_SUCCESS;
-  // ObTask只作为序列化用，故而只需要是一个栈变量即可
+  // ObTask is only used for serialization, so it only needs to be a stack variable
   ObTaskInfo *task_info = NULL;
 
   if (OB_ISNULL(job_) || OB_ISNULL(executor_)) {
     ret = OB_ERR_UNEXPECTED;
     LOG_WARN("job_ or executor_ is NULL", K(ret), K(job_), K(executor_));
-  } else if (OB_FAIL(get_executable_task(query_ctx, task_info))) { // 获得一个task info
+  } else if (OB_FAIL(get_executable_task(query_ctx, task_info))) { // get a task info
     LOG_WARN("fail get a executable task", K(ret));
   } else if (OB_ISNULL(task_info)) {
     ret = OB_ERR_UNEXPECTED;
     LOG_WARN("task info is NULL", K(ret));
   } else if (OB_FAIL(executor_->execute(query_ctx,
                                         job_,
-                                        task_info))) { // job_ + task_info 作为 task 的骨架和参数
+                                        task_info))) { // job_ + task_info as the skeleton and parameters of the task
     LOG_WARN("fail execute task", K(ret), K(*task_info));
   } else {}
   return ret;
 }
 
 /**
- * Task均用于读取单表物理数据, 因此Task的划分规则与LocationCache有关
- * 获得的Location均保存到Task结构中
+ * Task are all used to read single table physical data, therefore the task division rules are related to LocationCache
+ * The obtained Locations are all saved in the Task structure
  *
- * 同时，RemoteJobExecutor所执行的Job只会读取单分区的数据, 所以这里TaskControl还是只会输出一个Task
- * 如何划分Task，是根据TaskControl中的task_spliter决定
+ * At the same time, the Jobs executed by RemoteJobExecutor will only read data from a single partition, so TaskControl will still only output one Task
+ * How to divide the Task is determined by the task_spliter in TaskControl
  */
 int ObRemoteJobExecutor::get_executable_task(ObExecContext &ctx, ObTaskInfo *&task_info)
 {

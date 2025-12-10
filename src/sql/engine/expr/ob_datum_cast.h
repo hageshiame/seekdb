@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef _OB_EXPR_DATUM_CAST_
@@ -196,24 +200,21 @@ int vector_accuracy_check(const ObExpr &expr,
                          const ObIVector &in_vec,
                          ObIVector &out_vec,
                          int &warning);
-
-// 根据in_type,force_use_standard_format信息，获取fromat_str,优先从rt_expr保存的本地session变量列表获取，不存在则从session获取
+// According to in_type, force_use_standard_format information, get format_str, prioritize obtaining from the local session variable list saved by rt_expr, if it does not exist then get from session
 int common_get_nls_format(const ObBasicSessionInfo *session,
                           ObEvalCtx &ctx,
                           const ObExpr *rt_expr,
                           const ObObjType in_type,
                           const bool force_use_standard_format,
                           ObString &format_str);
-
-// 检查str以check_cs_type作为字符集是否合法
-// strict_mode下，如果上述检查失败，返回错误码
-// 否则返回以check_cs_type作为字符集的最长合法字符串
+// Check if str is valid with check_cs_type as the character set
+// strict_modeunder, if the above checks fail, return error code
+// Otherwise return the longest valid string with check_cs_type as the character set
 int string_collation_check(const bool is_strict_mode,
                            const common::ObCollationType check_cs_type,
                            const common::ObObjType str_type,
                            common::ObString &str);
-
-// 将T中的值转换为ob_time结构
+// Convert the value in T to ob_time structure
 template<typename T>
 int ob_datum_to_ob_time_with_date(const T &datum,
                                   const common::ObObjType type,
@@ -252,7 +253,7 @@ int ob_datum_to_ob_time_with_date(const T &datum,
         SQL_ENG_LOG(WARN, "convert timestamp to datetime failed", K(ret));
       } else {
         const int64_t usec_per_day = 3600 * 24 * USECS_PER_SEC;
-        // 将datetime的时间截取，只保留日期，然后转为微秒
+        // Extract the date from datetime, then convert to microseconds
         int64_t day_usecs = dt_value - dt_value % usec_per_day;
         ret = ObTimeConverter::datetime_to_ob_time(datum.get_time() + day_usecs, NULL, ob_time);
       }
@@ -338,7 +339,7 @@ int ob_datum_to_ob_time_without_date(const T &datum,
       if (OB_FAIL(ObTimeConverter::int_to_ob_time_without_date(datum.get_int(), ob_time))) {
         SQL_ENG_LOG(WARN, "int to ob time without date failed", K(ret));
       } else {
-        //mysql中intTC转time时，如果hour超过838，那么time应该为null，而不是最大值。
+        // When converting intTC to time in mysql, if hour exceeds 838, then time should be null, rather than the maximum value.
         const int64_t time_max_val = TIME_MAX_VAL;    // 838:59:59.
         int64_t value = ObTimeConverter::ob_time_to_time(ob_time);
         if (value > time_max_val) {
@@ -411,7 +412,7 @@ int ob_datum_to_ob_time_without_date(const T &datum,
         } else {
           if ((!ob_time.parts_[DT_YEAR]) && (!ob_time.parts_[DT_MON]) &&
               (!ob_time.parts_[DT_MDAY])) {
-            // mysql中intTC转time时，如果超过838:59:59，那么time应该为null，而不是最大值。
+            // When converting intTC to time in mysql, if it exceeds 838:59:59, then time should be null, rather than the maximum value.
             const int64_t time_max_val = TIME_MAX_VAL; // 838:59:59.
             int64_t value = ObTimeConverter::ob_time_to_time(ob_time);
             if (value > time_max_val) {
@@ -452,10 +453,8 @@ int common_string_double(const ObExpr &expr,
 
 
 int get_cast_ret_wrap(const ObCastMode &cast_mode, int ret, int &warning);
-
-
-// 进行datetime到string的转换，除了ob_datum_cast.cpp需要使用，有的表达式也需要将结果
-// 从datetime转为string, 例如ObExprTimeStampAdd
+// Perform datetime to string conversion, except for ob_datum_cast.cpp which needs to use it, some expressions also need to convert the result
+// From datetime to string, for example ObExprTimeStampAdd
 int common_datetime_string(const ObExpr &expr,
                            const common::ObObjType in_type,
                            const common::ObObjType out_type,
@@ -490,8 +489,7 @@ inline bool decimal_int_truncated_check(const ObDecimalInt *decint, const int32_
   return bret;
 #undef TRUNC_CHECK
 }
-
-// copied from ob_obj_cast.cpp，函数逻辑没有修改，只是将输入参数从ObObj变为ObDatum
+// copied from ob_obj_cast.cpp, function logic has not been modified, only changed the input parameter from ObObj to ObDatum
 class ObDatumHexUtils
 {
 public:
@@ -528,7 +526,7 @@ public:
                                         const common::ObCollationType out_cs_type,
                                         const int64_t cast_mode,
                                         ObExpr::EvalFunc &eval_func);
-  // 根据in_type/out_type等信息，获取cast func
+  // According to in_type/out_type etc. information, get cast func
   static int choose_cast_function(const common::ObObjType in_type,
                                   const common::ObCollationType in_cs_type,
                                   const common::ObObjType out_type,
@@ -540,24 +538,23 @@ public:
   static int get_enumset_cast_function(const common::ObObjTypeClass in_tc,
                                        const common::ObObjType out_type,
                                        ObExpr::EvalEnumSetFunc &eval_func);
-  // 检查转换是否合法，有些检查是没办法反映在转换矩阵里面
-  // 举例：string/text -> string/text时，如果是nonblob -> blob，
-  // 要求nonblob必须是char/varchar类型，这种检查在转换矩阵中是没法反映出来的
-  // 这些检查都会在该方法中进行
+  // Check if the conversion is valid, some checks cannot be reflected in the conversion matrix
+  // Example: string/text -> string/text when it is nonblob -> blob,
+  // Requirement nonblob must be char/varchar type, this check cannot be reflected in the conversion matrix
+  // These checks will be performed in this method
   static int check_can_cast(const common::ObObjType in_type,
                             const common::ObCollationType in_cs_type,
                             const common::ObObjType out_type,
                             const common::ObCollationType out_cs_type);
-  // 有些cast是什么事情都不用做的，例如int->bit，直接调用cast_eval_arg()计算参数的值即可
-  // CG阶段会使用该方法判断是否可以不用给cast表达式分配结果空间，直接指向参数的结果即可
+  // Some cast do nothing, for example int->bit, directly call cast_eval_arg() to calculate the value of the argument
+  // CG phase will use this method to determine if result space does not need to be allocated for the cast expression, and can directly point to the result of the parameter instead
   static int is_trivial_cast(const common::ObObjType in_type,
                                 const common::ObCollationType in_cs_type,
                                 const common::ObObjType out_type,
                                 const common::ObCollationType out_cs_type,
                                 const common::ObCastMode &cast_mode,
                                 bool &just_eval_arg);
-
-  // 功能同:
+  // Function same as:
   //    EXPR_DEFINE_CAST_CTX(expr_ctx, cast_mode)
   //    EXPR_CAST_OBJ_V2(obj_type, obj, res_obj)
   static int cast_obj(ObEvalCtx &ctx, common::ObIAllocator &alloc,

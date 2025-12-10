@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef __SQL_ENG_PX_TARGET_MGR_H__
@@ -147,7 +151,7 @@ private:
   bool is_running_;
   common::ObAddr server_;
   share::ObIAliveServerTracer *server_tracer_;
-  ObPxInfoMap px_info_map_; // 如果考虑删租户就要加锁
+  ObPxInfoMap px_info_map_; // If considering deleting tenant, need to add lock
   hash::ObHashSet<ObAddr> alive_server_set_;
   TimerTask timer_task_;
 };
@@ -169,7 +173,7 @@ public:
     } else if (OB_FAIL(px_res_info->get_target_monitor()->refresh_statistics(need_refresh_all_))) {
       COMMON_LOG(WARN, "target monitor refresh statistics failed", K(ret), K(px_tenant_info), KPC(px_res_info->get_target_monitor()));
     }
-    //外面需要遍历所有的租户，此处不能返回false
+    // Outside needs to traverse all tenants, here cannot return false
     return true;
   }
   

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX STORAGE
@@ -114,8 +118,8 @@ int ObLobManager::stop()
     LOG_WARN("ObLobManager is not initialized", K(ret));
   } else {
     // TODO
-    // 1. 触发LobOperator中内存数据的异步flush
-    // 2. 清理临时LOB
+    // 1. Trigger asynchronous flush of memory data in LobOperator
+    // 2. Clean up temporary LOB
   }
   return ret;
 }
@@ -124,7 +128,7 @@ void ObLobManager::wait()
 {
   STORAGE_LOG(INFO, "[LOB]wait");
   // TODO
-  // 1. 等待LobOperator中内存数据的异步flush完成
+  // 1. Wait for the asynchronous flush of memory data in LobOperator to complete
 }
 
 void ObLobManager::destroy()

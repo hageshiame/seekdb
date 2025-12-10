@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_BASIC_OB_SET_OB_MERGE_SET_VEC_OP_H_
@@ -96,9 +100,9 @@ protected:
 protected:
   common::ObArenaAllocator alloc_;
   Compare cmp_;
-  bool need_skip_init_row_; //是否需要跳过和最初的 last_output_row_ 比较; false: 不需要; true: 需要;
-                            //目前仅针对 merge except 和 merge intersect 置为TRUE, 因为无法区分 last_output_row_
-                            //是来自初始化时的全NULL or 左侧child的全NULL, see bug
+  bool need_skip_init_row_; // Whether to skip comparison with the initial last_output_row_; false: no; true: yes;
+                            //Currently only for merge except and merge intersect set to TRUE, because cannot distinguish last_output_row_
+                            // is from all NULL at initialization or all NULL from the left child, see bug
   int64_t last_row_idx_;
   bool use_last_row_;
   // for vec2.0

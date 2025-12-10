@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OB_DTL_CHANNEL_LOOP_H
@@ -124,7 +128,7 @@ private:
   common::ObSEArray<ObDtlChannel*, 128> chans_;
   int64_t next_idx_;
   uint16_t last_msg_type_;
-  common::SimpleCond cond_; // 1对1的唤醒模式，用SimpleCond即可
+  common::SimpleCond cond_; // 1-to-1 wake-up mode, SimpleCond is sufficient
   bool ignore_interrupt_;
   uint64_t tenant_id_;
   int64_t timeout_;
@@ -158,7 +162,7 @@ OB_INLINE void ObDtlChannelLoop::add_last_data_list(ObDtlChannel *ch)
 OB_INLINE void ObDtlChannelLoop::remove_data_list(ObDtlChannel *ch, bool force = false)
 {
   if (OB_UNLIKELY(force)) {
-    // 当unlink channel时去掉ch的prev_link和next_link，这样其他channel就避免了依赖
+    // When unlink channel remove ch's prev_link and next_link, so other channels avoid dependency
     ObLockGuard<ObSpinLock> lock_guard(spin_lock_);
     ch->remove_self();
   } else {

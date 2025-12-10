@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_RESV
@@ -723,8 +727,7 @@ int ObSchemaChecker::get_table_schema(const uint64_t tenant_id, const ObString &
   }
   return ret;
 }
-
-// 注意：这个函数只能在 sql 层使用
+// Note: this function can only be used in the sql layer
 int ObSchemaChecker::get_table_schema(const uint64_t tenant_id,
                                       const uint64_t catalog_id,
                                       const uint64_t database_id,
@@ -769,9 +772,9 @@ int ObSchemaChecker::get_table_schema(const uint64_t tenant_id,
   }
 
   if (OB_SUCC(ret)) {
-    // 也有可能是临时cte递归表schema与已有表重名，
-    // 这个时候必须由cte递归表schema优先(same with oracle)
-    // 在fake schema中找到了，则覆盖之前找到的基本表
+    // It is also possible that the temporary CTE recursive table schema conflicts with an existing table,
+    // At this point, the cte recursive table schema must take precedence (same with oracle)
+    // If found in fake schema, then override the previously found base table
     if (cte_table_fisrt) {
       ObNameCaseMode mode = OB_NAME_CASE_INVALID;
       if (OB_FAIL(schema_mgr_->get_tenant_name_case_mode(tenant_id, mode))) {
@@ -827,8 +830,7 @@ int ObSchemaChecker::get_table_schema(const uint64_t tenant_id,
   }
   return ret;
 }
-
-// 注意：这个函数只能在 sql 层使用
+// Note: this function can only be used in the sql layer
 int ObSchemaChecker::get_table_schema(const uint64_t tenant_id,
                                       const uint64_t database_id,
                                       const ObString &table_name,
@@ -848,8 +850,7 @@ int ObSchemaChecker::get_table_schema(const uint64_t tenant_id,
                           table_schema,
                           is_built_in_index);
 }
-
-// 注意：这个函数只能在 sql 层使用
+// Note: this function can only be used in the sql layer
 // tmp_cte_schemas_ is only maintained in resolver's SchemaChecker
 // Transformer's SchemaChecker doesn't have tmp_cte_schemas.
 int ObSchemaChecker::get_table_schema(const uint64_t tenant_id, const uint64_t table_id,
@@ -868,7 +869,7 @@ int ObSchemaChecker::get_table_schema(const uint64_t tenant_id, const uint64_t t
   } else if (!is_link && OB_FAIL(get_table_schema_inner(tenant_id, table_id, table))) {
     LOG_WARN("get table schema failed", K(tenant_id), K(table_id), K(ret));
   } else if (NULL == table) {
-    // 也有可能是临时cte递归表schema
+    // It could also be a temporary cte recursive table schema
     for (int64_t i = 0; i < tmp_cte_schemas_.count(); i++) {
       if (tmp_cte_schemas_.at(i)->get_table_id() == table_id) {
         table = tmp_cte_schemas_.at(i);
@@ -1454,7 +1455,7 @@ int ObSchemaChecker::get_sequence_id(const uint64_t tenant_id,
 }
 
 // only use in oracle mode
-// 如果函数执行结束时 table_schema 为空，则说明当前 db 下没有 index_name 对应的 index
+// If the function execution ends with table_schema being empty, then it indicates that there is no index corresponding to index_name under the current db
 int ObSchemaChecker::get_idx_schema_by_origin_idx_name(const uint64_t tenant_id,
                                                        const uint64_t database_id,
                                                        const ObString &index_name,
@@ -1477,8 +1478,8 @@ int ObSchemaChecker::get_idx_schema_by_origin_idx_name(const uint64_t tenant_id,
     if (NULL == table) {
       LOG_WARN("index table schema is null", K(index_name), K(ret));
      } else if (false == table->is_tmp_table() && 0 != table->get_session_id() && OB_INVALID_ID != schema_mgr_->get_session_id()) {
-      // 这种场景是查询建表时，数据还没有 insert 完成，表对外不可见
-      // table->get_session_id() 为 0 时只会是临时表，或者查询建表数据未插入完成两种情况
+      // This scenario is querying a table where the data has not been fully inserted, and the table is not visible to the outside
+      // table->get_session_id() is 0 when it can only be a temporary table, or when the query table data insertion is not yet complete
       const ObDatabaseSchema  *db_schema = NULL;
       if (OB_FAIL(schema_mgr_->get_database_schema(tenant_id, database_id, db_schema))) {
         LOG_WARN("get database schema failed", K(tenant_id), K(database_id), K(ret));
@@ -1521,6 +1522,26 @@ int ObSchemaChecker::get_directory_id(const uint64_t tenant_id,
     LOG_WARN("directory is not exists", K(directory_name));
   } else {
     directory_id = schema->get_directory_id();
+  }
+  return ret;
+}
+
+int ObSchemaChecker::get_location_id(const uint64_t tenant_id,
+                                     const common::ObString &location_name,
+                                     uint64_t &location_id)
+{
+  int ret = OB_SUCCESS;
+  const ObLocationSchema *schema = NULL;
+  if (IS_NOT_INIT) {
+    ret = OB_NOT_INIT;
+    LOG_WARN("schema checker is not inited", K_(is_inited));
+  } else if (OB_FAIL(schema_mgr_->get_location_schema_by_name(tenant_id, location_name, schema))) {
+    LOG_WARN("get location schema failed", K(ret));
+  } else if (OB_ISNULL(schema)) {
+    ret = OB_LOCATION_OBJ_NOT_EXIST;
+    LOG_WARN("location is not exists", K(location_name));
+  } else {
+    location_id = schema->get_location_id();
   }
   return ret;
 }
@@ -1657,7 +1678,7 @@ bool ObSchemaChecker::enable_mysql_pl_priv_check(int64_t tenant_id, ObSchemaGett
   int ret = OB_SUCCESS;
   if (OB_FAIL(GET_MIN_DATA_VERSION(tenant_id, compat_version))) {
     LOG_WARN("fail to get data version", K(tenant_id));
-  } else if (lib::is_mysql_mode() && sql::ObSQLUtils::is_data_version_ge_422_or_431(compat_version)) {
+  } else if (lib::is_mysql_mode()) {
     const ObSysVarSchema *sys_var = NULL;
     ObMalloc alloc(ObModIds::OB_TEMP_VARIABLES);
     ObObj val;

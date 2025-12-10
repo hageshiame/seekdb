@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -354,9 +358,9 @@ int ObMergeJoinOp::right_join_cache_func_end()
   right_cache_iter_.reset();
   stored_row_idx_ = -1;
   rj_match_vec_->reset(rj_match_vec_size_);
-  // full cache diff, 且right reach end时,
-  // 先将right cache中数据处理, 结束后如果是FULL_OUTER_JOIN,
-  // 再处理LEFT 数据
+  // full cache diff, and right reach end when,
+  // First process the data in right cache, after which if it is FULL_OUTER_JOIN,
+  // Process LEFT data
   if (right_fetcher_.reach_end_) {
     if (FULL_OUTER_JOIN == MY_SPEC.join_type_) {
       state_ = JS_LEFT_JOIN;
@@ -493,14 +497,14 @@ int ObMergeJoinOp::full_cache_func_diff()
   if (OB_FAIL(left_fetcher_.save_last())) {
     LOG_WARN("save last left row failed", K(ret));
   } else {
-    //在右表已迭代结束时semi join和inner join可提前退出
+    // When the right table has finished iteration, semi join and inner join can exit early
     if (right_fetcher_.reach_end_) {
       if (LEFT_OUTER_JOIN == MY_SPEC.join_type_ || LEFT_ANTI_JOIN == MY_SPEC.join_type_) {
         state_ = JS_LEFT_JOIN;
       } else if (need_right_join()) {
-        // full cache diff, 且right reach end时,
-        // 先将right cache中数据处理, 结束后如果是FULL_OUTER_JOIN,
-        // 再处理LEFT 数据
+        // full cache diff, and right reach end when,
+        // First process data in right cache, after which if it is FULL_OUTER_JOIN,
+        // Process LEFT data
         if (OB_FAIL(right_cache_.begin(right_cache_iter_))) {
           LOG_WARN("failed to begin iterator for chunk row store", K(ret));
         } else {
@@ -529,8 +533,7 @@ int ObMergeJoinOp::full_cache_func_diff()
 
   return ret;
 }
-
-// 当左表数据已迭代结束时
+// When the left table data has been iterated to the end
 int ObMergeJoinOp::full_cache_func_end()
 {
   int ret = OB_SUCCESS;
@@ -695,8 +698,8 @@ int ObMergeJoinOp::fill_cache_func_diff_end()
   } else {
     stored_row_idx_ = -1;
     state_ = JS_FULL_CACHE;
-    //fill cache结束,  如果last_left_row标记为expired_, 则不用输出,
-    //如果last_left_row没有标记expired_(false), 则表示该行不存在符合条件的行，可输出
+    //fill cache end, if last_left_row is marked as expired_, then no need to output,
+    // If last_left_row is not marked expired_(false), then it indicates that there is no row meeting the criteria, and can be output
     if (LEFT_ANTI_JOIN == MY_SPEC.join_type_) {
       if (!left_row_matched_) {
         output_row_produced_ = true;

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX CLOG
@@ -70,7 +74,7 @@ int ObLogService::mtl_init(ObLogService* &logservice)
   const ObAddr &self = GCTX.self_addr();
   const int64_t tenant_id = MTL_ID();
   observer::ObSrvNetworkFrame *net_frame = GCTX.net_frame_;
-  //log_disk_usage_limit_size无法主动从配置项获取, 需要在mtl初始化时作为入参传入
+  //log_disk_usage_limit_size cannot be actively obtained from the configuration item, and needs to be passed as a parameter during mtl initialization
   const palf::PalfOptions &palf_options = MTL_INIT_CTX()->palf_options_;
   const char *tenant_clog_dir = MTL_INIT_CTX()->tenant_clog_dir_;
   const char *clog_dir = OB_FILE_SYSTEM_ROUTER.get_clog_dir();
@@ -568,7 +572,7 @@ int ObLogService::update_palf_options_except_disk_usage_limit_size()
     if (OB_FAIL(common::ObCompressorPool::get_instance().get_compressor_type(
                 tenant_config->log_transport_compress_func, compressor_type))) {
       CLOG_LOG(ERROR, "log_transport_compress_func invalid.", K(ret));
-      //需要获取log_disk_usage_limit_size
+      //Need to get log_disk_usage_limit_size
     } else if (OB_FAIL(palf_env_->get_options(palf_opts))) {
       CLOG_LOG(WARN, "palf get_options failed", K(ret));
     } else {
@@ -590,8 +594,7 @@ int ObLogService::update_palf_options_except_disk_usage_limit_size()
   }
   return ret;
 }
-
-//log_disk_usage_limit_size无法主动感知,只能通过上层触发时传入
+//log_disk_usage_limit_size cannot be proactively detected, it can only be passed in when triggered by the upper layer
 int ObLogService::update_log_disk_usage_limit_size(const int64_t log_disk_usage_limit_size)
 {
   int ret = OB_SUCCESS;

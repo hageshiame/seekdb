@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SQL_OB_LOG_SET_H
@@ -49,11 +53,11 @@ public:
   inline void set_recursive_union(bool is_recursive_union) { is_recursive_union_ = is_recursive_union; }
   inline bool is_recursive_union() { return is_recursive_union_; }
   inline bool is_set_distinct() const { return is_distinct_; }
-  // 目前仅union支持先读完left然后读right，但merge_union的distinct不支持
-  // 增加hash intersect 和hash except算子1by1的能力
+  // Currently only union supports reading left first and then right, but merge_union's distinct does not support
+  // Add hash intersect and hash except operator 1by1 capability
   virtual bool is_consume_child_1by1() const
   { return (HASH_SET == set_algo_ || !is_distinct_); }
-  //hash set 全部都是从left 建立hash表，0号孩子是block input
+  // hash set all are built from left, 0 child is block input
   virtual bool is_block_input(const int64_t child_idx) const override 
   {
     return HASH_SET == set_algo_ && 0 == child_idx && ObSelectStmt::UNION != get_set_op();

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_LOGSERVICE_LOG_LOG_BUFFER_
@@ -32,14 +36,13 @@ public:
   int init(const LSN &start_lsn);
   void reset();
   void destroy();
-
   //
-  // 功能: 将日志体填充到聚合buffer
+  // Function: Fill the log body into the aggregation buffer
   //
-  // @param [in] lsn, 聚合buffer中填充起始偏移量
-  // @param [in] data, 数据内容指针
-  // @param [in] data_len, 数据长度
-  // @param [in] cb, 回调对象指针
+  // @param [in] lsn, starting offset for filling in the aggregation buffer
+  // @param [in] data, data content pointer
+  // @param [in] data_len, data length
+  // @param [in] cb, callback object pointer
   //
   // return code:
   //      OB_SUCCESS
@@ -100,21 +103,21 @@ private:
             const char *data,
             const int64_t data_len);
 private:
-  // buffer起始位置对应的lsn
+  // buffer start position corresponding lsn
   LSN start_lsn_;
-  // buffer可复用起点对应的lsn, 与max_flushed_end_lsn预期最终是相等的.
-  // 所有更新max_flushed_end_lsn的逻辑都要考虑一并更新该值.
+  // buffer reusable start point corresponding lsn, which is expected to be equal to max_flushed_end_lsn eventually.
+  // All logic that updates max_flushed_end_lsn should also consider updating this value.
   LSN reuse_lsn_;
   // lock for truncate operation.
   mutable common::ObSpinLock truncate_lock_;
   // This field is used for recording the readable begin lsn.
   // It won't fallback.
   LSN readable_begin_lsn_;
-  // 分配的buffer size
+  // allocated buffer size
   int64_t reserved_buffer_size_;
-  // 当前可用的buffer size
+  // current available buffer size
   int64_t available_buffer_size_;
-  // buffer指针
+  // buffer pointer
   char *data_buf_;
   bool is_inited_;
 private:

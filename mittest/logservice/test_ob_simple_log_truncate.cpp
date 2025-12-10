@@ -1,16 +1,20 @@
 // owner: zjf225077
 // owner group: log
 
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define private public
@@ -116,13 +120,13 @@ TEST_F(TestObSimpleLogClusterTruncate, truncate_log)
   set_rpc_loss(leader_idx, follower_1, 50);
   // drop 50% packet from leader -> follower_4
   set_rpc_loss(leader_idx, follower_4, 90);
-  // follower_4 -> leader 单向断网, 阻断fetch log
+  // follower_4 -> leader one-way network disconnection, block fetch log
   block_net(follower_4, leader_idx, true);
-  // follower_1 -> leader 单向断网, 阻断fetch log
+  // follower_1 -> leader one-way network disconnection, block fetch log
   block_net(follower_1, leader_idx, true);
 
   PALF_LOG(INFO, "begin submit_log", K(leader_idx));
-  // 保证只有leader副本拥有日志
+  // Ensure only the leader replica has the log
   wanted_group_log_size = 1 * 1024 * 1024;
   log_count = 16;
   EXPECT_EQ(OB_SUCCESS, submit_log(leader, log_count, leader_idx, wanted_group_log_size));
@@ -130,7 +134,7 @@ TEST_F(TestObSimpleLogClusterTruncate, truncate_log)
   EXPECT_EQ(OB_ITER_END, read_log(leader));
 
   PALF_LOG(INFO, "before sleep 15s", K(leader_idx));
-  // election 自动切主
+  // election auto role switch
   sleep(15);
   int64_t new_leader_idx = 0;
   PalfHandleImplGuard new_leader;

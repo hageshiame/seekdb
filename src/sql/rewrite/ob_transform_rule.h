@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef _OCEANBASE_SQL_REWRITE_RULE_H
@@ -186,7 +190,7 @@ struct ObTransformerCtx
   // record cost based transformers
   uint64_t happened_cost_based_trans_;
   EqualSets equal_sets_;
-  //记录semi to inner改写中，代价竞争失败的semi info，避免下一轮迭代重复检查代价
+  // Record semi to inner rewrite where cost competition failed semi info, avoid duplicate cost check in next iteration
   ObSEArray<uint64_t, 8, common::ModulePageAllocator, true> ignore_semi_infos_;
   ObSEArray<ObSelectStmt*, 8, common::ModulePageAllocator, true> temp_table_ignore_stmts_;
   bool eval_cost_;  // mark whether the context is in the process of cost evaluation.
@@ -242,12 +246,12 @@ enum TRANSFORM_TYPE {
   SIMPLIFY_SUBQUERY             ,
   SIMPLIFY_WINFUNC              ,
   FASTMINMAX                    , // select min/max -> select order by limit 1
-  ELIMINATE_OJ                  , // 外连接消除
-  VIEW_MERGE                    , // 视图合并
-  WHERE_SQ_PULL_UP              , // where子查询 -> semi join
+  ELIMINATE_OJ                  , // outer join elimination
+  VIEW_MERGE                    , // view merge
+  WHERE_SQ_PULL_UP              , // where subquery -> semi join
   QUERY_PUSH_DOWN               , // push down limit
-  AGGR_SUBQUERY                 , // JA类型子查询改写
-  SIMPLIFY_SET                  , // set相关改写
+  AGGR_SUBQUERY                 , // JA type subquery rewrite
+  SIMPLIFY_SET                  , // set related rewrite
   PROJECTION_PRUNING            , // project pruning
   OR_EXPANSION                  , // or expansion
   WIN_MAGIC                     ,

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_PC
@@ -23,10 +27,10 @@ namespace sql
 void ObPsStmtItemRefAtomicOp::operator()(const PsStmtIdKV &entry)
 {
   if (NULL != entry.second) {
-    if (entry.second->check_erase_inc_ref_count()) {//已经被其他线程标记位
+    if (entry.second->check_erase_inc_ref_count()) {//has been marked by other threads
       callback_ret_ = OB_EAGAIN;
       LOG_INFO("element will be free, try again", K(entry), K(callback_ret_));
-    } else {//执行到该代码块时引用计数不会为0，因为operator()会受hashtable中的lock保护
+    } else {//When execution reaches this code block, the reference count will not be 0, because operator() is protected by the lock in the hashtable}
       callback_ret_ = OB_SUCCESS;
       stmt_item_ = entry.second;
     }
@@ -65,10 +69,10 @@ void ObPsStmtItemEraseAtomicOp::operator()(const PsStmtIdKV &entry)
 void ObPsStmtInfoRefAtomicOp::operator ()(const PsStmtInfoKV &entry)
 {
   if (NULL != entry.second) {
-    if (entry.second->check_erase_inc_ref_count()) {//已经被其他线程标记位
+    if (entry.second->check_erase_inc_ref_count()) {//has been marked by other threads
       callback_ret_ = OB_EAGAIN;
       LOG_INFO("element will be free, try again", K(entry), K(callback_ret_));
-    } else {//执行到该代码块时引用计数不会为0，因为operator()会受hashtable中的lock保护
+    } else {//When execution reaches this code block, the reference count will not be 0, because operator() is protected by the lock in the hashtable}
       callback_ret_ = OB_SUCCESS;
       stmt_info_ = entry.second;
     }

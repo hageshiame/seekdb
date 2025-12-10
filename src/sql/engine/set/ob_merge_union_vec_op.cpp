@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -529,7 +533,7 @@ int ObMergeUnionVecOp::do_strict_distinct_vectorize(ObOperator &child_op,
     }
   }
   //if curr_op has row convert to output, can not get next batch before return
-  // (compare_row == nullptr && compare_idx < 0)说明没有上一个store的row，也还没有输出行
+  // (compare_row == nullptr && compare_idx < 0) indicates that there is no previous store's row, and no output row has been produced yet
   bool is_first = (compare_row == nullptr && compare_idx < 0);
   if (OB_SUCC(ret) && !op_info.op_added_) {
     //if cannot find a bigger row, iter until end or find it
@@ -542,7 +546,7 @@ int ObMergeUnionVecOp::do_strict_distinct_vectorize(ObOperator &child_op,
         if (OB_FAIL(ret)) {
         } else if (OB_FAIL(distinct_for_batch(child_op, *op_info.child_op_brs_, is_first,
                 compare_expr, compare_idx, op_info.result_op_brs_))) {
-          // 在进行batch内去重的时候，就需要根据compare_idx进行判断，看last_row是从compactrow里面拿，还是从compare_expr里面拿
+          // When performing deduplication within a batch, you need to judge based on compare_idx whether last_row is taken from compactrow or from compare_expr
           LOG_WARN("distinct for batch failed", K(ret));
         }
         op_info.op_idx_ = 0;

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef _OB_MYSQL_ROW_H_
@@ -28,13 +32,13 @@ public:
 
 public:
   /**
-   * 将该行数据序列化成MySQL认识的格式，输出位置：buf + pos，执行后pos指向buf中第一个free的位置。
+   * Serialize this row of data into a format recognized by MySQL, output position: buf + pos, after execution pos points to the first free position in buf.
    *
-   * @param [in] buf 序列化以后输出的序列的空间
-   * @param [in] len buf的长度
-   * @param [out] pos 当前buf第一个free的位置
+   * @param [in] buf The space for the serialized output sequence
+   * @param [in] len Length of buf
+   * @param [out] pos Current first free position in buf
    *
-   * @return 成功返回OB_SUCCESS， 失败返回oceanbase error code
+   * @return Returns OB_SUCCESS on success, returns oceanbase error code on failure
    */
   int serialize(char *buf, const int64_t len, int64_t &pos) const;
   bool is_packed() const { return is_packed_; }

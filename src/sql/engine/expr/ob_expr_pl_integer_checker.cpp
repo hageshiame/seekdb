@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -85,7 +89,7 @@ int ObExprPLIntegerChecker::calc_result_type1(ObExprResType &type,
 {
   int ret = OB_SUCCESS;
   UNUSED(type_ctx);
-  // ExprPLIntegerChecker用来check pl中integer数据类型的结果合法性, 不会改变结果的数据类型
+  // ExprPLIntegerChecker is used to check the validity of the result of integer data type in pl, without changing the data type of the result
   type.reset();
   if (OB_FAIL(type.assign(type1))) {
     LOG_WARN("fail to assign ObExprResType", K(type1), K(ret));
@@ -129,7 +133,7 @@ int ObExprPLIntegerChecker::check_range(const T &obj, const ObObjType type, int6
                         static_cast<int64_t>(min), static_cast<int64_t>(max));                  \
     default: {                                                                                  \
     }                                                                                           \
-  } // TODO:@xiaofeng.lby, 这里应该需要处理 decimal int 类型，PL 相关
+  } // TODO:@xiaofeng.lby, here should need to handle decimal int type, PL related
   ObPLIntegerRange pls_range(range);
   if (pls_range.valid()) {
     CHECK_OVERFLOW(pls_range.get_lower(), pls_range.get_upper());
@@ -147,7 +151,7 @@ int ObExprPLIntegerChecker::calc(ObObj &result,
 {
   int ret = OB_SUCCESS;
   switch (pls_type) {
-    // SimpleInteger的溢出行为有差别, 如果溢出需要圆整下, 其他的直接校验
+    // SimpleInteger's overflow behavior differs, if it overflows, it needs to be rounded, otherwise, just validate
     case PL_SIMPLE_INTEGER: {
       int64_t v = 0;
       if (obj.is_integer_type()) {

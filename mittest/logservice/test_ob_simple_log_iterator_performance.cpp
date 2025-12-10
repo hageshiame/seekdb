@@ -1,16 +1,20 @@
 // owner: zjf225077
 // owner group: log
 
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define private public
@@ -24,8 +28,7 @@
 #include "log/ob_shared_log_utils.h"
 #endif
 #include "share/resource_manager/ob_resource_manager.h"       // ObResourceManager
-
-// 测试OSS需要设置如下几个环境变量
+// Testing OSS requires setting the following environment variables
 //export BUCKET=xxxx
 //export ENDPOINT=xxxx
 //export ACCESS_ID=xxxx
@@ -355,7 +358,7 @@ TEST_F(TestObSimpleLogSharedStorage, iterator_performance)
     EXPECT_EQ(OB_SUCCESS, create_paxos_group(id, create_scn, leader_idx, leader));
     const block_id_t start_block_id = 0;
     const block_id_t end_block_id = g_end_block_id;
-    // 上传g_end_block_id个文件到oss
+    // Upload g_end_block_id files to oss
     if (0 == strcmp(need_upload_blocks, "TRUE")) {
       EXPECT_EQ(OB_SUCCESS, upload_blocks(dst_tenant_id, dst_palf_id, log_dir, start_block_id, end_block_id));
     }
@@ -382,7 +385,7 @@ TEST_F(TestObSimpleLogSharedStorage, iterator_performance)
 //    EXPECT_EQ(OB_SUCCESS, create_paxos_group(id, create_scn, leader_idx, leader));
 //    const block_id_t start_block_id = 0;
 //    const block_id_t end_block_id = g_end_block_id;
-//    // 上传400个文件到oss
+//    // Upload 400 files to oss
 //    if (0 == strcmp(need_upload_blocks, "TRUE")) {
 //      EXPECT_EQ(OB_SUCCESS, upload_blocks(dst_tenant_id, dst_palf_id, src_dir_bmsql_array, start_block_id, end_block_id));
 //    }

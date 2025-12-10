@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -395,9 +399,9 @@ int ObDMLService::create_rowkey_check_hashset(int64_t estimate_row,
       int64_t match_rows = estimate_row > ObDMLBaseCtDef::MIN_ROWKEY_DISTINCT_BUCKET_NUM ?
                             estimate_row : ObDMLBaseCtDef::MIN_ROWKEY_DISTINCT_BUCKET_NUM;
       // 
-      // match_rows是优化器估行的结果，如果这个值很大，
-      // 直接创建有这么多bucket的hashmap会申请
-      // 不到内存，这里做了限制为64k，防止报内存不足的错误
+      // match_rows is the result of the optimizer's row estimation, if this value is very large,
+      // Directly creating a hashmap with so many buckets will allocate
+      // Not enough memory, here the limit is set to 64k to prevent out of memory errors
       const int64_t max_bucket_num = match_rows > ObDMLBaseCtDef::MAX_ROWKEY_DISTINCT_BUCKET_NUM ?
                               ObDMLBaseCtDef::MAX_ROWKEY_DISTINCT_BUCKET_NUM : match_rows;
       if (OB_FAIL(rowkey_dist_ctx->create(max_bucket_num,
@@ -1415,8 +1419,7 @@ int ObDMLService::split_upd_to_del_and_ins(const ObUpdCtDef &upd_ctdef,
                                                          upd_ctdef.trans_info_expr_,
                                                          old_row))) {
       LOG_WARN("delete row to das op failed", K(ret), K(upd_ctdef), K(upd_rtdef));
-    } else if (upd_ctdef.is_table_without_pk_ &&
-        old_tablet_loc != new_tablet_loc &&
+    } else if (((upd_ctdef.is_table_without_pk_ && old_tablet_loc != new_tablet_loc) || (upd_ctdef.is_vec_hnsw_index_vid_opt_)) &&
         OB_FAIL(set_update_hidden_pk(dml_rtctx.get_eval_ctx(),
                                      upd_ctdef,
                                      new_tablet_loc->tablet_id_))) {
@@ -1607,6 +1610,7 @@ int ObDMLService::init_dml_param(const ObDASDMLBaseCtDef &base_ctdef,
   dml_param.prelock_ = base_rtdef.prelock_;
   dml_param.is_batch_stmt_ = base_ctdef.is_batch_stmt_;
   dml_param.dml_allocator_ = &das_alloc;
+  dml_param.is_main_table_in_fts_ddl_ = base_ctdef.is_main_table_in_fts_ddl_;
   if (OB_FAIL(dml_param.snapshot_.assign(snapshot))) {
     LOG_WARN("assign snapshot fail", K(ret));
   }
@@ -2206,7 +2210,7 @@ int ObDMLService::parallel_submit_das_task(ObDMLRtCtx &dml_rtctx, ObDasAggregate
               K(dml_rtctx.get_das_task_memory_size()), K(dml_rtctx.get_das_parallel_task_size()));
     }
   } else if (dml_rtctx.das_ref_.get_parallel_type() == DAS_BLOCKING_PARALLEL) {
-    // 阻塞性提交，暂时不真正提交，但是会等到足够并行度的task数量才会真正全量提交
+    // Blocking submission, temporarily not committing, but will wait until there are enough parallel task numbers to truly submit all at once
     if (dml_rtctx.das_ref_.get_submitted_task_count() >= dml_rtctx.das_ref_.get_das_dop()) {
       LOG_INFO("submitted tasks reach dop", "submitted_cnt", dml_rtctx.das_ref_.get_submitted_task_count(),
           "das_dop", dml_rtctx.das_ref_.get_das_dop());
@@ -3003,8 +3007,7 @@ int ObDMLService::log_user_error_inner(
   }
   return ret;
 }
-
-// 找第一个发起fk cascading的祖先exec context。
+// Find the first ancestor exec context that initiates fk cascading.
 // The exec_ctx can be used to create hash set to perform duplicate rowkey check,
 // which is used to avoid delete or update same row mutiple times
 int ObDMLService::get_root_exec_ctx_for_fk_cascading(ObExecContext *ctx, ObExecContext* &needed_ctx)

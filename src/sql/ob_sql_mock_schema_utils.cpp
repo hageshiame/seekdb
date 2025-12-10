@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL
@@ -189,8 +193,8 @@ int ObSQLMockSchemaUtils::try_mock_partid(const share::schema::ObTableSchema *or
   } else if (!sql::ObSQLMockSchemaUtils::is_mock_table(org_table->get_table_id())) {
     // do nothing
   } else {
-    // mock schema请求一定在工作线程上执行，后台线程不会有is_mock_table一定是false
-    // 所以可以拿到上下文allocator
+    // mock schema request must be executed on the worker thread, background threads will always have is_mock_table as false
+    // So can get the context allocator
     ObIAllocator &allocator = THIS_WORKER.get_sql_arena_allocator();
     ObTableSchema *tmp_table = NULL;
     if (OB_FAIL(ObSchemaUtils::alloc_schema(allocator, *org_table, tmp_table))) {

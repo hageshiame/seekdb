@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SHARE_SCHEMA
@@ -194,7 +198,7 @@ int64_t ObTriggerInfo::get_convert_size() const
   "FUNCTION calc_when(%.*s IN %c%.*s%c%%ROWTYPE, %.*s IN %c%.*s%c%%ROWTYPE) RETURN BOOL;\n"
 #define SPEC_BEFORE_STMT \
   "PROCEDURE before_stmt;\n"
-// 在 instead of trigger 中, 第二个参数的第二个%.*s 传入的是 "IN", 其他情况传入的是 "IN OUT"
+// in instead of trigger, the second %.*s of the second parameter is passed as "IN", otherwise it is passed as "IN OUT"
 #define SPEC_BEFORE_ROW \
   "PROCEDURE before_row(:%.*s IN %c%.*s%c%%ROWTYPE, :%.*s %.*s %c%.*s%c%%ROWTYPE);\n"
 #define SPEC_AFTER_ROW \
@@ -226,7 +230,7 @@ int64_t ObTriggerInfo::get_convert_size() const
   "BEGIN\n" \
   "%.*s" \
   "END;\n"
-// 在 instead of trigger 中, 第二个参数的第二个%.*s 传入的是 "IN", 其他情况传入的是 "IN OUT"
+// in instead of trigger, the second %.*s of the second parameter is passed as "IN", otherwise it is passed as "IN OUT"
 #define BODY_BEFORE_ROW \
   "PROCEDURE before_row(:%.*s IN %c%.*s%c%%ROWTYPE, :%.*s %.*s %c%.*s%c%%ROWTYPE) IS\n" \
   "%.*s" \
@@ -708,7 +712,7 @@ void ObTriggerInfo::calc_package_source_size(const ObTriggerInfo &trigger_info,
       body_params_size += (STRLEN(AUTO_TRANS_DECALRE) + STRLEN(AUTO_TRANS_COMMIT));
     }
   } else if (is_ora) {
-    // instead trigger before row 第二个参数属性为 "IN", 其他类型trigger的属性为"IN OUT"
+    // instead trigger before row second parameter attribute is "IN", other type trigger attributes are "IN OUT"
     int64_t in_out_size = (trigger_info.is_instead_dml_type() 
                            || (trigger_info.is_compound_dml_type() && trigger_info.has_instead_row())) ? 2 : 6;
     spec_params_size = trigger_info.get_trigger_name().length() +

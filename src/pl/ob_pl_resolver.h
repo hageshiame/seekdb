@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SRC_PL_OB_PL_RESOLVER_H_
@@ -117,7 +121,7 @@ public:
   sql::ObResolverParams params_;
   bool is_prepare_protocol_;
   bool is_check_mode_;
-  bool is_sql_scope_; // 标识是否是由纯SQL语句过来的表达式解析请求
+  bool is_sql_scope_; // Indicates whether the expression parsing request comes from a pure SQL statement
   sql::ExternalParams *extern_param_info_;
   bool is_udt_udf_ctx_; // indicate this context is belong to a udt udf
   bool is_sync_package_var_;
@@ -197,9 +201,9 @@ public:
 
   private:
     ObArray<ObPLDeclareHandlerStmt::DeclareHandler> handler_stack_;
-    int64_t top_continue_; //handler_stack_里top continue的下标
-    int64_t top_notfound_level_; //第一个notfound的level，注意：这里不是handler_stack_的下标
-    int64_t top_warning_level_; //第一个warning的level，注意：这里不是handler_stack_的下标
+    int64_t top_continue_; //index of top continue in handler_stack_
+    int64_t top_notfound_level_; // the level of the first notfound, note: this is not the index of handler_stack_
+    int64_t top_warning_level_; // the level of the first warning, note: this is not the index of handler_stack_
   };
 
 public:
@@ -275,13 +279,13 @@ public:
 
 public:
   /**
-   * @brief 解析一个PL内部变量
-   * @param [in] node      - 变量的语法节点
-   * @param [in] ns  - PL的名字空间
-   * @param [in] expr_factory  - 表达式工厂
-   * @param [in] session_info  - session信息
-   * @param [out] expr  - 解析出的表达式
-   * @param [in] for_write  - 该变量是否是赋值的左值
+   * @brief Parse an internal variable of PL
+   * @param [in] node      - Syntax node of the variable
+   * @param [in] ns  - Namespace of PL
+   * @param [in] expr_factory  - Expression factory
+   * @param [in] session_info  - Session information
+   * @param [out] expr  - Parsed expression
+   * @param [in] for_write  - Whether this variable is the left value of assignment
    * @retval OB_SUCCESS execute success
    * @retval OB_SOME_ERROR special errno need to handle
    *
@@ -656,7 +660,7 @@ private:
                            ObPLCompileUnitAST &package_ast,
                            ObPLRoutineInfo *&routine_info,
                            bool is_udt_routine = false,
-                           bool resolve_routine_def = false); // 当前是否在resolve routine define
+                           bool resolve_routine_def = false); // Whether currently in resolve routine define
   int resolve_routine_block(const ObStmtNodeTree *parse_tree,
                             const ObPLRoutineInfo &routine_info,
                             ObPLFunctionAST &routine_ast);
@@ -1033,14 +1037,14 @@ private:
   sql::ObRawExprFactory expr_factory_;
   ObPLStmtFactory stmt_factory_;
   ObPLStmtBlock *current_block_;
-  int64_t current_level_; // 当前的block实际层数
+  int64_t current_level_; // The actual number of levels of the current block
   HandlerAnalyzer handler_analyzer_;
-  uint64_t arg_cnt_; // 对于匿名快用于表示总的question mark个数,对于routine用于表示入参个数
-  uint64_t question_mark_cnt_; // 表示解析到当前语句时question_mark_cnt_数目(不包含当前语句)
-  uint64_t next_user_defined_exception_id_; // 用户定义的ExceptionID, 从1开始递增
+  uint64_t arg_cnt_; // For anonymous blocks, used to indicate the total number of question marks; for routines, used to indicate the number of input parameters
+  uint64_t question_mark_cnt_; // indicates the number of question_mark_cnt_ parsed up to the current statement (excluding the current statement)
+  uint64_t next_user_defined_exception_id_; // User-defined ExceptionID, starting from 1 and incrementing
   sql::ObSequenceNamespaceChecker ob_sequence_ns_checker_; // check if an sequence is defined.
-  ObArray<int64_t> current_subprogram_path_; // 当前解析到的subprogram的寻址路径
-  ObArray<ObPLStmt *> goto_stmts_; // goto语句的索引，用来二次解析。
+  ObArray<int64_t> current_subprogram_path_; // The addressing path of the subprogram currently being parsed
+  ObArray<ObPLStmt *> goto_stmts_; // index of goto statements, used for secondary parsing.
   ObItemType item_type_;
   mutable uint64_t fast_check_status_times_;
 };

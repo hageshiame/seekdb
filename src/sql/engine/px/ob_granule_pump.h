@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OB_GRANULE_PUMP_H_
@@ -140,33 +144,34 @@ public :
   int64_t pump_version_;
   //-----end
 };
-
-// 引入 TaskSet 的概念，是为了处理一个 GI 下管多张表的场景。
+// Introduce the concept of TaskSet, which is to handle the scenario where multiple tables are managed under a single GI.
 //
-// 对于单表扫描来说，ObGITaskSet 中 partition_keys_ 等几个数组里，都只有一个元素
-// 对于 Partition Wise 的 N 表扫描（一个 GI 下挂多个 table）场景，ObGITaskSet 中 partition_keys_
-// 等几个数组里，有 N 个元素。
+// For single table scan, there is only one element in several arrays like partition_keys_ in ObGITaskSet
+// For the Partition Wise N-table scan (multiple tables hanging under one GI) scenario, partition_keys_ in ObGITaskSet
+// There are N elements in several arrays.
 class ObGITaskSet {
 public:
   struct ObGITaskInfo
   {
-    ObGITaskInfo() : tablet_loc_(nullptr), range_(), ss_range_(), idx_(0), hash_value_(0) {}
+    ObGITaskInfo() : tablet_loc_(nullptr), range_(), ss_range_(), idx_(0), hash_value_(0), granule_type_(OB_GRANULE_UNINITIALIZED) {}
     ObGITaskInfo(ObDASTabletLoc *tablet_loc,
                  const common::ObNewRange &range,
                  const common::ObNewRange &ss_range,
                  int64_t idx) :
-        tablet_loc_(tablet_loc), range_(range), ss_range_(ss_range), idx_(idx), hash_value_(0) {}
+        tablet_loc_(tablet_loc), range_(range), ss_range_(ss_range), idx_(idx), hash_value_(0), granule_type_(OB_GRANULE_UNINITIALIZED) {}
     TO_STRING_KV(KPC(tablet_loc_),
                  KP(tablet_loc_),
                  K(range_),
                  K(ss_range_),
                  K(idx_),
-                 K(hash_value_));
+                 K(hash_value_),
+                 K(granule_type_));
     ObDASTabletLoc *tablet_loc_;
     common::ObNewRange range_;
     common::ObNewRange ss_range_;
     int64_t idx_;
     uint64_t hash_value_;
+    ObGranuleType granule_type_;; // one partition one task when OB_PARTITION_GRANULE
   };
 
   enum ObGIRandomType
@@ -213,7 +218,7 @@ struct GITaskArrayItem
 
   TO_STRING_KV(K(tsc_op_id_), K(taskset_array_));
   // table scan operator id or insert op id
-  // TODO: jiangting.lk 先不修改变量名字，后期统一调整
+  // TODO: jiangting.lk Do not modify variable names for now, unify adjustments later
   uint64_t tsc_op_id_;
   // gi task set array
   ObGITaskArray taskset_array_;
@@ -302,8 +307,8 @@ class ObPartitionWiseGranuleSplitter : public ObGranuleSplitter
 public:
   ObPartitionWiseGranuleSplitter() = default;
   virtual ~ObPartitionWiseGranuleSplitter() = default;
-  // FULL PARITION WISE情况下的任务划分与其他类型的`spliter`有非常大的不同；普通的spliter仅仅需要考虑TSC，
-  // 但是PARTITION WISE情况下，有可能需要考虑DML（目前仅仅是INSERT)
+  // FULL PARTITION WISE situationtask division is very different from other types`spliter`very different；ordinaryspliteronly need to considerTSC，
+  // But PARTITION WISE case, it might be necessary to consider DML (currently only INSERT)
   int split_granule(ObGranulePumpArgs &args,
                     ObIArray<const ObTableScanSpec *> &scan_ops,
                     const ObTableModifySpec *modify_op,
@@ -312,8 +317,8 @@ public:
                     bool partition_granule = true);
 
 private:
-//  FULL PARTITION WISE划分任务的情况下，有可能需要对INSERT进行划分
-//  TSC的任务划分，直接使用`split_gi_task`方法
+// FULL PARTITION WISE partitioning tasks, there may be a need to partition INSERT
+//  TSC task division, directly use `split_gi_task` method
 int split_insert_gi_task(ObGranulePumpArgs &args,
                         const uint64_t insert_table_id,
                         const int64_t row_key_count,
@@ -423,7 +428,7 @@ public:
                          uint64_t tsc_op_id,
                          uint64_t fetched_task_cnt,
                          ObGranuleSplitterType splitter_type);
-  // 通过phy op ids获得其对应的gi tasks
+  // Obtain gi tasks corresponding to phy op ids
   int try_fetch_pwj_tasks(ObIArray<ObGranuleTaskInfo> &infos,
                           const ObIArray<int64_t> &op_ids,
                           int64_t worker_id,
@@ -527,7 +532,7 @@ private:
   int fill_shared_pool(ObGITaskSet &new_task_set, GITaskArrayItem &taskset_array_item);
 
 private:
-  //TODO::muhang 自旋锁还是阻塞锁，又或者按静态划分任务避免锁竞争？
+  //TODO::muhang spin lock or blocking lock, or divide tasks statically to avoid lock contention?
   common::ObSpinLock lock_;
   int64_t parallelism_;
   int64_t tablet_size_;

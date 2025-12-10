@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_EXE
@@ -59,7 +63,6 @@
 #include "sql/resolver/tcl/ob_start_trans_stmt.h"
 #include "sql/resolver/tcl/ob_end_trans_stmt.h"
 #include "sql/resolver/tcl/ob_savepoint_stmt.h"
-#include "sql/resolver/cmd/ob_bootstrap_stmt.h"
 #include "sql/resolver/cmd/ob_kill_stmt.h"
 #include "sql/resolver/cmd/ob_empty_query_stmt.h"
 #include "sql/resolver/cmd/ob_resource_stmt.h"
@@ -81,6 +84,8 @@
 #include "sql/resolver/cmd/ob_drop_restore_point_stmt.h"
 #include "sql/resolver/ddl/ob_create_directory_stmt.h"
 #include "sql/resolver/ddl/ob_drop_directory_stmt.h"
+#include "sql/resolver/ddl/ob_create_location_stmt.h"
+#include "sql/resolver/ddl/ob_drop_location_stmt.h"
 #include "sql/resolver/ddl/ob_create_ccl_rule_stmt.h"
 #include "sql/resolver/ddl/ob_drop_ccl_rule_stmt.h"
 #include "sql/engine/ob_exec_context.h"
@@ -107,6 +112,7 @@
 #include "sql/engine/cmd/ob_analyze_executor.h"
 #include "sql/engine/cmd/ob_udf_executor.h"
 #include "sql/engine/cmd/ob_load_data_executor.h"
+#include "sql/engine/cmd/ob_location_utils_executor.h"
 #include "sql/engine/cmd/ob_sequence_executor.h"
 #include "sql/engine/cmd/ob_role_cmd_executor.h"
 #include "sql/engine/cmd/ob_xa_executor.h"
@@ -119,6 +125,7 @@
 #include "observer/ob_server_event_history_table_operator.h"
 #include "observer/omt/ob_tenant.h"
 #include "sql/engine/cmd/ob_directory_executor.h"
+#include "sql/engine/cmd/ob_location_executor.h"
 #include "sql/resolver/dcl/ob_alter_role_stmt.h"
 #include "sql/resolver/ddl/ob_drop_context_resolver.h"
 #include "sql/engine/cmd/ob_context_executor.h"
@@ -173,7 +180,7 @@ int ObCmdExecutor::execute(ObExecContext &ctx, ObICmd &cmd)
       LOG_WARN("session is null", K(ret));
     } else if (stmt::T_VARIABLE_SET == static_cast<stmt::StmtType>(cmd.get_cmd_type())
         && !static_cast<ObVariableSetStmt*>(&cmd)->has_global_variable()) {
-      // 只有 set global variable 才是 DDL 操作，session 级别的 variable 变更不是 DDL
+      // Only set global variable is DDL operation, session level variable change is not DDL
       // do nothing
     } else {
       my_session->get_query_timeout(ori_query_timeout);
@@ -194,16 +201,16 @@ int ObCmdExecutor::execute(ObExecContext &ctx, ObICmd &cmd)
             my_session->get_query_start_time() + GCONF._ob_ddl_timeout);
       }
       if (OB_SUCC(ret)) {
-        // DDL 在向 RS 发 rpc 之前释放所持有的特定版本的 schema_mgr
-        // 避免在排队的 DDL 始终占用槽位导致 RS 正在处理的 DDL 没有新槽位可用而相互死锁的问题
+        // DDL release the specific version of schema_mgr held before sending rpc to RS
+        // Avoid the DDL in the queue always occupying slots causing the DDL being processed by RS to have no new slots available and resulting in a deadlock issue
         if (stmt::T_CREATE_OUTLINE == static_cast<stmt::StmtType>(cmd.get_cmd_type())
             || stmt::T_ALTER_OUTLINE == static_cast<stmt::StmtType>(cmd.get_cmd_type())
-          // create outline 和 alter outline 会在 execute 的时候继续使用 schema guard 生成逻辑计划
-          // reset 延后到 ObCreateOutlineExecutor::execute 和 ObAlterOutlineExecutor::execute 里进行
+          // create outline and alter outline will continue to use schema guard to generate logical plan at execute
+          // reset delay to ObCreateOutlineExecutor::execute and ObAlterOutlineExecutor::execute
             || (stmt::T_CREATE_TABLE == static_cast<stmt::StmtType>(cmd.get_cmd_type()))
-          // ctas 需要在 execute_ctas 中使用 ObCreateTableStmt 中的 ObSelectStmt 拼出类似于 insert into select 的语句
-          // 拼 SQL 过程中，ObSelectStmt 中的成员需要继续依赖从特定版本 schema guard 中获取的 schema
-          // reset 延后到 ObCreateTableExecutor::execute 和 ObCreateTableExecutor::execute_cta 里进行
+          // ctas needs to use ObSelectStmt in execute_ctas to construct a statement similar to insert into select
+          // During the SQL assembly process, the members of ObSelectStmt need to continue relying on the schema obtained from a specific version schema guard
+          // reset delay to ObCreateTableExecutor::execute and ObCreateTableExecutor::execute_cta inside
         ) {
         } else if (OB_FAIL(ctx.get_sql_ctx()->schema_guard_->reset())){
           LOG_WARN("schema_guard reset failed", K(ret));
@@ -529,10 +536,6 @@ int ObCmdExecutor::execute(ObExecContext &ctx, ObICmd &cmd)
       case stmt::T_SERVER_ACTION: {
         break;
       }
-      case stmt::T_BOOTSTRAP: {
-        DEFINE_EXECUTE_CMD(ObBootstrapStmt, ObBootstrapExecutor);
-        break;
-      }
       case stmt::T_ADMIN_ZONE: {
         DEFINE_EXECUTE_CMD(ObAdminZoneStmt, ObAdminZoneExecutor);
         break;
@@ -856,9 +859,7 @@ int ObCmdExecutor::execute(ObExecContext &ctx, ObICmd &cmd)
         } else if (OB_FAIL(ObParallelDDLControlMode::is_parallel_ddl_enable(
                            ObParallelDDLControlMode::SET_COMMENT, tenant_id, is_parallel_ddl))) {
           LOG_WARN("fail to get whether is parallel set comment", KR(ret), K(tenant_id));
-        } else if (!(data_version >= DATA_VERSION_4_3_5_0
-                     || (data_version >= DATA_VERSION_4_2_2_0 && data_version <= DATA_VERSION_4_3_0_0))
-                   || !is_parallel_ddl) {
+        } else if (!is_parallel_ddl) {
           DEFINE_EXECUTE_CMD(ObAlterTableStmt, ObAlterTableExecutor);
         } else {
           DEFINE_EXECUTE_CMD(ObAlterTableStmt, ObCommentExecutor);
@@ -979,6 +980,19 @@ int ObCmdExecutor::execute(ObExecContext &ctx, ObICmd &cmd)
       }
       case stmt::T_DROP_DIRECTORY: {
         DEFINE_EXECUTE_CMD(ObDropDirectoryStmt, ObDropDirectoryExecutor);
+        break;
+      }
+      case stmt::T_CREATE_LOCATION:
+      case stmt::T_ALTER_LOCATION: {
+        DEFINE_EXECUTE_CMD(ObCreateLocationStmt, ObCreateLocationExecutor);
+        break;
+      }
+      case stmt::T_DROP_LOCATION: {
+        DEFINE_EXECUTE_CMD(ObDropLocationStmt, ObDropLocationExecutor);
+        break;
+      }
+      case stmt::T_LOCATION_UTILS: {
+        DEFINE_EXECUTE_CMD(ObLocationUtilsStmt, ObLocationUtilsExecutor);
         break;
       }
       case stmt::T_BACKUP_BACKUPPIECE: {
@@ -1104,7 +1118,7 @@ int ObCmdExecutor::execute(ObExecContext &ctx, ObICmd &cmd)
   }
 
   if (is_ddl_or_dcl_stmt) {
-    // ddl/dcl 执行过程中修改了 session 的 query_timeout 和 trx_timeout，执行完需要还原回去
+    // ddl/dcl execution process modified the session's query_timeout and trx_timeout, need to restore after execution
     int tmp_ret = ret;
     ObObj ori_query_timeout_obj;
     ObObj ori_trx_timeout_obj;

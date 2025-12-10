@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX STORAGE
@@ -37,7 +41,7 @@ void ObServerCheckpointSlogHandler::ObWriteCheckpointTask::runTimerTask()
       LOG_WARN("fail to write checkpoint", K(ret));
     }
   } else {
-    // 必须等待所有的slog回放完成才能做ckpt,否则有些macro block可能没有被mark
+    // Must wait for all slog replays to complete before doing ckpt, otherwise some macro blocks may not be marked
     LOG_INFO("slog replay not finish, do not write checkpoint");
   }
 }
@@ -434,7 +438,7 @@ int ObServerCheckpointSlogHandler::replay_create_tenant_prepare(const char *buf,
     ret = OB_ERR_UNEXPECTED;
     LOG_ERROR("tenant create_status should be creating in prepare log", K(ret), K(meta));
   } else {
-    // 可能已经在快照中, 如果之后任然发现prepare日志, 以之后的为准，即使快照已经表明create commit
+    // May already be in the snapshot, if prepare log is found later, use the later one, even if the snapshot indicates create commit
     if (OB_FAIL(tenant_meta_map_for_replay_->set_refactored(meta.super_block_.tenant_id_, meta, 1))) {
       LOG_WARN("failed to set tenant meta map", K(ret), K(meta));
     }

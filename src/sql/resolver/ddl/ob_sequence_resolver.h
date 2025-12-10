@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef _OB_SQL_RESOLVER_DDL_SEQUENCE_RESOLVER_H_
@@ -27,11 +31,11 @@ namespace sql
 
 /**
 * Why use template instead of inheritance?
-* 如果使用这种继承关系：ObCreateSequenceResolver:ObSequenceResolver:ObStmtResolver
-* 则必须再写一个ObSequenceStmt类出来，形成下面的继承关系：
+* If using this inheritance relationship: ObCreateSequenceResolver:ObSequenceResolver:ObStmtResolver
+* then we must write another ObSequenceStmt class to form the following inheritance relationship:
 * ObCreateSequenceStmt:ObSequenceStmt:ObStmt
 * ObAlterSequenceStmt:ObSequenceStmt:ObStmt
-* 这么做太麻烦了，不简明，所以用模板的方式解决。
+* This is too cumbersome and not concise, so we use a template approach to solve it.
 */
 template<class T>
 class ObSequenceResolver {
@@ -74,15 +78,7 @@ int ObSequenceResolver<T>::resolve_sequence_options(uint64_t tenant_id, T *stmt,
           SQL_LOG(WARN, "resolve sequence option failed", K(ret));
         }
       }
-      // Fields used for upgrade compatibility, not user input
-      uint64_t compat_version = 0;
-      if (FAILEDx(GET_MIN_DATA_VERSION(tenant_id, compat_version))) {
-        LOG_WARN("fail to get data version", KR(ret), K(tenant_id));
-      } else if ((compat_version >= MOCK_DATA_VERSION_4_2_3_0
-                  && compat_version < DATA_VERSION_4_3_0_0)
-                 || (compat_version >= DATA_VERSION_4_3_2_0)) {
-        stmt->option().set_cache_order_mode(share::NEW_ACTION);
-      }
+      stmt->option().set_cache_order_mode(share::NEW_ACTION);
 
       // conflict check
       if (OB_SUCC(ret)) {
@@ -388,9 +384,8 @@ int ObSequenceResolver<T>::resolve_sequence_option(T *stmt, ParseNode *node)
   }
   return ret;
 }
-
-// 封这个接口主要是因为sequence有十几个属性，重复代码太多了，动一个约束就要动很多东西
-// 但是更好的去重复的方法可能是定义一个这样的数组？
+// Seal this interface mainly because sequence has dozens of attributes, there is too much duplicate code, changing one constraint requires changing many things
+// But a better way to remove duplicates might be to define such an array?
 // {sequence_option, option_dup_errno, option_func}
 // {INCREMENT_BY, OB_ERR_DUP_INCREMENT_BY_SPEC, set_increment_by}
 template<class T>

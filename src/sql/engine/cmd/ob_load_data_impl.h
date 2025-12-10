@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SQL_LOAD_DATA_IMPL_H_
@@ -108,8 +112,7 @@ private:
   common::ObSEArray<ObRawExpr *, 16> field_exprs_;
   int64_t sql_mode_;
 };
-
-//存储row_cnt行序列化的数据，每行的序列化数据是一个SEArray
+// Store row_cnt rows of serialized data, where each row's serialized data is an SEArray
 struct ObDataFrag : common::ObLink
 {
   ObDataFrag() = delete;
@@ -198,7 +201,7 @@ public:
 
 private:
   /**
-   * @brief 返回frag中第row_num行的起始位置
+   * @brief Return the starting position of the row_num row in frag
    */
   int rowoffset2pos(ObDataFrag *frag, int64_t row_num, int64_t &pos);
 
@@ -279,7 +282,7 @@ struct ObPartBufMgrHashInfo
 };
 
 //========================
-/*解决table location计算使用的内存无法释放问题*/
+/*Solve the memory release issue for table location calculation*/
 class ObAllocatorSwitch : public common::ObIAllocator
 {
 public:
@@ -570,7 +573,7 @@ OB_INLINE void ObCSVParser::handle_one_field(char *field_end_pos, bool has_escap
           && ((str_len == 1 && *cur_field_begin_pos_ == 'N' && has_escaped && cur_pos_ - cur_field_begin_pos_ == 2)
               || (formats_.enclose_char_ != INT64_MAX && !has_escaped
                   && str_len == 4 && 0 == MEMCMP(cur_field_begin_pos_, "NULL", 4)))) { 
-        //用一个特殊的flag表示;
+        // Use a special flag to indicate;
         values_in_line_.at(field_id_).assign_ptr(&ObLoadDataUtils::NULL_VALUE_FLAG, 1);
       } else {
         values_in_line_.at(field_id_).assign_ptr(cur_field_begin_pos_, str_len);

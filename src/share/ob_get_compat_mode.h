@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "lib/ob_define.h"
@@ -31,7 +35,7 @@ class ObCompatModeGetter
 {
 public:
   static ObCompatModeGetter &instance();
-  //对外提供全局函数接口
+  //Provide global function interface to external users
   static int get_tenant_mode(const uint64_t tenant_id, lib::Worker::CompatMode& mode);
   static int get_table_compat_mode(const uint64_t tenant_id, const int64_t table_id, lib::Worker::CompatMode& mode);
   static int get_tablet_compat_mode(const uint64_t tenant_id, const common::ObTabletID &tablet_id, lib::Worker::CompatMode& mode);
@@ -40,14 +44,14 @@ public:
              const uint64_t tenant_id,
              const int64_t table_id,
              bool &is_oracle_mode);
-  //初始化哈希表
+  //Initialize hash table
   int init(common::ObMySQLProxy *proxy);
   // Init for OBCDC
   //
   // Avoid relying on SQL when CDC consumes archive logs offline
-  //释放哈希表内存
+  //Release hash table memory
   void destroy();
-  //根据租户id,拿到租户系统变量的兼容性模式,第一次拿会发内部sql,以后直接从缓存中读取
+  //According to the tenant id, get the compatibility mode of the tenant system variables, the first time it will send an internal SQL, afterwards it will directly read from the cache
   int get_tenant_compat_mode(const uint64_t tenant_id, lib::Worker::CompatMode& mode);
   // only for unittest used
 

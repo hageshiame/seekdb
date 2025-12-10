@@ -1,16 +1,20 @@
 // owner: msy164651 
 // owner group: rs
 
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SHARE
@@ -52,7 +56,7 @@ TEST_F(TestLSStatusOperator, SQLProxy)
   sql.assign_fmt("select tenant_id, ls_id from oceanbase.__all_virtual_ls_status");
   ASSERT_EQ(OB_SUCCESS, ret);
   SMART_VAR(ObMySQLProxy::MySQLResult, res) {
-    //mysql proxy 指定cluster_id报错，指定本集群也报错，不指定可以查询
+    // mysql proxy specify cluster_id error, specify this cluster also error, not specify can query
     common::ObMySQLProxy &sql_proxy = get_curr_simple_server().get_sql_proxy2();
     ret = sql_proxy.read(res, sql.ptr());
     ASSERT_EQ(OB_SUCCESS, ret);
@@ -62,9 +66,7 @@ TEST_F(TestLSStatusOperator, SQLProxy)
     ASSERT_EQ(OB_NOT_SUPPORTED, ret);
     ret = sql_proxy.read(res, OB_INVALID_CLUSTER_ID, OB_SYS_TENANT_ID, sql.ptr());
     ASSERT_EQ(OB_NOT_SUPPORTED, ret);
-
-
-    //innser_sql不指定查询本集群，指定本集群查询本集群，指定非法报错
+    //inner_sql does not specify to query this cluster, specifies this cluster to query this cluster, specifies illegal to report an error
     common::ObMySQLProxy &inner_proxy = get_curr_simple_server().get_observer().get_mysql_proxy();
     ret = inner_proxy.read(res, sql.ptr());
     ASSERT_EQ(OB_SUCCESS, ret);
@@ -74,9 +76,7 @@ TEST_F(TestLSStatusOperator, SQLProxy)
     ASSERT_EQ(OB_SUCCESS, ret);
     ret = inner_proxy.read(res, OB_INVALID_CLUSTER_ID, OB_SYS_TENANT_ID, sql.ptr());
     ASSERT_EQ(OB_INVALID_ARGUMENT, ret);
-
-
-    //trans不能指定远程集群，在mysql proxy开启的事务
+    // trans cannot specify a remote cluster, in the transaction opened by mysql proxy
     ObMySQLTransaction trans;
     ret = trans.start(&sql_proxy, OB_SYS_TENANT_ID);
     ASSERT_EQ(OB_SUCCESS, ret);
@@ -97,9 +97,7 @@ TEST_F(TestLSStatusOperator, SQLProxy)
 
     ret = trans12.read(res, OB_INVALID_CLUSTER_ID, OB_SYS_TENANT_ID, sql.ptr());
     ASSERT_EQ(OB_NOT_SUPPORTED, ret);
-
-
-    //trans 在innser_sql上开启的事务
+    // Start transaction on innser_sql
     ObMySQLTransaction trans2;
     ret = trans2.start(&inner_proxy, OB_SYS_TENANT_ID);
     ASSERT_EQ(OB_SUCCESS, ret);
@@ -135,7 +133,7 @@ TEST_F(TestLSStatusOperator, LSLifeAgent)
   ObLSLifeAgentManager ls_life(get_curr_simple_server().get_observer().get_mysql_proxy());
   ObLSStatusOperator status_operator;
   ObLSStatusInfoArray ls_array;
-  //非法参数检查
+  // Illegal parameter check
   share::SCN create_scn;
   ObLSStatusInfo info;
   ObZone zone_priority("z1");
@@ -152,15 +150,13 @@ TEST_F(TestLSStatusOperator, LSLifeAgent)
   ret = ls_life.create_new_ls(info, create_scn, zone_priority.str(), share::NORMAL_SWITCHOVER_STATUS);
   ASSERT_EQ(OB_INVALID_ARGUMENT, ret);
   create_scn.set_min();
-
-  //创建新日志流
+  // Create new log stream
   ObLSID ls_id(1002);
   ret = info.init(tenant_id_, ls_id, 0, share::OB_LS_CREATING, 0, primary_zone, flag);
   ASSERT_EQ(OB_SUCCESS, ret);
   ret = ls_life.create_new_ls(info, create_scn, zone_priority.str(), share::NORMAL_SWITCHOVER_STATUS);
   ASSERT_EQ(OB_SUCCESS, ret);
-
-  //设置初始成员列表
+  // Set initial member list
   ObMemberList member_list;
   ObMember arb_member;
   common::GlobalLearnerList learner_list;
@@ -176,8 +172,7 @@ TEST_F(TestLSStatusOperator, LSLifeAgent)
   ret = status_operator.get_ls_init_member_list(tenant_id_, ls_id, new_list, new_status_info,
       get_curr_simple_server().get_observer().get_mysql_proxy(), arb_member, learner_list);
   ASSERT_EQ(OB_SUCCESS, ret);
-
-  //创建新日志流
+  // Create new log stream
   ObLSStatusInfo new_status_info2;
   ObLSID ls_id3(1003);
   ret = new_status_info2.init(tenant_id_, ls_id3, 0, share::OB_LS_CREATING, 0, primary_zone, flag);
@@ -198,19 +193,16 @@ TEST_F(TestLSStatusOperator, LSLifeAgent)
   ret = status_operator.get_ls_init_member_list(tenant_id_, ls_id3, new_list2, new_status_info3,
       get_curr_simple_server().get_observer().get_mysql_proxy(), arb_member3, learner_list3);
   ASSERT_EQ(OB_SUCCESS, ret);
-
-  //设置日志流offline的参数检查
+  // Set the parameter check for offline log stream
   share::SCN invalid_scn;
   ret = ls_life.set_ls_offline(tenant_id_, SYS_LS, share::OB_LS_DROPPING, invalid_scn, share::NORMAL_SWITCHOVER_STATUS);
   ASSERT_EQ(OB_INVALID_ARGUMENT, ret);
   ret = ls_life.set_ls_offline(tenant_id_, SYS_LS, share::OB_LS_NORMAL, share::SCN::min_scn(), share::NORMAL_SWITCHOVER_STATUS);
   ASSERT_EQ(OB_INVALID_ARGUMENT, ret);
-
-  //更新__all_ls_status表为空
+  // Update __all_ls_status table to empty
   ret = ls_life.set_ls_offline(tenant_id_, ls_id, share::OB_LS_DROPPING, share::SCN::min_scn(), share::NORMAL_SWITCHOVER_STATUS);
   ASSERT_EQ(OB_NEED_RETRY, ret);
-
-  //更新__all_ls_status表中1001日志流的状态
+  // Update the status of log stream 1001 in the __all_ls_status table
   ret = status_operator.update_ls_status(tenant_id_, ls_id, share::OB_LS_EMPTY, share::OB_LS_DROPPING, share::NORMAL_SWITCHOVER_STATUS, 
       get_curr_simple_server().get_observer().get_mysql_proxy());
   ASSERT_EQ(OB_INVALID_ARGUMENT, ret);
@@ -226,8 +218,7 @@ TEST_F(TestLSStatusOperator, LSLifeAgent)
   ASSERT_EQ(OB_SUCCESS, ret);
   ret = ls_life.set_ls_offline(tenant_id_, ls_id, share::OB_LS_NORMAL, share::SCN::min_scn(), share::NORMAL_SWITCHOVER_STATUS);
   ASSERT_EQ(OB_INVALID_ARGUMENT, ret);
-
-  //更新成dropping状态，才可以set_offline
+  // Update to dropping state, then can set_offline
   ret = status_operator.update_ls_status(tenant_id_, ls_id, share::OB_LS_NORMAL, share::OB_LS_DROPPING, share::NORMAL_SWITCHOVER_STATUS,
       get_curr_simple_server().get_observer().get_mysql_proxy());
   ASSERT_EQ(OB_SUCCESS, ret);
@@ -237,8 +228,7 @@ TEST_F(TestLSStatusOperator, LSLifeAgent)
   scn.convert_for_logservice(100);
   ret = ls_life.set_ls_offline(tenant_id_, ls_id, share::OB_LS_DROPPING, scn, share::NORMAL_SWITCHOVER_STATUS);
   ASSERT_EQ(OB_SUCCESS, ret);
-
-  //drop_ls，要等待sync等大于dropping
+  //drop_ls, need to wait for sync etc. to be greater than dropping
   ret = ls_life.drop_ls(tenant_id_, ls_id, share::NORMAL_SWITCHOVER_STATUS);
   ASSERT_EQ(OB_NEED_RETRY, ret);
   ObLSRecoveryStat recovery_stat;
@@ -256,10 +246,10 @@ TEST_F(TestLSStatusOperator, LSLifeAgent)
   scn.convert_for_logservice(100);
   share::SCN recovery_scn;
   recovery_scn.convert_for_logservice(98);
-  //readable scn 大于sync_scn 
+  // readable scn greater than sync_scn
   ret = recovery_stat.init_only_recovery_stat(tenant_id_, ls_id, scn, recovery_scn,config_version);
   ASSERT_EQ(OB_SUCCESS, ret);
-  //recovery_stat的取最大值
+  //get the maximum value of recovery_stat
   ret = recovery_op.update_ls_recovery_stat(recovery_stat, false, get_curr_simple_server().get_observer().get_mysql_proxy());
   ASSERT_EQ(OB_SUCCESS, ret);
 

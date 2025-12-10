@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2023 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
  
 #include <gtest/gtest.h>
@@ -506,13 +510,13 @@ TEST_F(TestXPath, test_good_path)
   ObArenaAllocator allocator(ObModIds::TEST);
   ObMulModeMemCtx* ctx = nullptr;
   ASSERT_EQ(ObXmlUtil::create_mulmode_tree_context(&allocator, ctx), OB_SUCCESS);
-  // 用于解析
+  // Used for parsing
   //ObString str0 = "/self::a/b/@c";
   ObString str0 = "/Grade/Format/list_Step[text() = \"' || B.GRADE || '\"]/@PD";
   std::cout<<str0.ptr()<<std::endl;
   ObString str1 = "/Grade/Format/list_Step[text() = \"' || B.GRADE || '\"]/@PD";
   ObPathParser test_path(ctx, ObParserType::PARSER_XML_PATH, str0, default_ns, nullptr);
-  // 解析
+  // Parse
   ret = test_path.parse_path();
   ASSERT_EQ(OB_SUCCESS, ret);
   // to_string
@@ -520,8 +524,7 @@ TEST_F(TestXPath, test_good_path)
   ret = test_path.to_string(buf);
   std::cout<<buf.ptr()<<std::endl;
   ASSERT_EQ(OB_SUCCESS, ret);
-  
-  // 验证是否相等 （ObSqlString直接相比会报错，因为没有重载==
+  // Verify if they are equal (ObSqlString direct comparison will cause an error because == is not overloaded)
   ObString str2(buf.ptr());
   ASSERT_EQ(str1, str2);
   std::cout<<"end test"<<std::endl;
@@ -530,7 +533,7 @@ TEST_F(TestXPath, test_good_path)
 ObString seek_element[2] = {"<title>Learning XML-first</title>", "<title>Learning XML-last</title>"};
 TEST_F(TestXPath, test_seek_element_by_tag) // tested
 {
-  // 用于解析
+  // Used for parsing
   ObString str0 = "bookstore/book/title";
   ObString xml_text("<bookstore><book><title>Learning XML-first</title><title>Learning XML-last</title></book></bookstore>");
   int ret = OB_SUCCESS;
@@ -542,7 +545,7 @@ TEST_F(TestXPath, test_seek_element_by_tag) // tested
   ASSERT_EQ(OB_SUCCESS, ret);
   ObXmlBin xbin(ctx);
   ASSERT_EQ(xbin.parse_tree(doc), 0);
-  // 用于解析
+  // Used for parsing
   std::cout<<str0.ptr()<<std::endl;
   ObString str1 = "bookstore/book/title";
   ObString default_ns;
@@ -554,7 +557,7 @@ TEST_F(TestXPath, test_seek_element_by_tag) // tested
   ASSERT_EQ(OB_SUCCESS, ret);
   ObPathExprIter pathiter(&allocator);
   pathiter.init(ctx,str0, default_ns, doc, &pass);
-  // 解析
+  // Parse
   ret = pathiter.open();
   ASSERT_EQ(OB_SUCCESS, ret);
   // to_string
@@ -562,8 +565,7 @@ TEST_F(TestXPath, test_seek_element_by_tag) // tested
   ret = pathiter.path_node_->node_to_string(buf);
   std::cout<<buf.ptr()<<std::endl;
   ASSERT_EQ(OB_SUCCESS, ret);
-  
-  // 验证是否相等 （ObSqlString直接相比会报错，因为没有重载==
+  // Verify if they are equal (ObSqlString direct comparison will cause an error because == is not overloaded)
   ObString str2(buf.ptr());
   ASSERT_EQ(str1, str2);
   std::cout<<"parse node successed, test eval node_begin:"<<std::endl;
@@ -615,7 +617,7 @@ ObString seek_ellipsis_case[23] = {"root","test1","test_start","a","a1","a2","a3
 "b12","b2","b21","b22","b3","b31","b32","c","c1","c2","c3","test_end","test2" };
 TEST_F(TestXPath, test_seek_ellipsis_case) // tested
 {
-  // 用于解析
+  // Used for parsing
   ObString str0 = "//text()";
   ObString xml_text("<root>root<test1>test1</test1><test>test_start"
     "<a>a<a1>a1</a1><a2>a2</a2><a3>a3</a3></a>"
@@ -633,7 +635,7 @@ TEST_F(TestXPath, test_seek_ellipsis_case) // tested
   ASSERT_EQ(OB_SUCCESS, ret);
   ObXmlBin xbin(ctx);
   ASSERT_EQ(xbin.parse_tree(doc), 0);
-  // 用于解析
+  // Used for parsing
   std::cout<<str0.ptr()<<std::endl;
   ObString str1 = "//text()";
   ObString default_ns;
@@ -645,7 +647,7 @@ TEST_F(TestXPath, test_seek_ellipsis_case) // tested
   ASSERT_EQ(OB_SUCCESS, ret);
   ObPathExprIter pathiter(&allocator);
   pathiter.init(ctx,str0, default_ns, doc, &pass);
-  // 解析
+  // Parse
   ret = pathiter.open();
   ASSERT_EQ(OB_SUCCESS, ret);
   // to_string
@@ -653,8 +655,7 @@ TEST_F(TestXPath, test_seek_ellipsis_case) // tested
   ret = pathiter.path_node_->node_to_string(buf);
   std::cout<<buf.ptr()<<std::endl;
   ASSERT_EQ(OB_SUCCESS, ret);
-  
-  // 验证是否相等 （ObSqlString直接相比会报错，因为没有重载==
+  // Verify if they are equal (ObSqlString direct comparison will cause an error because == is not overloaded)
   ObString str2(buf.ptr());
   ASSERT_EQ(str1, str2);
   std::cout<<"parse node successed, test eval node_begin:"<<std::endl;
@@ -704,7 +705,7 @@ TEST_F(TestXPath, test_seek_ellipsis_case) // tested
 ObString seek_suite_ellipsis[2] = {"name=\"b\"", "name=\"d\""};
 TEST_F(TestXPath, test_seek_suite_ellipsis) // tested
 {
-  // 用于解析
+  // Used for parsing
   set_compat_mode(oceanbase::lib::Worker::CompatMode::ORACLE);
   ObString str0 = "//@name";
   ObString xml_text("<root><a name=\"b\" age=\"18\"><c name=\"d\" age=\"1\"/></a></root>");
@@ -717,7 +718,7 @@ TEST_F(TestXPath, test_seek_suite_ellipsis) // tested
   ASSERT_EQ(OB_SUCCESS, ret);
   ObXmlBin xbin(ctx);
   ASSERT_EQ(xbin.parse_tree(doc), 0);
-  // 用于解析
+  // Used for parsing
   std::cout<<str0.ptr()<<std::endl;
   ObString str1 = "/descendant-or-self::node()/@name";
   ObString default_ns;
@@ -729,7 +730,7 @@ TEST_F(TestXPath, test_seek_suite_ellipsis) // tested
   ASSERT_EQ(OB_SUCCESS, ret);
   ObPathExprIter pathiter(&allocator);
   pathiter.init(ctx,str0, default_ns, doc, &pass);
-  // 解析
+  // Parse
   ret = pathiter.open();
   ASSERT_EQ(OB_SUCCESS, ret);
   // to_string
@@ -737,8 +738,7 @@ TEST_F(TestXPath, test_seek_suite_ellipsis) // tested
   ret = pathiter.path_node_->node_to_string(buf);
   std::cout<<buf.ptr()<<std::endl;
   ASSERT_EQ(OB_SUCCESS, ret);
-  
-  // 验证是否相等 （ObSqlString直接相比会报错，因为没有重载==
+  // Verify if they are equal (ObSqlString direct comparison will cause an error because == is not overloaded)
   ObString str2(buf.ptr());
   ASSERT_EQ(str1, str2);
   std::cout<<"parse node successed, test eval node_begin:"<<std::endl;
@@ -788,7 +788,7 @@ TEST_F(TestXPath, test_seek_suite_ellipsis) // tested
 ObString seek_suite_case[2] = {"b1=\"b1\""};
 TEST_F(TestXPath, test_seek_suite_case) // tested
 {
-  // 用于解析
+  // Used for parsing
   ObString str0 = "/a/h:b/@b1";
   ObString xml_text("<a xmlns=\"ns1\" xmlns:f=\"ns2\"><f:b b1=\"b1\" b2=\"b2\">bbb1</f:b><b b1=\"b1\" b2=\"b2\">bbb2</b></a>");
   int ret = OB_SUCCESS;
@@ -800,7 +800,7 @@ TEST_F(TestXPath, test_seek_suite_case) // tested
   ASSERT_EQ(OB_SUCCESS, ret);
   ObXmlBin xbin(ctx);
   ASSERT_EQ(xbin.parse_tree(doc), 0);
-  // 用于解析
+  // Used for parsing
   std::cout<<str0.ptr()<<std::endl;
   ObString str1 = "/ns1:a/ns2:b/@b1";
   ObString default_ns("ns1");
@@ -812,7 +812,7 @@ TEST_F(TestXPath, test_seek_suite_case) // tested
   ASSERT_EQ(OB_SUCCESS, ret);
   ObPathExprIter pathiter(&allocator);
   pathiter.init(ctx,str0, default_ns, doc, &pass);
-  // 解析
+  // Parse
   ret = pathiter.open();
   ASSERT_EQ(OB_SUCCESS, ret);
   // to_string
@@ -820,8 +820,7 @@ TEST_F(TestXPath, test_seek_suite_case) // tested
   ret = pathiter.path_node_->node_to_string(buf);
   std::cout<<buf.ptr()<<std::endl;
   ASSERT_EQ(OB_SUCCESS, ret);
-  
-  // 验证是否相等 （ObSqlString直接相比会报错，因为没有重载==
+  // Verify if they are equal (ObSqlString direct comparison will cause an error because == is not overloaded)
   ObString str2(buf.ptr());
   ASSERT_EQ(str1, str2);
   std::cout<<"parse node successed, test eval node_begin:"<<std::endl;
@@ -871,7 +870,7 @@ TEST_F(TestXPath, test_seek_suite_case) // tested
 ObString seek_suite_filter[1] = {"<a99>99</a99>"};
 TEST_F(TestXPath, test_seek_suite_filter) // tested
 {
-  // 用于解析
+  // Used for parsing
   ObString str0 = "s/a99[//text() > \"离开\"]";
   ObString xml_text("<s>离开景圆圆<a99>99</a99></s>");
   int ret = OB_SUCCESS;
@@ -883,7 +882,7 @@ TEST_F(TestXPath, test_seek_suite_filter) // tested
   ASSERT_EQ(OB_SUCCESS, ret);
   ObXmlBin xbin(ctx);
   ASSERT_EQ(xbin.parse_tree(doc), 0);
-  // 用于解析
+  // Used for parsing
   std::cout<<str0.ptr()<<std::endl;
   ObString str1 = "/s/a99[//text() > \"离开\"]";
   ObString default_ns;
@@ -895,7 +894,7 @@ TEST_F(TestXPath, test_seek_suite_filter) // tested
   ASSERT_EQ(OB_SUCCESS, ret);
   ObPathExprIter pathiter(&allocator);
   pathiter.init(ctx,str0, default_ns, doc, &pass);
-  // 解析
+  // Parse
   ret = pathiter.open();
   ASSERT_EQ(OB_SUCCESS, ret);
   // to_string
@@ -903,8 +902,7 @@ TEST_F(TestXPath, test_seek_suite_filter) // tested
   ret = pathiter.path_node_->node_to_string(buf);
   std::cout<<buf.ptr()<<std::endl;
   ASSERT_EQ(OB_SUCCESS, ret);
-  
-  // 验证是否相等 （ObSqlString直接相比会报错，因为没有重载==
+  // Verify if they are equal (ObSqlString direct comparison will cause an error because == is not overloaded)
   ObString str2(buf.ptr());
   ASSERT_EQ(str1, str2);
   std::cout<<"parse node successed, test eval node_begin:"<<std::endl;
@@ -954,7 +952,7 @@ TEST_F(TestXPath, test_seek_suite_filter) // tested
 ObString seek_suite_complex_filter[2] = {"<d>-100</d>", "<e>+2.33</e>"};
 TEST_F(TestXPath, test_seek_suite_complex_filter) // tested
 {
-  // 用于解析
+  // Used for parsing
   ObString str0 = "/a[//text() >= -100]/node()[./node() < 3]";
   ObString xml_text("<?xml version=\"1.0\" ?><a><b>aaa</b><d>-100</d><e>+2.33</e></a>");
   int ret = OB_SUCCESS;
@@ -966,7 +964,7 @@ TEST_F(TestXPath, test_seek_suite_complex_filter) // tested
   ASSERT_EQ(OB_SUCCESS, ret);
   ObXmlBin xbin(ctx);
   ASSERT_EQ(xbin.parse_tree(doc), 0);
-  // 用于比较
+  // Used for comparison
   std::cout<<str0.ptr()<<std::endl;
   ObString str1 = "/a[//text() >= -100]/node()[self::node()/node() < 3]";
   ObString default_ns;
@@ -978,7 +976,7 @@ TEST_F(TestXPath, test_seek_suite_complex_filter) // tested
   ASSERT_EQ(OB_SUCCESS, ret);
   ObPathExprIter pathiter(&allocator);
   pathiter.init(ctx,str0, default_ns, doc, &pass);
-  // 解析
+  // Parse
   ret = pathiter.open();
   ASSERT_EQ(OB_SUCCESS, ret);
   // to_string
@@ -986,8 +984,7 @@ TEST_F(TestXPath, test_seek_suite_complex_filter) // tested
   ret = pathiter.path_node_->node_to_string(buf);
   std::cout<<buf.ptr()<<std::endl;
   ASSERT_EQ(OB_SUCCESS, ret);
-  
-  // 验证是否相等 （ObSqlString直接相比会报错，因为没有重载==
+  // Verify if they are equal (ObSqlString direct comparison will cause an error because == is not overloaded)
   ObString str2(buf.ptr());
   ASSERT_EQ(str1, str2);
   std::cout<<"parse node successed, test eval node_begin:"<<std::endl;
@@ -1037,7 +1034,7 @@ TEST_F(TestXPath, test_seek_suite_complex_filter) // tested
 ObString seek_descendant_or_self_text[1] = {"bbb"};
 TEST_F(TestXPath, test_seek_descendant_or_self_text) // tested
 {
-  // 用于解析
+  // Used for parsing
   ObString str0 = "a/descendant-or-self::text()";
   ObString xml_text("<a><b b1=\"b1\" b2=\"b2\">bbb</b></a>");
   int ret = OB_SUCCESS;
@@ -1049,7 +1046,7 @@ TEST_F(TestXPath, test_seek_descendant_or_self_text) // tested
   ASSERT_EQ(OB_SUCCESS, ret);
   ObXmlBin xbin(ctx);
   ASSERT_EQ(xbin.parse_tree(doc), 0);
-  // 用于解析
+  // Used for parsing
   std::cout<<str0.ptr()<<std::endl;
   ObString str1 = "a/descendant-or-self::text()";
   ObString default_ns;
@@ -1061,7 +1058,7 @@ TEST_F(TestXPath, test_seek_descendant_or_self_text) // tested
   ASSERT_EQ(OB_SUCCESS, ret);
   ObPathExprIter pathiter(&allocator);
   pathiter.init(ctx,str0, default_ns, doc, &pass);
-  // 解析
+  // Parse
   ret = pathiter.open();
   ASSERT_EQ(OB_SUCCESS, ret);
   // to_string
@@ -1069,8 +1066,7 @@ TEST_F(TestXPath, test_seek_descendant_or_self_text) // tested
   ret = pathiter.path_node_->node_to_string(buf);
   std::cout<<buf.ptr()<<std::endl;
   ASSERT_EQ(OB_SUCCESS, ret);
-  
-  // 验证是否相等 （ObSqlString直接相比会报错，因为没有重载==
+  // Verify if they are equal (ObSqlString direct comparison will cause an error because == is not overloaded)
   ObString str2(buf.ptr());
   ASSERT_EQ(str1, str2);
   std::cout<<"parse node successed, test eval node_begin:"<<std::endl;
@@ -1129,7 +1125,7 @@ TEST_F(TestXPath, test_seek_all_element) // tested
   ASSERT_EQ(ObXmlUtil::create_mulmode_tree_context(&allocator, ctx), OB_SUCCESS);
   ret = ObXmlParserUtils::parse_document_text(ctx, xml_text, doc);
   ASSERT_EQ(OB_SUCCESS, ret);
-  // 用于解析
+  // Used for parsing
   ObString str0 = "bookstore/book/*";
   std::cout<<str0.ptr()<<std::endl;
   ObString str1 = "bookstore/book/*";
@@ -1142,7 +1138,7 @@ TEST_F(TestXPath, test_seek_all_element) // tested
   ASSERT_EQ(OB_SUCCESS, ret);
   ObPathExprIter pathiter(&allocator);
   pathiter.init(ctx,str0, default_ns, doc, &pass);
-  // 解析
+  // Parse
   ret = pathiter.open();
   ASSERT_EQ(OB_SUCCESS, ret);
   // to_string
@@ -1150,8 +1146,7 @@ TEST_F(TestXPath, test_seek_all_element) // tested
   ret = pathiter.path_node_->node_to_string(buf);
   std::cout<<buf.ptr()<<std::endl;
   ASSERT_EQ(OB_SUCCESS, ret);
-  
-  // 验证是否相等 （ObSqlString直接相比会报错，因为没有重载==
+  // Verify if they are equal (ObSqlString direct comparison will cause an error because == is not overloaded)
   ObString str2(buf.ptr());
   ASSERT_EQ(str1, str2);
   std::cout<<"parse node successed, test eval node_begin:"<<std::endl;
@@ -1187,7 +1182,7 @@ TEST_F(TestXPath, test_seek_ns_element) // to test
   ASSERT_EQ(ObXmlUtil::create_mulmode_tree_context(&allocator, ctx), OB_SUCCESS);
   ret = ObXmlParserUtils::parse_document_text(ctx, xml_text, doc);
   ASSERT_EQ(OB_SUCCESS, ret);
-  // 用于解析
+  // Used for parsing
   ObString str0 = "bookstore/a:book";
   std::cout<<str0.ptr()<<std::endl;
   ObString str1 = "bookstore/bbb:book";
@@ -1200,7 +1195,7 @@ TEST_F(TestXPath, test_seek_ns_element) // to test
   ASSERT_EQ(OB_SUCCESS, ret);
   ObPathExprIter pathiter(&allocator);
   pathiter.init(ctx,str0, default_ns, doc, &pass);
-  // 解析
+  // Parse
   ret = pathiter.open();
   ASSERT_EQ(OB_SUCCESS, ret);
   // to_string
@@ -1208,8 +1203,7 @@ TEST_F(TestXPath, test_seek_ns_element) // to test
   ret = pathiter.path_node_->node_to_string(buf);
   std::cout<<buf.ptr()<<std::endl;
   ASSERT_EQ(OB_SUCCESS, ret);
-  
-  // 验证是否相等 （ObSqlString直接相比会报错，因为没有重载==
+  // Verify if they are equal (ObSqlString direct comparison will cause an error because == is not overloaded)
   ObString str2(buf.ptr());
   ASSERT_EQ(str1, str2);
   std::cout<<"parse node successed, test eval node_begin:"<<std::endl;
@@ -1247,7 +1241,7 @@ TEST_F(TestXPath, test_seek_root) // tested
   ASSERT_EQ(ObXmlUtil::create_mulmode_tree_context(&allocator, ctx), OB_SUCCESS);
   ret = ObXmlParserUtils::parse_document_text(ctx, xml_text, doc);
   ASSERT_EQ(OB_SUCCESS, ret);
-  // 用于解析
+  // Used for parsing
   ObString str0 = "/";
   std::cout<<str0.ptr()<<std::endl;
   ObString str1 = "/";
@@ -1260,7 +1254,7 @@ TEST_F(TestXPath, test_seek_root) // tested
   ASSERT_EQ(OB_SUCCESS, ret);
   ObPathExprIter pathiter(&allocator);
   pathiter.init(ctx,str0, default_ns, doc, &pass);
-  // 解析
+  // Parse
   ret = pathiter.open();
   ASSERT_EQ(OB_SUCCESS, ret);
   // to_string
@@ -1268,8 +1262,7 @@ TEST_F(TestXPath, test_seek_root) // tested
   ret = pathiter.path_node_->node_to_string(buf);
   std::cout<<buf.ptr()<<std::endl;
   ASSERT_EQ(OB_SUCCESS, ret);
-  
-  // 验证是否相等 （ObSqlString直接相比会报错，因为没有重载==
+  // Verify if they are equal (ObSqlString direct comparison will cause an error because == is not overloaded)
   ObString str2(buf.ptr());
   ASSERT_EQ(str1, str2);
   std::cout<<"parse node successed, test eval node_begin:"<<std::endl;
@@ -1300,7 +1293,7 @@ TEST_F(TestXPath, test_seek_all_attribute) // to test
 {
   int ret = OB_SUCCESS;
   ObArenaAllocator allocator(ObModIds::TEST);
-  // 用于解析
+  // Used for parsing
   ObString str0 = "bookstore/book/@*";
   std::cout<<str0.ptr()<<std::endl;
   ObString str1 = "bookstore/book/@*";
@@ -1319,7 +1312,7 @@ TEST_F(TestXPath, test_seek_all_attribute) // to test
   ASSERT_EQ(OB_SUCCESS, ret);
   ObPathExprIter pathiter(&allocator);
   pathiter.init(ctx,str0, default_ns, doc, &pass);
-  // 解析
+  // Parse
   ret = pathiter.open();
   ASSERT_EQ(OB_SUCCESS, ret);
   // to_string
@@ -1327,8 +1320,7 @@ TEST_F(TestXPath, test_seek_all_attribute) // to test
   ret = pathiter.path_node_->node_to_string(buf);
   std::cout<<buf.ptr()<<std::endl;
   ASSERT_EQ(OB_SUCCESS, ret);
-  
-  // 验证是否相等 （ObSqlString直接相比会报错，因为没有重载==
+  // Verify if they are equal (ObSqlString direct comparison will cause an error because == is not overloaded)
   ObString str2(buf.ptr());
   ASSERT_EQ(str1, str2);
   std::cout<<"parse node successed, test eval node_begin:"<<std::endl;
@@ -1383,7 +1375,7 @@ TEST_F(TestXPath, test_seek_certain_attribute) // to test
 {
   int ret = OB_SUCCESS;
   ObArenaAllocator allocator(ObModIds::TEST);
-  // 用于解析
+  // Used for parsing
   ObString str0 = "bookstore/book/@lang";
   std::cout<<str0.ptr()<<std::endl;
   ObString str1 = "bookstore/book/@lang";
@@ -1402,7 +1394,7 @@ TEST_F(TestXPath, test_seek_certain_attribute) // to test
   ASSERT_EQ(OB_SUCCESS, ret);
   ObPathExprIter pathiter(&allocator);
   pathiter.init(ctx,str0, default_ns, doc, &pass);
-  // 解析
+  // Parse
   ret = pathiter.open();
   ASSERT_EQ(OB_SUCCESS, ret);
   // to_string
@@ -1410,8 +1402,7 @@ TEST_F(TestXPath, test_seek_certain_attribute) // to test
   ret = pathiter.path_node_->node_to_string(buf);
   std::cout<<buf.ptr()<<std::endl;
   ASSERT_EQ(OB_SUCCESS, ret);
-  
-  // 验证是否相等 （ObSqlString直接相比会报错，因为没有重载==
+  // Verify if they are equal (ObSqlString direct comparison will cause an error because == is not overloaded)
   ObString str2(buf.ptr());
   ASSERT_EQ(str1, str2);
   std::cout<<"parse node successed, test eval node_begin:"<<std::endl;
@@ -1474,7 +1465,7 @@ TEST_F(TestXPath, test_seek_ns_attribute) // to test
   ASSERT_EQ(ObXmlUtil::create_mulmode_tree_context(&allocator, ctx), OB_SUCCESS);
   ret = ObXmlParserUtils::parse_document_text(ctx, xml_text, doc);
   ASSERT_EQ(OB_SUCCESS, ret);
-  // 用于解析
+  // Used for parsing
   ObString str0 = "bookstore/book/@a:lang";
   std::cout<<str0.ptr()<<std::endl;
   ObString str1 = "bookstore/book/@bbb:lang";
@@ -1487,7 +1478,7 @@ TEST_F(TestXPath, test_seek_ns_attribute) // to test
   ASSERT_EQ(OB_SUCCESS, ret);
   ObPathExprIter pathiter(&allocator);
   pathiter.init(ctx,str0, default_ns, doc, &pass);
-  // 解析
+  // Parse
   ret = pathiter.open();
   ASSERT_EQ(OB_SUCCESS, ret);
   // to_string
@@ -1495,8 +1486,7 @@ TEST_F(TestXPath, test_seek_ns_attribute) // to test
   ret = pathiter.path_node_->node_to_string(buf);
   std::cout<<buf.ptr()<<std::endl;
   ASSERT_EQ(OB_SUCCESS, ret);
-  
-  // 验证是否相等 （ObSqlString直接相比会报错，因为没有重载==
+  // Verify if they are equal (ObSqlString direct comparison will cause an error because == is not overloaded)
   ObString str2(buf.ptr());
   ASSERT_EQ(str1, str2);
   std::cout<<"parse node successed, test eval node_begin:"<<std::endl;
@@ -1556,7 +1546,7 @@ TEST_F(TestXPath, test_seek_node) // tested
   ASSERT_EQ(ObXmlUtil::create_mulmode_tree_context(&allocator, ctx), OB_SUCCESS);
   ret = ObXmlParserUtils::parse_document_text(ctx, xml_text, doc);
   ASSERT_EQ(OB_SUCCESS, ret);
-  // 用于解析
+  // Used for parsing
   ObString str0 = "bookstore/node()";
   std::cout<<str0.ptr()<<std::endl;
   ObString str1 = "bookstore/node()";
@@ -1569,7 +1559,7 @@ TEST_F(TestXPath, test_seek_node) // tested
   ASSERT_EQ(OB_SUCCESS, ret);
   ObPathExprIter pathiter(&allocator);
   pathiter.init(ctx,str0, default_ns, doc, &pass);
-  // 解析
+  // Parse
   ret = pathiter.open();
   ASSERT_EQ(OB_SUCCESS, ret);
   // to_string
@@ -1577,8 +1567,7 @@ TEST_F(TestXPath, test_seek_node) // tested
   ret = pathiter.path_node_->node_to_string(buf);
   std::cout<<buf.ptr()<<std::endl;
   ASSERT_EQ(OB_SUCCESS, ret);
-  
-  // 验证是否相等 （ObSqlString直接相比会报错，因为没有重载==
+  // Verify if they are equal (ObSqlString direct comparison will cause an error because == is not overloaded)
   ObString str2(buf.ptr());
   ASSERT_EQ(str1, str2);
   std::cout<<"parse node successed, test eval node_begin:"<<std::endl;
@@ -1615,7 +1604,7 @@ TEST_F(TestXPath, test_seek_text) // tested
   ASSERT_EQ(ObXmlUtil::create_mulmode_tree_context(&allocator, ctx), OB_SUCCESS);
   ret = ObXmlParserUtils::parse_document_text(ctx, xml_text, doc);
   ASSERT_EQ(OB_SUCCESS, ret);
-  // 用于解析
+  // Used for parsing
   ObString str0 = "bookstore/book/text()";
   std::cout<<str0.ptr()<<std::endl;
   ObString str1 = "bookstore/book/text()";
@@ -1628,7 +1617,7 @@ TEST_F(TestXPath, test_seek_text) // tested
   ASSERT_EQ(OB_SUCCESS, ret);
   ObPathExprIter pathiter(&allocator);
   pathiter.init(ctx,str0, default_ns, doc, &pass);
-  // 解析
+  // Parse
   ret = pathiter.open();
   ASSERT_EQ(OB_SUCCESS, ret);
   // to_string
@@ -1636,8 +1625,7 @@ TEST_F(TestXPath, test_seek_text) // tested
   ret = pathiter.path_node_->node_to_string(buf);
   std::cout<<buf.ptr()<<std::endl;
   ASSERT_EQ(OB_SUCCESS, ret);
-  
-  // 验证是否相等 （ObSqlString直接相比会报错，因为没有重载==
+  // Verify if they are equal (ObSqlString direct comparison will cause an error because == is not overloaded)
   ObString str2(buf.ptr());
   ASSERT_EQ(str1, str2);
   std::cout<<"parse node successed, test eval node_begin:"<<std::endl;
@@ -1673,7 +1661,7 @@ TEST_F(TestXPath, test_seek_comment) // tested
   ASSERT_EQ(ObXmlUtil::create_mulmode_tree_context(&allocator, ctx), OB_SUCCESS);
   ret = ObXmlParserUtils::parse_document_text(ctx, xml_text, doc);
   ASSERT_EQ(OB_SUCCESS, ret);
-  // 用于解析
+  // Used for parsing
   ObString str0 = "bookstore/comment()";
   std::cout<<str0.ptr()<<std::endl;
   ObString str1 = "bookstore/comment()";
@@ -1686,7 +1674,7 @@ TEST_F(TestXPath, test_seek_comment) // tested
   ASSERT_EQ(OB_SUCCESS, ret);
   ObPathExprIter pathiter(&allocator);
   pathiter.init(ctx,str0, default_ns, doc, &pass);
-  // 解析
+  // Parse
   ret = pathiter.open();
   ASSERT_EQ(OB_SUCCESS, ret);
   // to_string
@@ -1694,8 +1682,7 @@ TEST_F(TestXPath, test_seek_comment) // tested
   ret = pathiter.path_node_->node_to_string(buf);
   std::cout<<buf.ptr()<<std::endl;
   ASSERT_EQ(OB_SUCCESS, ret);
-  
-  // 验证是否相等 （ObSqlString直接相比会报错，因为没有重载==
+  // Verify if they are equal (ObSqlString direct comparison will cause an error because == is not overloaded)
   ObString str2(buf.ptr());
   ASSERT_EQ(str1, str2);
   std::cout<<"parse node successed, test eval node_begin:"<<std::endl;
@@ -1731,7 +1718,7 @@ TEST_F(TestXPath, test_seek_pi_wildcard) // tested
   ASSERT_EQ(ObXmlUtil::create_mulmode_tree_context(&allocator, ctx), OB_SUCCESS);
   ret = ObXmlParserUtils::parse_document_text(ctx, xml_text, doc);
   ASSERT_EQ(OB_SUCCESS, ret);
-  // 用于解析
+  // Used for parsing
   ObString str0 = "bookstore/processing-instruction()";
   std::cout<<str0.ptr()<<std::endl;
   ObString str1 = "bookstore/processing-instruction()";
@@ -1744,7 +1731,7 @@ TEST_F(TestXPath, test_seek_pi_wildcard) // tested
   ASSERT_EQ(OB_SUCCESS, ret);
   ObPathExprIter pathiter(&allocator);
   pathiter.init(ctx,str0, default_ns, doc, &pass);
-  // 解析
+  // Parse
   ret = pathiter.open();
   ASSERT_EQ(OB_SUCCESS, ret);
   // to_string
@@ -1752,8 +1739,7 @@ TEST_F(TestXPath, test_seek_pi_wildcard) // tested
   ret = pathiter.path_node_->node_to_string(buf);
   std::cout<<buf.ptr()<<std::endl;
   ASSERT_EQ(OB_SUCCESS, ret);
-  
-  // 验证是否相等 （ObSqlString直接相比会报错，因为没有重载==
+  // Verify if they are equal (ObSqlString direct comparison will cause an error because == is not overloaded)
   ObString str2(buf.ptr());
   ASSERT_EQ(str1, str2);
   std::cout<<"parse node successed, test eval node_begin:"<<std::endl;
@@ -1789,7 +1775,7 @@ TEST_F(TestXPath, test_seek_certain_pi) // tested
   ASSERT_EQ(ObXmlUtil::create_mulmode_tree_context(&allocator, ctx), OB_SUCCESS);
   ret = ObXmlParserUtils::parse_document_text(ctx, xml_text, doc);
   ASSERT_EQ(OB_SUCCESS, ret);
-  // 用于解析
+  // Used for parsing
   ObString str0 = "bookstore/processing-instruction(\"price2\")";
   std::cout<<str0.ptr()<<std::endl;
   ObString str1 = "bookstore/processing-instruction(\"price2\")";
@@ -1802,7 +1788,7 @@ TEST_F(TestXPath, test_seek_certain_pi) // tested
   ASSERT_EQ(OB_SUCCESS, ret);
   ObPathExprIter pathiter(&allocator);
   pathiter.init(ctx,str0, default_ns, doc, &pass);
-  // 解析
+  // Parse
   ret = pathiter.open();
   ASSERT_EQ(OB_SUCCESS, ret);
   // to_string
@@ -1810,8 +1796,7 @@ TEST_F(TestXPath, test_seek_certain_pi) // tested
   ret = pathiter.path_node_->node_to_string(buf);
   std::cout<<buf.ptr()<<std::endl;
   ASSERT_EQ(OB_SUCCESS, ret);
-  
-  // 验证是否相等 （ObSqlString直接相比会报错，因为没有重载==
+  // Verify if they are equal (ObSqlString direct comparison will cause an error because == is not overloaded)
   ObString str2(buf.ptr());
   ASSERT_EQ(str1, str2);
   std::cout<<"parse node successed, test eval node_begin:"<<std::endl;
@@ -1848,7 +1833,7 @@ TEST_F(TestXPath, test_seek_default_ns_attribute)
   ASSERT_EQ(ObXmlUtil::create_mulmode_tree_context(&allocator, ctx), OB_SUCCESS);
   ret = ObXmlParserUtils::parse_document_text(ctx, xml_text, doc);
   ASSERT_EQ(OB_SUCCESS, ret);
-  // 用于解析
+  // Used for parsing
   ObString str0 = "/a/h:b/@b1";
   std::cout<<str0.ptr()<<std::endl;
   ObString str1 = "/ns1:a/ns2:b/@b1";
@@ -1861,7 +1846,7 @@ TEST_F(TestXPath, test_seek_default_ns_attribute)
   ASSERT_EQ(OB_SUCCESS, ret);
   ObPathExprIter pathiter(&allocator);
   pathiter.init(ctx,str0, default_ns, doc, &pass);
-  // 解析
+  // Parse
   ret = pathiter.open();
   ASSERT_EQ(OB_SUCCESS, ret);
   // to_string
@@ -1869,8 +1854,7 @@ TEST_F(TestXPath, test_seek_default_ns_attribute)
   ret = pathiter.path_node_->node_to_string(buf);
   std::cout<<buf.ptr()<<std::endl;
   ASSERT_EQ(OB_SUCCESS, ret);
-  
-  // 验证是否相等 （ObSqlString直接相比会报错，因为没有重载==
+  // Verify if they are equal (ObSqlString direct comparison will cause an error because == is not overloaded)
   ObString str2(buf.ptr());
   ASSERT_EQ(str1, str2);
   std::cout<<"parse node successed, test eval node_begin:"<<std::endl;
@@ -1913,7 +1897,7 @@ TEST_F(TestXPath, test_seek_self)
   ASSERT_EQ(ObXmlUtil::create_mulmode_tree_context(&allocator, ctx), OB_SUCCESS);
   ret = ObXmlParserUtils::parse_document_text(ctx, xml_text, doc);
   ASSERT_EQ(OB_SUCCESS, ret);
-  // 用于解析
+  // Used for parsing
   ObString str0 = "/root/*/b/*/self::*";
   std::cout<<str0.ptr()<<std::endl;
   ObString str1 = "/root/*/b/*/self::*";
@@ -1926,7 +1910,7 @@ TEST_F(TestXPath, test_seek_self)
   ASSERT_EQ(OB_SUCCESS, ret);
   ObPathExprIter pathiter(&allocator);
   pathiter.init(ctx,str0, default_ns, doc, &pass);
-  // 解析
+  // Parse
   ret = pathiter.open();
   ASSERT_EQ(OB_SUCCESS, ret);
   // to_string
@@ -1934,8 +1918,7 @@ TEST_F(TestXPath, test_seek_self)
   ret = pathiter.path_node_->node_to_string(buf);
   std::cout<<buf.ptr()<<std::endl;
   ASSERT_EQ(OB_SUCCESS, ret);
-  
-  // 验证是否相等 （ObSqlString直接相比会报错，因为没有重载==
+  // Verify if they are equal (ObSqlString direct comparison will cause an error because == is not overloaded)
   ObString str2(buf.ptr());
   ASSERT_EQ(str1, str2);
   std::cout<<"parse node successed, test eval node_begin:"<<std::endl;
@@ -1977,7 +1960,7 @@ TEST_F(TestXPath, test_seek_basic_descendant) // tested
   ASSERT_EQ(ObXmlUtil::create_mulmode_tree_context(&allocator, ctx), OB_SUCCESS);
   ret = ObXmlParserUtils::parse_document_text(ctx, xml_text, doc);
   ASSERT_EQ(OB_SUCCESS, ret);
-  // 用于解析
+  // Used for parsing
   // '/descendant::node()/*'
   ObString str0 = "root/*/b/b1/descendant::*";
   std::cout<<str0.ptr()<<std::endl;
@@ -1991,7 +1974,7 @@ TEST_F(TestXPath, test_seek_basic_descendant) // tested
   ASSERT_EQ(OB_SUCCESS, ret);
   ObPathExprIter pathiter(&allocator);
   pathiter.init(ctx,str0, default_ns, doc, &pass);
-  // 解析
+  // parse
   ret = pathiter.open();
   ASSERT_EQ(OB_SUCCESS, ret);
   // to_string
@@ -2000,7 +1983,7 @@ TEST_F(TestXPath, test_seek_basic_descendant) // tested
   std::cout<<buf.ptr()<<std::endl;
   ASSERT_EQ(OB_SUCCESS, ret);
   
-  // 验证是否相等 （ObSqlString直接相比会报错，因为没有重载==
+  // verify equality (ObSqlString direct comparison will error because == is not overloaded)
   ObString str2(buf.ptr());
   ASSERT_EQ(str1, str2);
   std::cout<<"parse node successed, test eval node_begin:"<<std::endl;
@@ -2042,7 +2025,7 @@ TEST_F(TestXPath, test_seek_descendant) // tested
   ASSERT_EQ(ObXmlUtil::create_mulmode_tree_context(&allocator, ctx), OB_SUCCESS);
   ret = ObXmlParserUtils::parse_document_text(ctx, xml_text, doc);
   ASSERT_EQ(OB_SUCCESS, ret);
-  // 用于解析
+  // used for parsing
   // root/*/b/descendant::*/node()/text()
   ObString str0 = "root/*/b/descendant::*/node()/text()";
   std::cout<<str0.ptr()<<std::endl;
@@ -2056,7 +2039,7 @@ TEST_F(TestXPath, test_seek_descendant) // tested
   ASSERT_EQ(OB_SUCCESS, ret);
   ObPathExprIter pathiter(&allocator);
   pathiter.init(ctx,str0, default_ns, doc, &pass);
-  // 解析
+  // Parse
   ret = pathiter.open();
   ASSERT_EQ(OB_SUCCESS, ret);
   // to_string
@@ -2064,8 +2047,7 @@ TEST_F(TestXPath, test_seek_descendant) // tested
   ret = pathiter.path_node_->node_to_string(buf);
   std::cout<<buf.ptr()<<std::endl;
   ASSERT_EQ(OB_SUCCESS, ret);
-  
-  // 验证是否相等 （ObSqlString直接相比会报错，因为没有重载==
+  // Verify if they are equal (ObSqlString direct comparison will cause an error because == is not overloaded)
   ObString str2(buf.ptr());
   ASSERT_EQ(str1, str2);
   std::cout<<"parse node successed, test eval node_begin:"<<std::endl;
@@ -2107,7 +2089,7 @@ TEST_F(TestXPath, test_seek_descendant_or_self) // tested
   ASSERT_EQ(ObXmlUtil::create_mulmode_tree_context(&allocator, ctx), OB_SUCCESS);
   ret = ObXmlParserUtils::parse_document_text(ctx, xml_text, doc);
   ASSERT_EQ(OB_SUCCESS, ret);
-  // 用于解析
+  // Used for parsing
   ObString str0 = "root/*/b/descendant-or-self::*/node()/text()";
   std::cout<<str0.ptr()<<std::endl;
   ObString str1 = "root/*/b/descendant-or-self::*/node()/text()";
@@ -2120,7 +2102,7 @@ TEST_F(TestXPath, test_seek_descendant_or_self) // tested
   ASSERT_EQ(OB_SUCCESS, ret);
   ObPathExprIter pathiter(&allocator);
   pathiter.init(ctx,str0, default_ns, doc, &pass);
-  // 解析
+  // Parse
   ret = pathiter.open();
   ASSERT_EQ(OB_SUCCESS, ret);
   // to_string
@@ -2128,8 +2110,7 @@ TEST_F(TestXPath, test_seek_descendant_or_self) // tested
   ret = pathiter.path_node_->node_to_string(buf);
   std::cout<<buf.ptr()<<std::endl;
   ASSERT_EQ(OB_SUCCESS, ret);
-  
-  // 验证是否相等 （ObSqlString直接相比会报错，因为没有重载==
+  // Verify if they are equal (ObSqlString direct comparison will cause an error because == is not overloaded)
   ObString str2(buf.ptr());
   ASSERT_EQ(str1, str2);
   std::cout<<"parse node successed, test eval node_begin:"<<std::endl;
@@ -2173,7 +2154,7 @@ TEST_F(TestXPath, test_seek_descendant_self_text) // tested
   ASSERT_EQ(ObXmlUtil::create_mulmode_tree_context(&allocator, ctx), OB_SUCCESS);
   ret = ObXmlParserUtils::parse_document_text(ctx, xml_text, doc);
   ASSERT_EQ(OB_SUCCESS, ret);
-  // 用于解析
+  // Used for parsing
   ObString str0 = "/descendant-or-self::node()/text()";
   std::cout<<str0.ptr()<<std::endl;
   ObString str1 = "/descendant-or-self::node()/text()";
@@ -2186,7 +2167,7 @@ TEST_F(TestXPath, test_seek_descendant_self_text) // tested
   ASSERT_EQ(OB_SUCCESS, ret);
   ObPathExprIter pathiter(&allocator);
   pathiter.init(ctx,str0, default_ns, doc, &pass);
-  // 解析
+  // Parse
   ret = pathiter.open();
   ASSERT_EQ(OB_SUCCESS, ret);
   // to_string
@@ -2194,8 +2175,7 @@ TEST_F(TestXPath, test_seek_descendant_self_text) // tested
   ret = pathiter.path_node_->node_to_string(buf);
   std::cout<<buf.ptr()<<std::endl;
   ASSERT_EQ(OB_SUCCESS, ret);
-  
-  // 验证是否相等 （ObSqlString直接相比会报错，因为没有重载==
+  // Verify if they are equal (ObSqlString direct comparison will cause an error because == is not overloaded)
   ObString str2(buf.ptr());
   ASSERT_EQ(str1, str2);
   std::cout<<"parse node successed, test eval node_begin:"<<std::endl;
@@ -2237,7 +2217,7 @@ TEST_F(TestXPath, test_seek_user_extract)
   ASSERT_EQ(ObXmlUtil::create_mulmode_tree_context(&allocator, ctx), OB_SUCCESS);
   ret = ObXmlParserUtils::parse_document_text(ctx, xml_text, doc);
   ASSERT_EQ(OB_SUCCESS, ret);
-  // 用于解析
+  // Used for parsing
   ObString str0 = "/Rule/Format";
   std::cout<<str0.ptr()<<std::endl;
   ObString str1 = "/Rule/Format";
@@ -2250,7 +2230,7 @@ TEST_F(TestXPath, test_seek_user_extract)
   ASSERT_EQ(OB_SUCCESS, ret);
   ObPathExprIter pathiter(&allocator);
   pathiter.init(ctx,str0, default_ns, doc, &pass);
-  // 解析
+  // Parse
   ret = pathiter.open();
   ASSERT_EQ(OB_SUCCESS, ret);
   // to_string
@@ -2258,8 +2238,7 @@ TEST_F(TestXPath, test_seek_user_extract)
   ret = pathiter.path_node_->node_to_string(buf);
   std::cout<<buf.ptr()<<std::endl;
   ASSERT_EQ(OB_SUCCESS, ret);
-  
-  // 验证是否相等 （ObSqlString直接相比会报错，因为没有重载==
+  // Verify if they are equal (ObSqlString direct comparison will cause an error because == is not overloaded)
   ObString str2(buf.ptr());
   ASSERT_EQ(str1, str2);
   std::cout<<"parse node successed, test eval node_begin:"<<std::endl;
@@ -2301,7 +2280,7 @@ TEST_F(TestXPath, test_seek_parent) // tested
   ASSERT_EQ(ObXmlUtil::create_mulmode_tree_context(&allocator, ctx), OB_SUCCESS);
   ret = ObXmlParserUtils::parse_document_text(ctx, xml_text, doc);
   ASSERT_EQ(OB_SUCCESS, ret);
-  // 用于解析
+  // Used for parsing
   ObString str0 = "root/*/b/b2/b22/parent::*";
   std::cout<<str0.ptr()<<std::endl;
   ObString str1 = "root/*/b/b2/b22/parent::*";
@@ -2314,7 +2293,7 @@ TEST_F(TestXPath, test_seek_parent) // tested
   ASSERT_EQ(OB_SUCCESS, ret);
   ObPathExprIter pathiter(&allocator);
   pathiter.init(ctx,str0, default_ns, doc, &pass);
-  // 解析
+  // Parse
   ret = pathiter.open();
   ASSERT_EQ(OB_SUCCESS, ret);
   // to_string
@@ -2322,8 +2301,7 @@ TEST_F(TestXPath, test_seek_parent) // tested
   ret = pathiter.path_node_->node_to_string(buf);
   std::cout<<buf.ptr()<<std::endl;
   ASSERT_EQ(OB_SUCCESS, ret);
-  
-  // 验证是否相等 （ObSqlString直接相比会报错，因为没有重载==
+  // Verify if they are equal (ObSqlString direct comparison will cause an error because == is not overloaded)
   ObString str2(buf.ptr());
   ASSERT_EQ(str1, str2);
   std::cout<<"parse node successed, test eval node_begin:"<<std::endl;
@@ -2389,7 +2367,7 @@ TEST_F(TestXPath, test_seek_parent_child) // tested
   ASSERT_EQ(ObXmlUtil::create_mulmode_tree_context(&allocator, ctx), OB_SUCCESS);
   ret = ObXmlParserUtils::parse_document_text(ctx, xml_text, doc);
   ASSERT_EQ(OB_SUCCESS, ret);
-  // 用于解析
+  // Used for parsing
   ObString str0 = "root/*/b/b2/b22/parent::*/node()";
   std::cout<<str0.ptr()<<std::endl;
   ObString str1 = "root/*/b/b2/b22/parent::*/node()";
@@ -2402,7 +2380,7 @@ TEST_F(TestXPath, test_seek_parent_child) // tested
   ASSERT_EQ(OB_SUCCESS, ret);
   ObPathExprIter pathiter(&allocator);
   pathiter.init(ctx,str0, default_ns, doc, &pass);
-  // 解析
+  // Parse
   ret = pathiter.open();
   ASSERT_EQ(OB_SUCCESS, ret);
   // to_string
@@ -2410,8 +2388,7 @@ TEST_F(TestXPath, test_seek_parent_child) // tested
   ret = pathiter.path_node_->node_to_string(buf);
   std::cout<<buf.ptr()<<std::endl;
   ASSERT_EQ(OB_SUCCESS, ret);
-  
-  // 验证是否相等 （ObSqlString直接相比会报错，因为没有重载==
+  // Verify if they are equal (ObSqlString direct comparison will cause an error because == is not overloaded)
   ObString str2(buf.ptr());
   ASSERT_EQ(str1, str2);
   std::cout<<"parse node successed, test eval node_begin:"<<std::endl;
@@ -2456,7 +2433,7 @@ TEST_F(TestXPath, test_seek_ancestor) // tested
   ASSERT_EQ(ObXmlUtil::create_mulmode_tree_context(&allocator, ctx), OB_SUCCESS);
   ret = ObXmlParserUtils::parse_document_text(ctx, xml_text, doc);
   ASSERT_EQ(OB_SUCCESS, ret);
-  // 用于解析
+  // Used for parsing
   ObString str0 = "root/*/b/b2/b22/ancestor::*";
   std::cout<<str0.ptr()<<std::endl;
   ObString str1 = "root/*/b/b2/b22/ancestor::*";
@@ -2469,7 +2446,7 @@ TEST_F(TestXPath, test_seek_ancestor) // tested
   ASSERT_EQ(OB_SUCCESS, ret);
   ObPathExprIter pathiter(&allocator);
   pathiter.init(ctx,str0, default_ns, doc, &pass);
-  // 解析
+  // Parse
   ret = pathiter.open();
   ASSERT_EQ(OB_SUCCESS, ret);
   // to_string
@@ -2477,8 +2454,7 @@ TEST_F(TestXPath, test_seek_ancestor) // tested
   ret = pathiter.path_node_->node_to_string(buf);
   std::cout<<buf.ptr()<<std::endl;
   ASSERT_EQ(OB_SUCCESS, ret);
-  
-  // 验证是否相等 （ObSqlString直接相比会报错，因为没有重载==
+  // Verify if they are equal (ObSqlString direct comparison will cause an error because == is not overloaded)
   ObString str2(buf.ptr());
   ASSERT_EQ(str1, str2);
   std::cout<<"parse node successed, test eval node_begin:"<<std::endl;
@@ -2546,7 +2522,7 @@ TEST_F(TestXPath, test_seek_ancestor_or_self) //tested
   ASSERT_EQ(ObXmlUtil::create_mulmode_tree_context(&allocator, ctx), OB_SUCCESS);
   ret = ObXmlParserUtils::parse_document_text(ctx, xml_text, doc);
   ASSERT_EQ(OB_SUCCESS, ret);
-  // 用于解析
+  // Used for parsing
   ObString str0 = "root/*/b/b2/b22/ancestor::*";
   std::cout<<str0.ptr()<<std::endl;
   ObString str1 = "root/*/b/b2/b22/ancestor::*";
@@ -2559,7 +2535,7 @@ TEST_F(TestXPath, test_seek_ancestor_or_self) //tested
   ASSERT_EQ(OB_SUCCESS, ret);
   ObPathExprIter pathiter(&allocator);
   pathiter.init(ctx,str0, default_ns, doc, &pass);
-  // 解析
+  // Parse
   ret = pathiter.open();
   ASSERT_EQ(OB_SUCCESS, ret);
   // to_string
@@ -2567,8 +2543,7 @@ TEST_F(TestXPath, test_seek_ancestor_or_self) //tested
   ret = pathiter.path_node_->node_to_string(buf);
   std::cout<<buf.ptr()<<std::endl;
   ASSERT_EQ(OB_SUCCESS, ret);
-  
-  // 验证是否相等 （ObSqlString直接相比会报错，因为没有重载==
+  // Verify if they are equal (ObSqlString direct comparison will cause an error because == is not overloaded)
   ObString str2(buf.ptr());
   ASSERT_EQ(str1, str2);
   std::cout<<"parse node successed, test eval node_begin:"<<std::endl;
@@ -2608,7 +2583,7 @@ TEST_F(TestXPath, test_seek_root_ancestor) // tested
   ASSERT_EQ(ObXmlUtil::create_mulmode_tree_context(&allocator, ctx), OB_SUCCESS);
   ret = ObXmlParserUtils::parse_document_text(ctx, xml_text, doc);
   ASSERT_EQ(OB_SUCCESS, ret);
-  // 用于解析
+  // Used for parsing
   ObString str0 = "root/ancestor::*";
   std::cout<<str0.ptr()<<std::endl;
   ObString str1 = "root/ancestor::*";
@@ -2621,7 +2596,7 @@ TEST_F(TestXPath, test_seek_root_ancestor) // tested
   ASSERT_EQ(OB_SUCCESS, ret);
   ObPathExprIter pathiter(&allocator);
   pathiter.init(ctx, str0, default_ns, doc, &pass);
-  // 解析
+  // Parse
   ret = pathiter.open();
   ASSERT_EQ(OB_SUCCESS, ret);
   // to_string
@@ -2629,8 +2604,7 @@ TEST_F(TestXPath, test_seek_root_ancestor) // tested
   ret = pathiter.path_node_->node_to_string(buf);
   std::cout<<buf.ptr()<<std::endl;
   ASSERT_EQ(OB_SUCCESS, ret);
-  
-  // 验证是否相等 （ObSqlString直接相比会报错，因为没有重载==
+  // Verify if they are equal (ObSqlString direct comparison will cause an error because == is not overloaded)
   ObString str2(buf.ptr());
   ASSERT_EQ(str1, str2);
   std::cout<<"parse node successed, test eval node_begin:"<<std::endl;
@@ -2657,7 +2631,7 @@ TEST_F(TestXPath, test_seek_root_parent) // tested
   ASSERT_EQ(ObXmlUtil::create_mulmode_tree_context(&allocator, ctx), OB_SUCCESS);
   ret = ObXmlParserUtils::parse_document_text(ctx, xml_text, doc);
   ASSERT_EQ(OB_SUCCESS, ret);
-  // 用于解析
+  // Used for parsing
   ObString str0 = "root/parent::*";
   std::cout<<str0.ptr()<<std::endl;
   ObString str1 = "root/parent::*";
@@ -2670,7 +2644,7 @@ TEST_F(TestXPath, test_seek_root_parent) // tested
   ASSERT_EQ(OB_SUCCESS, ret);
   ObPathExprIter pathiter(&allocator);
   pathiter.init(ctx,str0, default_ns, doc, &pass);
-  // 解析
+  // Parse
   ret = pathiter.open();
   ASSERT_EQ(OB_SUCCESS, ret);
   // to_string
@@ -2678,8 +2652,7 @@ TEST_F(TestXPath, test_seek_root_parent) // tested
   ret = pathiter.path_node_->node_to_string(buf);
   std::cout<<buf.ptr()<<std::endl;
   ASSERT_EQ(OB_SUCCESS, ret);
-  
-  // 验证是否相等 （ObSqlString直接相比会报错，因为没有重载==
+  // Verify if they are equal (ObSqlString direct comparison will cause an error because == is not overloaded)
   ObString str2(buf.ptr());
   ASSERT_EQ(str1, str2);
   std::cout<<"parse node successed, test eval node_begin:"<<std::endl;

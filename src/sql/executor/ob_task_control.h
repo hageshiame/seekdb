@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SQL_EXECUTOR_TASK_CONTROL_
@@ -59,16 +63,18 @@ public:
   TO_STRING_KV("tasks", tasks_);
 private:
   int get_task_by_state(common::ObIArray<ObTaskInfo *> &tasks, int state) const;
-  // 数组下标转换为可以存进queue中的void*指针
+  // Array index converted to void* pointer that can be stored in queue
   inline void *id_to_ptr(uint64_t id)
   {
-    // 由于queue中push一个NULL指针会报错，而数组下标一般从0开始，因此这里要改为从1开始
+    // Since pushing a NULL pointer into the queue will cause an error, and array indices generally start from 0, therefore, we need to change it to start from 1
     return reinterpret_cast<void*>(id + 1);
   }
-  // queue中取出的void*指针转换为数组下标
+  // queueinextract void*pointerconvert toarrayindex
+  // queueextract void* pointer converted to array index
+  // queue retrieved void* pointer converted to array index
   inline uint64_t ptr_to_id(void *ptr)
   {
-    // 指针转回来之后从1开始，而数组下标从0开始，因此减去1
+    // Pointer returns to start from 1, while array index starts from 0, therefore subtract 1
     return reinterpret_cast<uint64_t>(ptr) - 1;
   }
   DISALLOW_COPY_AND_ASSIGN(ObTaskControl);
@@ -76,9 +82,9 @@ private:
   common::ObSEArray<ObTaskInfo *, 2> tasks_;
   //  bool is_scan_job_;
   bool is_root_job_;
-  // 用于底层scan_task的发送
-  // 计划中一定不包含insert update delete等数据修改操作
-  // 仅仅是select/select for update。这种情况下可以考虑做分区级重试
+  // Used for sending the underlying scan_task
+  // The plan must not contain insert update delete etc data modification operations
+  // Just select/select for update. In this case, partition-level retry can be considered
   // 
   bool is_select_plan_;
 };

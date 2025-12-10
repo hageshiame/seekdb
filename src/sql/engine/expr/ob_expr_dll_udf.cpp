@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -53,12 +57,12 @@ ObExprDllUdf::~ObExprDllUdf()
 }
 
 /*
- * UDF的结果是强制性的，UDF的ret仅仅只有三种类型，分别是STRING，DOUBLE，LONG LONG。
- * 这里不存类型的推导。
- * UDF的输入则是可以是任何类型，
- * 比如select udf_sum(t1.c1) from t1
+ * The result of UDF is mandatory, and UDF's ret only has three types, which are STRING, DOUBLE, LONG LONG.
+ * There is no type inference here.
+ * The input to UDF can be any type,
+ * for example select udf_sum(t1.c1) from t1
  *     select udf_sum(t2.c1) from t2
- * t1.c1是varchar，t2.c1是int，只要udf_sum的执行函数里面写清楚执行逻辑即可。
+ * t1.c1 is varchar, t2.c1 is int, as long as the execution logic inside the udf_sum function is clearly written.
  * */
 int ObExprDllUdf::calc_result_typeN(ObExprResType &type,
                                     ObExprResType *types,
@@ -127,7 +131,7 @@ int ObExprDllUdf::init_udf(const common::ObIArray<ObRawExpr*> &param_exprs)
       // generate the sql expression
      // ObObj tmp_res;
      // ObNewRow empty_row;
-     // RowDesc row_desc; //空的行描述符，可计算的表达式，不需要行描述符
+     // RowDesc row_desc; // empty row descriptor, calculable expression, no need for row descriptor
      // ObSqlExpression *sql_expr = NULL;
      // ObExprGeneratorImpl expr_generator(expr_op_factory_, 0, 0, NULL, row_desc);
      // if (OB_FAIL(sql_expression_factory_.alloc(sql_expr))) {

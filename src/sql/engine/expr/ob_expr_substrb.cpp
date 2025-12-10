@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -72,7 +76,7 @@ int ObExprSubstrb::calc(ObString &res_str, const ObString &text,
       } else {
         MEMCPY(buf, text.ptr(), text_len);
         res_len = min(length, text_len - start);
-        // 标准Oracle会将非法的byte设置为空格
+        // Standard Oracle will set illegal byte to space
         if (OB_FAIL(handle_invalid_byte(buf, text_len, start, res_len, ' ', cs_type, false))) {
           LOG_WARN("handle invalid byte failed", K(start), K(res_len), K(cs_type));
         } else {
@@ -109,11 +113,11 @@ int ObExprSubstrb::handle_invalid_byte(char* ptr,
     }
 
     if (OB_SUCC(ret) && OB_UNLIKELY(len % mbminlen != 0)) {
-      // 防御性代码，防止hang
+      // Defensive code, prevent hang
       // eg: a -> '0061'
-      //     substrb(utf16_a, 2, 1), well_formed_len()方法认为'61'是一个合法的utf16字符
-      //     是不符合预期的，这是我们底层字符集函数的缺陷
-      //     由于不确定well_formed_len()是否有其他坑，这里进行防御，防止hang
+      //     substrb(utf16_a, 2, 1), well_formed_len() method considers '61' a legal utf16 character
+      //     is not as expected, this is a defect in our underlying character set function
+      //     Due to uncertainty about other pitfalls of well_formed_len(), a defense is performed here to prevent hang
       int64_t hex_len = 0;
       char hex_buf[1024] = {0}; // just print 512 bytes
       OZ(common::hex_print(ptr + start, len, hex_buf, sizeof(hex_buf), hex_len));

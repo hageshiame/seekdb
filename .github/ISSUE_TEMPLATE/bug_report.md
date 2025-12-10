@@ -1,8 +1,10 @@
 ---
-name: 🐞 Bug report
+name: "\U0001F41E Bug report"
 about: Create a report to help us improve
 title: "[Bug]: "
-labels: ["type: bug"]
+labels: 'type: bug'
+assignees: ''
+
 ---
 
 **Describe the bug**
@@ -11,9 +13,10 @@ labels: ["type: bug"]
 **Environment**
 <!-- Environment Details sometimes important -->
 - OS Version and CPU Arch(`uname -a`):
-  
+
 - OB Version(`LD_LIBRARY_PATH=../lib:$LD_LIBRARY_PATH ./observer -V`):
-  
+
+- Hardware resource(`cpu core/memory size/disk hardware`):
 
 **Fast Reproduce Steps(Required)**
 
@@ -23,7 +26,7 @@ Steps to reproduce the behavior:
 <!-- A clear and concise description of what you expected to happen. -->
 
 **Actual Behavior**
-<!-- What is the result? picture is allowed -->
+<!-- What is the result? Pictures are allowed -->
 
 **Additional context**
 <!-- Add any other context about the problem here. -->

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SERVER
@@ -92,7 +96,7 @@ int ObMPStmtSendLongData::process()
   int ret = OB_SUCCESS;
   ObSQLSessionInfo *sess = NULL;
   bool need_response_error = true;
-  bool async_resp_used = false; // 由事务提交线程异步回复客户端
+  bool async_resp_used = false; // Asynchronously reply to the client by the transaction commit thread
   int64_t query_timeout = 0;
   ObSMConnection *conn = get_conn();
 
@@ -216,10 +220,9 @@ int ObMPStmtSendLongData::process_send_long_data_stmt(ObSQLSessionInfo &session)
   ObThreadLogLevelUtils::init(session.get_log_id_level_map());
   ret = do_process(session);
   ObThreadLogLevelUtils::clear();
-
-  //对于tracelog的处理，不影响正常逻辑，错误码无须赋值给ret
+  //For the handling of tracelog, it does not affect the normal logic, and the error code does not need to be assigned to ret
   int tmp_ret = OB_SUCCESS;
-  //清空WARNING BUFFER
+  //Clear WARNING BUFFER
   tmp_ret = do_after_process(session, false);
   UNUSED(tmp_ret);
   return ret;
@@ -261,12 +264,11 @@ int ObMPStmtSendLongData::do_process(ObSQLSessionInfo &session)
     } else if (OB_FAIL(store_piece(session))) {
       exec_start_timestamp_ = ObTimeUtility::current_time();
     } else {
-      //监控项统计开始
+      //Monitoring item statistics start
       exec_start_timestamp_ = ObTimeUtility::current_time();
 
       session.set_current_execution_id(execution_id);
-
-      //监控项统计结束
+      //Monitoring item statistics end
       exec_end_timestamp_ = ObTimeUtility::current_time();
 
       // some statistics must be recorded for plan stat, even though sql audit disabled
@@ -294,7 +296,7 @@ int ObMPStmtSendLongData::do_process(ObSQLSessionInfo &session)
     // if diagnostic stmt execute successfully, it dosen't clear the warning message
     session.update_show_warnings_buf();
   } else {
-    session.set_show_warnings_buf(ret); // TODO: 挪个地方性能会更好，减少部分wb拷贝
+    session.set_show_warnings_buf(ret); // TODO: Move this to a better place, reduce some wb copy
   }
 
   if (enable_sql_audit) {

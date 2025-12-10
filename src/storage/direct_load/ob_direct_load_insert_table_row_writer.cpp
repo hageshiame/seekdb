@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2024 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 #define USING_LOG_PREFIX STORAGE
 
@@ -460,12 +464,12 @@ int ObDirectLoadInsertTableBatchRowStoreWriter::write(ObDirectLoadIStoreRowItera
         ret = OB_ERR_UNEXPECTED;
         LOG_WARN("unexpected datum row is null", KR(ret));
       }
-      // 有删除行的情况不走batch模式
+      // There are deleted lines, do not use batch mode
       else if (OB_UNLIKELY(datum_row->is_delete_)) {
         ret = OB_ERR_UNEXPECTED;
         LOG_WARN("unexpected delete row", KR(ret), KPC(datum_row));
       }
-      // 先处理lob列, 降低内存压力
+      // First process the lob column, reduce memory pressure
       else if (OB_FAIL(row_handler_.handle_row(const_cast<ObDirectLoadDatumRow &>(*datum_row), row_flag))) {
         LOG_WARN("fail to handle row", KR(ret), KPC(datum_row), K(row_flag));
       } else if (OB_FAIL(batch_rows_.append_row(*datum_row))) {

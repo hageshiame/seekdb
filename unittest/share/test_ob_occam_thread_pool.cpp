@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define UNITTEST_DEBUG
@@ -112,7 +116,7 @@ TEST_F(TestObOccamThreadPool, thread_pool_big_obj) {
 }
 
 TEST_F(TestObOccamThreadPool, queue_full) {
-  // 线程池里有两个线程，队列长度是2，只能同事容纳两个等待执行的任务
+  // The thread pool has two threads, the queue length is 2, and can only accommodate two waiting tasks simultaneously
   auto fun = []() { 
     this_thread::sleep_for(chrono::milliseconds(100));
     OB_LOG(DEBUG, "task done time", K(ObClockGenerator::getRealClock()));
@@ -122,19 +126,19 @@ TEST_F(TestObOccamThreadPool, queue_full) {
   vector<ObFuture<void>> results;
   ObFuture<void> result;
   // start commit task
-  ret = thread_pool->commit_task(result, fun);// 提交第一个任务
+  ret = thread_pool->commit_task(result, fun);// submit the first task
   ASSERT_EQ(ret, OB_SUCCESS);
   results.push_back(result);
-  ret = thread_pool->commit_task(result, fun); // 提交第二个任务
+  ret = thread_pool->commit_task(result, fun); // submit the second task
   ASSERT_EQ(ret, OB_SUCCESS);
   results.push_back(result);
   OB_LOG(DEBUG, "2", K(ObClockGenerator::getRealClock()));
-  this_thread::sleep_for(chrono::milliseconds(50));// 等待worker线程fetch任务，预期两个线程都把任务去出来了，现在任务队列空了
+  this_thread::sleep_for(chrono::milliseconds(50)); // wait for worker thread to fetch task, expect both threads to have taken out the tasks, now the task queue is empty
   // now all 2 threads are busy
-  ret = thread_pool->commit_task(result, fun);// 提交第三个任务
+  ret = thread_pool->commit_task(result, fun);// submit the third task
   ASSERT_EQ(ret, OB_SUCCESS);
   results.push_back(result);
-  ret = thread_pool->commit_task(result, fun);// 提交第四个任务
+  ret = thread_pool->commit_task(result, fun);// submit the fourth task
   ASSERT_EQ(ret, OB_SUCCESS);
   results.push_back(result);
   OB_LOG(DEBUG, "3", K(ObClockGenerator::getRealClock()));
@@ -202,14 +206,14 @@ vector<int64_t> run_all_without_thread_pool(vector<int64_t> &inputs)
 vector<int64_t> run_all_with_thread_pool(vector<int64_t> &inputs, ObOccamThreadPool &th_pool)
 {
   vector<int64_t> outputs;
-  // 拆分提交异步任务
+  // Split submission asynchronous task
   vector<ObFuture<int64_t>> futures;
   ObFuture<int64_t> future;
   for (auto &input : inputs) {
     th_pool.commit_task(future, task, input);
     futures.push_back(future);
   }
-  // 同步等待异步任务的结果
+  // Synchronous wait for the result of an asynchronous task
   int64_t *p_result;
   for (auto &future : futures) {
     future.get(p_result);

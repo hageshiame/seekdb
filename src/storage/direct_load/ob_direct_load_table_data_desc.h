@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 #pragma once
 
@@ -35,9 +39,9 @@ public:
   {
     struct
     {
-      bool uncontain_hidden_pk_ : 1; // 无主键表且数据不包含隐藏主键
-      bool has_delete_row_ : 1; // TODO: 后续维护这个flag
-      bool lob_id_only_; // 数据中只有lob_id
+      bool uncontain_hidden_pk_ : 1; // No primary key table and data does not contain hidden primary key
+      bool has_delete_row_ : 1; // TODO: maintain this flag later
+      bool lob_id_only_; // Data contains only lob_id
       int64_t reserved_ : 61;
     };
     int64_t flag_;
@@ -66,7 +70,7 @@ struct ObDirectLoadSampleMode
 struct ObDirectLoadTableDataDesc
 {
   static const int64_t DEFAULT_EXTRA_BUF_SIZE = (2LL << 20); // 2M
-  static const int64_t DEFAULT_ROWS_PER_SAMPLE = 10000; // 1w行采样1个
+  static const int64_t DEFAULT_ROWS_PER_SAMPLE = 10000; // 10,000 rows sample 1
 public:
   ObDirectLoadTableDataDesc();
   ~ObDirectLoadTableDataDesc();
@@ -85,8 +89,8 @@ public:
   int64_t extra_buf_size_;
   common::ObCompressorType compressor_type_;
   ObDirectLoadRowFlag row_flag_;
-  ObDirectLoadSampleMode::Type sample_mode_; // 采样模式
-  int64_t num_per_sample_; // 采样间隔
+  ObDirectLoadSampleMode::Type sample_mode_; // sampling mode
+  int64_t num_per_sample_; // sampling interval
 };
 
 } // namespace storage

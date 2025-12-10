@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 #define USING_LOG_PREFIX STORAGE
 
@@ -289,9 +293,9 @@ int ObDirectLoadMultipleSSTableBuilder::close()
     ret = OB_ERR_UNEXPECTED;
     LOG_WARN("multiple sstable builder is closed", KR(ret));
   } else {
-    // mark_close是为了在数据块采样模式能记录最后一个未填满的索引块的endkey
+    // mark_close is for recording the endkey of the last unfilled index block in data block sampling mode
     callback_.mark_close();
-    // 行采样模式记录最后一行的rowkey
+    // Row sampling mode records the rowkey of the last row
     if (ObDirectLoadSampleMode::is_row_sample(param_.table_data_desc_.sample_mode_) &&
         0 != data_block_writer_.get_item_count() % param_.table_data_desc_.num_per_sample_ &&
         OB_FAIL(rowkey_block_writer_.append_row(last_rowkey_))) {

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SERVER_OMT
@@ -917,7 +921,7 @@ void ObTenant::mark_tenant_is_removed()
 }
 
 ERRSIM_POINT_DEF(CREATE_MTL_MODULE_FAIL)
-// 初始化租户各子模块，保证初始化同步执行，因为依赖线程局部变量和栈上变量
+// Initialize tenant sub-modules, ensuring synchronous execution during initialization, because it depends on thread-local variables and stack variables
 int ObTenant::create_tenant_module()
 {
   int ret = OB_SUCCESS;
@@ -936,9 +940,9 @@ int ObTenant::create_tenant_module()
     LOG_ERROR("create_tenant_module failed because of tracepoint CREATE_MTL_MODULE_FAIL",
               K(tenant_id), K(ret));
   } else if (FALSE_IT(ObTenantEnv::set_tenant(this))) {
-    // 上面通过ObTenantSwitchGuard中会创建一个新的TenantBase线程局部变量，而不是存TenantBase的指针，
-    // 目的是通过MTL()访问时减少一次内存跳转，但是设置的时mtl模块的指针还是nullptr, 所以在mtl创建完成时
-    // 还需要设置一次。
+    // Above, a new TenantBase thread-local variable is created through ObTenantSwitchGuard, rather than storing a pointer to TenantBase,
+    // The purpose is to reduce one memory jump when accessing via MTL(), but the pointer set for the mtl module is still nullptr, so when the mtl creation is completed
+    // Still needs to be set once.
   } else if (FALSE_IT(mtl_init = true)) {
   } else if (OB_FAIL(ObTenantBase::init_mtl_module())) {
     LOG_ERROR("init mtl module failed", K(tenant_id), K(ret));

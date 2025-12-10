@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "obsm_utils.h"
@@ -176,8 +180,8 @@ int ObSMUtils::cell_str(
       case ObRawTC:
       case ObTextTC: // TODO@hanhui texttc share the stringtc temporarily
       case ObStringTC:
-      // lob locator也会按varchar方式进行encode, 客户端往server端传输数据时,
-      // 也是将lob locator按varchar传输, 先编码LobLocator length, 然后再编码整个lob Locator
+      // lob locator will also be encoded in a varchar manner, client sends data to the server,
+      // Also transmit the lob locator as varchar, first encode the LobLocator length, then encode the entire lob Locator
       case ObLobTC:
       case ObRoaringBitmapTC: {
         ret = ObMySQLUtil::varchar_cell_str(buf, len, obj.get_string(), is_oracle_raw, pos);

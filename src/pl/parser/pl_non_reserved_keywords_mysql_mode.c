@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include <stdio.h>
@@ -17,9 +21,9 @@
 static t_node *mysql_pl_none_reserved_keywords_root = NULL;
 
 /* List of non-reserved keywords */
-/*一开始会对这些word建立一颗trie树，对于每次的查找来言，树是固定的
- *若新添加的keyword含有除大小写字母、'_'和数字以外的其它字符，请联系@叶提修改这颗树。
- *实现不需要保证字典序，但是原则上还是保证字典序，方便维护和查找*/
+/*Initially, a trie tree will be built for these words. For each lookup, the tree remains fixed.
+ *If the new keyword contains characters other than uppercase and lowercase letters, '_', and numbers, please contact @YeTi to modify this tree.
+ *The implementation does not need to guarantee lexicographical order, but it is still advisable to maintain lexicographical order for ease of maintenance and lookup.*/
 static const NonReservedKeyword Mysql_pl_none_reserved_keywords[] =
 {
   {"after", AFTER},

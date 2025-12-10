@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX PL
@@ -223,11 +227,11 @@ int TestPLUtils::do_resolve(const char* pl_str, sql::ObRawExprFactory &expr_fact
       if (OB_SUCC(ret)) {
         ObDataType res_type;
         res_type.set_obj_type(common::ObNullType);
-        func.set_ret_type(res_type); //无返回值
+        func.set_ret_type(res_type); // no return value
       }
 
       if (OB_SUCC(ret)) {
-        ObStmtNodeTree *body = pl_tree->children_[3]; //获取body
+        ObStmtNodeTree *body = pl_tree->children_[3]; // get body
         if (OB_ISNULL(body)) {
           ret = OB_ERR_UNEXPECTED;
           LOG_WARN("pl body is NULL", K(pl_tree), K(ret));

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "ob_admin_object_storage_driver_quality.h"
@@ -311,26 +315,6 @@ bool OSDQTaskHandler::check_parallel_write_result_(
         OB_LOG(WARN, "parallel append write should succeed when storage type is s3", KR(ret),
           K(op_type1), K(ret1), K(op_type2), K(ret2));
       } 
-    } else if (storage_info_->get_type() == ObStorageType::OB_STORAGE_COS
-        || storage_info_->get_type() == ObStorageType::OB_STORAGE_OSS) {
-      // if the storage type is cos or oss, the append write may fail if the append operation is performed
-      // after the single or multi-part write operation.
-      // but if two parallel operation are both append write operation, they should succeed.
-      if (op_type1 == APPEND_WRITE && op_type2 == APPEND_WRITE) {
-        if (OB_UNLIKELY(ret1 != OB_SUCCESS || ret2 != OB_SUCCESS)) {
-          bool_ret = false;
-          ret = OB_ERR_UNEXPECTED;
-          OB_LOG(WARN, "the parallel append write operation should succeed", KR(ret),
-              K(op_type1), K(ret1), K(op_type2), K(ret2));
-        }
-      } else {
-        if (OB_UNLIKELY((op_type1 != APPEND_WRITE && ret1 != OB_SUCCESS) || (op_type2 != APPEND_WRITE && ret2 != OB_SUCCESS))) {
-          bool_ret = false;
-          ret = OB_ERR_UNEXPECTED;
-          OB_LOG(WARN, "the write single operation or multi-part write should success", 
-              KR(ret), KPC(storage_info_), K(op_type1), K(ret1), K(op_type2), K(ret2));
-        } 
-      }
     } else {
       bool_ret = false;
       ret = OB_ERR_UNEXPECTED;

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_STORAGE_TMP_FILE_OB_TMP_FILE_META_TREE_H_
@@ -49,10 +53,10 @@ public:
     virtual_page_id_ = ObTmpFileGlobal::INVALID_VIRTUAL_PAGE_ID;
   }
   int16_t page_level_;         // child page level
-  int16_t physical_page_id_;   // child page 在宏块内的page id
-  uint32_t buffer_page_id_;    // child page 在写缓存中的page id
-  int64_t block_index_;        // child page 对应的宏块block index
-  int64_t virtual_page_id_;    // child page 对应的文件逻辑页号最小值（即索引）
+  int16_t physical_page_id_;   // child page id within the macroblock
+  uint32_t buffer_page_id_;    // child page in the write cache's page id
+  int64_t block_index_;        // child page corresponding macro block index
+  int64_t virtual_page_id_;    // child page corresponding file logical page number minimum value (i.e., index)
   TO_STRING_KV(K(page_level_), K(buffer_page_id_), K(physical_page_id_),
                K(block_index_), K(virtual_page_id_));
 };  // 24B
@@ -85,10 +89,10 @@ struct ObSharedNothingTmpFileDataItem
     physical_page_num_ = 0;
     virtual_page_id_ = ObTmpFileGlobal::INVALID_VIRTUAL_PAGE_ID;
   }
-  int64_t block_index_;        // 刷盘data extent所在的宏块block index
-  int16_t physical_page_id_;   // 刷盘data extent在宏块内的起始page id
-  int16_t physical_page_num_;  // 刷盘data extent在宏块内的连续page数量
-  int64_t virtual_page_id_;    // 刷盘data extent在整个文件中逻辑页号（偏移位置)
+  int64_t block_index_;        // the macro block block index where the data extent is flushed to disk
+  int16_t physical_page_id_;   // start page id of the data extent in the macroblock when flushing to disk
+  int16_t physical_page_num_;  // The number of continuous pages of the data extent in the macroblock
+  int64_t virtual_page_id_;    // Logical page number (offset position) of the data extent in the entire file when flushed to disk
   TO_STRING_KV(K(block_index_), K(physical_page_id_),
                K(physical_page_num_), K(virtual_page_id_));
 };  // 24B
@@ -139,13 +143,13 @@ struct ObTmpFileTreeIOInfo
            && page_level_ >= 0;
   }
   int64_t tree_epoch_;
-  int64_t block_index_;            //刷脏页所在的block index
-  uint32_t flush_start_page_id_;   //刷脏起始页在写缓存中的page_id
-  int32_t flush_start_level_page_index_; //刷脏起始页在其所在层的 page_index
-  uint32_t flush_end_page_id_;     //刷脏最后一个页在写缓存中的page_id
-  int16_t physical_start_page_id_; //这批页在block中的start page id（物理偏移）
-  int16_t flush_nums_;             //刷脏的页数
-  int16_t page_level_;             //刷脏的页所属的元数据树层次
+  int64_t block_index_;            // block index where the dirty page resides
+  uint32_t flush_start_page_id_;   // start page id of dirty pages in write cache
+  int32_t flush_start_level_page_index_; // start page index of flushing in its level
+  uint32_t flush_end_page_id_;     // flush the last page's page_id in write cache
+  int16_t physical_start_page_id_; // This batch of pages' start page id in the block (physical offset)
+  int16_t flush_nums_;             // the number of dirty pages to flush
+  int16_t page_level_;             // the metadata tree level to which the dirty page belongs
   TO_STRING_KV(K(tree_epoch_), K(block_index_), K(flush_start_page_id_),
                K(flush_start_level_page_index_), K(flush_end_page_id_),
                K(physical_start_page_id_), K(flush_nums_), K(page_level_));

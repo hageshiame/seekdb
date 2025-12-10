@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_ENGINE_OB_OPERATOR_H_
@@ -78,20 +82,20 @@ public:
 public:
   common::ObObjType obj_type_;
   bool is_not_null_;
-  // 因为ObSortColumn是需要序列化的，但是ObSortColumn没有使用信息的序列化框架
-  // 在ObSortColumn里面加任何一个字段都会有兼容性问题
-  // 所以就把null first last的信息放在这里了
+  // Because ObSortColumn is serializable, but ObSortColumn does not use the serialization framework for information
+  // Adding any field inside ObSortColumn will have compatibility issues
+  // So we put the null first last information here
   ObOrderDirection order_type_;
 };
 
 enum OperatorOpenOrder
 {
-  OPEN_CHILDREN_FIRST = 0, //默认先open children
-  OPEN_SELF_FIRST = 1, //先open自己
-  OPEN_CHILDREN_LATER = 2, //再open children
+  OPEN_CHILDREN_FIRST = 0, // default open children first
+  OPEN_SELF_FIRST = 1, // first open yourself
+  OPEN_CHILDREN_LATER = 2, // open children later
   OPEN_SELF_LATER = 3,
-  OPEN_SELF_ONLY = 4, //不打开children，但是打开自己
-  OPEN_NONE = 5, //不打开自己，也不打开children, unused since 4.0
+  OPEN_SELF_ONLY = 4, // do not open children, but open self
+  OPEN_NONE = 5, // do not open itself, nor open children, unused since 4.0
   OPEN_EXIT = 6
 };
 
@@ -238,7 +242,7 @@ public:
   // for current DFO.
   int create_operator(ObExecContext &exec_ctx, ObOperator *&op) const;
   int create_op_input(ObExecContext &exec_ctx) const;
-  // 将算子注册到 datahub，用于并行计算场景
+  // Register the operator to datahub, used for parallel computing scenarios
   // 
   virtual int register_to_datahub(ObExecContext &exec_ctx) const
     { UNUSED(exec_ctx); return common::OB_SUCCESS; }

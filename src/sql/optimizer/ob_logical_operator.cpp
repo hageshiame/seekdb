@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_OPT
@@ -800,7 +804,7 @@ int ObLogicalOperator::compute_table_set()
   int ret = OB_SUCCESS;
   ObLogicalOperator *child = NULL;
   if (LOG_SUBPLAN_FILTER == get_type() || get_num_of_child() == 1) {
-    // subplan filter 只能看到左表，外层不应该看到右表
+    // subplan filter can only see the left table, the outer layer should not see the right table
     if (OB_ISNULL(child = get_child(0))) {
       ret = OB_ERR_UNEXPECTED;
       LOG_WARN("get unexpected null", K(ret));
@@ -2566,15 +2570,15 @@ int ObLogicalOperator::reorder_filters_exprs(common::ObIArray<ObExprSelPair> &pr
 }
 
 /**
- * 生成计划的location约束，有以下三种约束：
+ * Generate location constraints for the plan, there are three types of constraints:
  * base_table_constraints_:
- *    基表location约束，包括TABLE_SCAN算子上的基表和INSERT算子上的基表
+ *    Base table location constraints, including base tables on TABLE_SCAN operators and base tables on INSERT operators
  * strict_pwj_constraint_:
- *    严格partition wise join约束，要求同一个分组内的基表分区逻辑上和物理上都相等。
- *    每个分组是一个array，保存了对应基表在base_table_constraints_中的偏移
+ *    Strict partition wise join constraint, requiring that base table partitions within the same group are logically and physically equal.
+ *    Each group is an array, saving the offset of the corresponding base table in base_table_constraints_
  * non_strict_pwj_constraint_:
- *    严格partition wise join约束，要求用一个分组内的基表分区物理上相等。
- *    每个分组是一个array，保存了对应基表在base_table_constraints_中的偏移
+ *    Non-strict partition wise join constraint, requiring that base table partitions within one group are physically equal.
+ *    Each group is an array, saving the offset of the corresponding base table in base_table_constraints_
  */
 int ObLogicalOperator::gen_location_constraint(void *ctx)
 {
@@ -2633,12 +2637,14 @@ int ObLogicalOperator::gen_location_constraint(void *ctx)
       }
     } else if (get_num_of_child() > 0) {
       /**
-       * 当前算子从孩子算子（insert包括自身）上继承的pwj约束的次数，如果继承次数超过1次，
-       * 说明有多个pwj约束可以合并，就需要将当前算子的pwj约束添加到ctx中
+       * The number of pwj constraints inherited by the current operator from its child operators (including itself).
+       * If the inheritance count exceeds 1, it indicates that multiple pwj constraints can be merged,
+       * and the current operator's pwj constraint needs to be added to ctx.
        * e.g.        join3
        *            /    \         base_table_constraints = [t1,t2,t3,t4]
        *         join1   join2
-       * 假设join1上有严格约束(0,1), join2上有严格约束(2,3), 那么join3应该继承并合并左右孩子节点的约束(0,1,2,3)
+       * Assuming join1 has a strict constraint (0,1) and join2 has a strict constraint (2,3),
+       * then join3 should inherit and merge the constraints of the left and right child nodes (0,1,2,3).
        */
 
       int64_t add_count = 0;
@@ -2658,14 +2664,14 @@ int ObLogicalOperator::gen_location_constraint(void *ctx)
           !get_stmt()->has_instead_of_trigger() &&
           static_cast<ObLogInsert*>(this)->is_insert_select()) {
         // base table constraints for INSERT
-        // multi part insert只记录基表location约束，非multi part insert需要同时记录
-        // 基表location约束和partition wise join约束
+        // multi part insert only records the base table location constraint, non-multi part insert needs to record both simultaneously
+        // Base table location constraint and partition wise join constraint
         bool is_multi_part_dml = false;
         LocationConstraint loc_cons;
         if (OB_FAIL(get_tbl_loc_cons_for_insert(loc_cons, is_multi_part_dml))) {
           LOG_WARN("failed to get location constraint for insert op", K(ret));
         } else if (!is_multi_part_dml) {
-          // 非multi part insert
+          // non-multi part insert
           if (OB_FAIL(loc_cons_ctx->base_table_constraints_.push_back(loc_cons))) {
             LOG_WARN("failed to push back location constraint", K(ret));
           } else if (OB_FAIL(strict_pwj_constraint_.push_back(
@@ -2697,12 +2703,11 @@ int ObLogicalOperator::gen_location_constraint(void *ctx)
           }
         }
       }
-
-      // 处理pdml index维护的location 约束
-      // 目前支持的pdml logical op包含（insert，update，delete）
-      // pdml logical op中需要维护phy table location的条件是：
-      // 1. 当前逻辑算子是pdml
-      // 2. 当前算子是用于维护global index table
+      // processing pdml index maintained location constraint
+      // Currently supported pdml logical op include (insert, update, delete)
+      // pdml logical op needs to maintain phy table location under the condition that:
+      // 1. The current logical operator is pdml
+      // 2. The current operator is used to maintain global index table
       if (OB_SUCC(ret)) {
         if (log_op_def::LOG_DELETE == get_type()
             || log_op_def::LOG_UPDATE == get_type()) {
@@ -2754,14 +2759,14 @@ int ObLogicalOperator::gen_location_constraint(void *ctx)
           *          TABLE LOOKUP
           *            TABLE SCAN  t2(idx_t2)
           *
-          *  t1的分区和idx_t2的分区需在同一个节点上，否则partition wise join 报4016
-          *  因此table lookup 需要继承子节点的约束
+          *  The partition of t1 and the partition of idx_t2 need to be on the same node, otherwise partition wise join reports 4016
+          *  Therefore table lookup needs to inherit the constraints of the child node
           */
           LOG_TRACE("get child location constraint", K(i),
               K(get_child(i)->strict_pwj_constraint_), K(get_child(i)->non_strict_pwj_constraint_));
           if (get_child(i)->strict_pwj_constraint_.count() <= 0 &&
               get_child(i)->non_strict_pwj_constraint_.count() <= 0) {
-            // 孩子节点没有记录pwj约束，说明这个分支上没有table scan或者存在exchange
+            // Child node does not record pwj constraint, indicating that there is no table scan or exchange on this branch
           } else if (get_child(i)->strict_pwj_constraint_.count() <= 0 ||
                      get_child(i)->non_strict_pwj_constraint_.count() <= 0) {
             ret = OB_ERR_UNEXPECTED;
@@ -2769,9 +2774,9 @@ int ObLogicalOperator::gen_location_constraint(void *ctx)
                         K(ret), K(get_child(i)->strict_pwj_constraint_.count()),
                         K(get_child(i)->non_strict_pwj_constraint_.count()));
           } else {
-            // 所有算子都会继承第一个可继承孩子节点的严格pwj约束和非严格pw约束
-            // set pw类型union all算子会继承所有孩子节点的非严格pw约束
-            // extended pw join/set不继承其他严格和非严格pw约束
+            // All operators will inherit the strict pwj constraint and non-strict pw constraint of the first inheritable child node
+            // set pw type union all operator will inherit all child nodes' non-strict pw constraints
+            // extended pw join/set does not inherit other strict and non-strict pw constraints
             ++add_count;
             if (need_add_strict) {
               if (OB_FAIL(append(strict_pwj_constraint_, get_child(i)->strict_pwj_constraint_))) {
@@ -2993,7 +2998,7 @@ int ObLogicalOperator::allocate_material(const int64_t index)
       mat_op->set_op_cost(0.0);
       mat_op->set_cost(child->get_cost());
     }
-    //把Material当作下层LogPlan的顶点，否则没人会给这个Material分配表达式
+    // Treat Material as the top vertex of the lower LogPlan, otherwise no one will assign an expression to this Material
     if (OB_SUCC(ret) && child->is_plan_root()) {
       if (OB_FAIL(mat_op->get_output_exprs().assign(child->get_output_exprs()))) {
         LOG_WARN("failed to assign output exprs", K(ret));
@@ -3014,7 +3019,7 @@ int ObLogicalOperator::check_exchange_rescan(bool &need_rescan)
   need_rescan = false;
   if (LOG_EXCHANGE == get_type()) {
     need_rescan = true;
-  } else if (LOG_MATERIAL == get_type()) { //TODO:遇到其他物化类算子也可以停止探测，但目前它们不支持真正意义的物化
+  } else if (LOG_MATERIAL == get_type()) { //TODO:Encounter other materialization class operators can also stop probing, but they currently do not support true materialization
     /*no nothing, stop checking deeply*/
   } else {
     for (int64_t i = 0; OB_SUCC(ret) && !need_rescan && i < get_num_of_child(); ++i) {
@@ -3247,8 +3252,9 @@ int ObLogicalOperator::numbering_exchange_post(NumberingExchangeCtx &ctx)
 }
 
 /*
- * 算法；每个节点在先序pre时进行push，后序post时pop，同时pop之前将自身的factor merge到parent上，
- * 这样可以将需要传递的factor传递给整颗树
+ * algorithm; each node performs a push during pre-order traversal, and a pop during post-order traversal,
+ * simultaneously merging its own factor to the parent before popping,
+ * this way the factors that need to be passed can be transferred to the entire tree
  *            o(1)
  *          /       \
  *         o(2)     o(7)
@@ -3256,7 +3262,7 @@ int ObLogicalOperator::numbering_exchange_post(NumberingExchangeCtx &ctx)
  *     o(3)     o(6)
  *    /   \
  *   o(4) o(5)
- * 数字表示入栈的顺序，即push操作
+ * numbers represent the order of pushing onto the stack, i.e., push operation
  */
 int ObLogicalOperator::px_estimate_size_factor_pre()
 {
@@ -3277,8 +3283,7 @@ int ObLogicalOperator::px_estimate_size_factor_pre()
   }
   return ret;
 }
-
-// 这里统一将child的factor合并到parent，而不是通过从parent拉child的方式来处理facotr
+// Here we uniformly merge child's factor into parent, rather than handling factor by pulling child from parent
 int ObLogicalOperator::px_estimate_size_factor_post()
 {
   int ret = OB_SUCCESS;
@@ -3298,7 +3303,7 @@ int ObLogicalOperator::px_estimate_size_factor_post()
   } else if (LOG_EXCHANGE == type_) {
     ObLogExchange *exchange = static_cast<ObLogExchange*>(this);
     if (exchange->is_px_producer()) {
-      // 跨shuffle，则reset所有，仅保留exchange相关
+      // Across shuffle, then reset all, only retain exchange related
       px_est_size_factor_.revert_all();
       if (ObPQDistributeMethod::BROADCAST == exchange->get_dist_method()) {
         px_est_size_factor_.broadcast_exchange_ = true;
@@ -3320,8 +3325,8 @@ int ObLogicalOperator::px_estimate_size_factor_post()
       }
     }
     if (1 < get_num_of_child()) {
-      // broadcast只服务于HashJoin，如果上层不是HashJoin的二元或多元Operator，则去掉Broadcast设置
-      // 但其实有些plan也是基于Broadcast的，如
+      // broadcast only serves HashJoin, if the upper level is not a binary or multi-ary Operator of HashJoin, then remove the Broadcast setting
+      // But actually some plans are also based on Broadcast, like
       //  HashJoin
       //    Union all
       //      Exchange(Broadcast)
@@ -3342,10 +3347,10 @@ int ObLogicalOperator::px_estimate_size_factor_post()
 int ObLogicalOperator::px_rescan_pre()
 {
   int ret = OB_SUCCESS;
-  /* 一共有 3 中生成 QC 的场景：
-   * 1. 顶层算子是 EXCHANGE，本身就是 QC
-   * 2. 顶层算子下的一层 EXCHANGE 都是 QC
-   * 3. SUBPLAN FILTER 下的一层 EXCHANGE 算子 (first_child 除外)
+  /* There are a total of 3 scenarios for generating QC:
+   * 1. The top-level operator is EXCHANGE, which is itself a QC
+   * 2. All EXCHANGE operators under the top-level operator are QC
+   * 3. EXCHANGE operators under SUBPLAN FILTER (excluding first_child)
    * 4. Nested Loop Join (both children are pulled to local execution)
    * 5. Recursive union all
    */
@@ -3512,9 +3517,6 @@ int ObLogicalOperator::project_pruning_pre()
       do_project_pruning(temp_scan->get_access_exprs(), deps);
     }
   }
-  if (OB_SUCC(ret) && OB_FAIL(try_add_remove_const_exprs())) {
-    LOG_WARN("failed to add remove const exprs", K(ret));
-  } else { /*do nothing*/ }
 
   return ret;
 }
@@ -3536,50 +3538,6 @@ void ObLogicalOperator::do_project_pruning(ObIArray<ObRawExpr *> &exprs, PPDeps 
     exprs.pop_back();
     i--;
   }
-}
-
-int ObLogicalOperator::try_add_remove_const_exprs()
-{
-  int ret = OB_SUCCESS;
-  if (GET_MIN_CLUSTER_VERSION() >= CLUSTER_VERSION_4_2_0_0) {
-    // do nothing
-  } else if (OB_ISNULL(get_plan()) || OB_ISNULL(get_plan()->get_optimizer_context().get_session_info())) {
-    ret = OB_ERR_UNEXPECTED;
-    LOG_WARN("get unexpected null", K(get_plan()), K(ret));
-  } else {
-    FOREACH_X(e, output_exprs_, OB_SUCC(ret)) {
-      // Add remove_const() to above const expr, except:
-      // - remove_const() already added. (has CNT_VOLATILE_CONST flag)
-      // - is dynamic param store (has CNT_DYNAMIC_PARAM flag). Because question mark expr of
-      //   dynamic param store may be passed by operator output. e.g.:
-      //
-      if (OB_ISNULL((*e))) {
-        ret = OB_ERR_UNEXPECTED;
-        LOG_WARN("get unexpected null", K(ret));
-      } else if ((*e)->is_const_expr() &&
-                 !(*e)->has_flag(CNT_VOLATILE_CONST) &&
-                 !(log_op_def::LOG_EXCHANGE == get_type()
-                   && static_cast<ObLogExchange*>(this)->is_producer()
-                   && (*e)->has_flag(CNT_DYNAMIC_PARAM))) {
-        ObRawExpr *remove_const_expr = NULL;
-        if (OB_FAIL(ObRawExprUtils::build_remove_const_expr(
-                                    get_plan()->get_optimizer_context().get_expr_factory(),
-                                    *get_plan()->get_optimizer_context().get_session_info(),
-                                    *e,
-                                    remove_const_expr))) {
-          LOG_WARN("failed to build remove const expr", K(output_exprs_), K(*e), K(ret));
-        } else if (OB_ISNULL(remove_const_expr)) {
-          ret = OB_ERR_UNEXPECTED;
-          LOG_WARN("get unexpected null", K(ret));
-        } else if (OB_FAIL(get_plan()->get_optimizer_context().get_all_exprs().append(remove_const_expr))) {
-          LOG_WARN("faield to append exprs", K(ret));
-        } else {
-          *e = remove_const_expr;
-        }
-      }
-    }
-  }
-  return ret;
 }
 
 int ObLogicalOperator::adjust_plan_root_output_exprs()
@@ -3634,6 +3592,7 @@ int ObLogicalOperator::check_stmt_can_be_packed(const ObDMLStmt *stmt, bool &nee
 {
   int ret = OB_SUCCESS;
   need_pack = false;
+  #ifndef OB_BUILD_EMBED_MODE
   ObSQLSessionInfo *session_info = NULL;
   if (OB_ISNULL(stmt) || OB_ISNULL(get_plan()) ||
       OB_ISNULL(session_info = get_plan()->get_optimizer_context().get_session_info())) {
@@ -3645,6 +3604,7 @@ int ObLogicalOperator::check_stmt_can_be_packed(const ObDMLStmt *stmt, bool &nee
     need_pack = stmt->is_select_stmt() && (!session_info->is_inner()) && LOG_EXCHANGE == type_
                  && (ObPhyPlanType::OB_PHY_PLAN_DISTRIBUTED == get_phy_plan_type()) && !has_var_assign;
   }
+  #endif
   return ret;
 }
 
@@ -4197,9 +4157,7 @@ int ObLogicalOperator::allocate_granule_nodes_above(AllocGIContext &ctx)
       ObLogGranuleIterator *gi_op = static_cast<ObLogGranuleIterator *>(log_op);
       if (NULL != get_parent()) {
         //check topN sort
-        if (stmt->get_query_ctx()->check_opt_compat_version(COMPAT_VERSION_4_2_3, COMPAT_VERSION_4_3_0,
-                                                            COMPAT_VERSION_4_3_2) &&
-            LOG_SORT == get_parent()->get_type()) {
+        if (LOG_SORT == get_parent()->get_type()) {
           ObLogSort *parent = static_cast<ObLogSort*>(get_parent());
           if (parent->is_local_merge_sort() && 
               NULL != parent->get_topn_expr()) {
@@ -4510,7 +4468,7 @@ int ObLogicalOperator::allocate_startup_expr_post(int64_t child_idx)
       if (OB_FAIL(ObOptimizerUtil::append_exprs_no_dup(get_startup_exprs(), new_startup_exprs))) {
         LOG_WARN("failed to add startup exprs", K(ret));
       } else {
-        //exchange out上面的startup filter保留，用于控制当前dfo提前终止
+        //exchange out above the startup filter retain, used to control the current dfo early termination
         bool mark_exchange_out = false;
         if (log_op_def::LOG_EXCHANGE == child->get_type()) {
           ObLogExchange *exchange_out = static_cast<ObLogExchange*>(child);
@@ -5427,8 +5385,7 @@ int ObLogicalOperator::allocate_partition_join_filter(const ObIArray<JoinFilterI
       } else {
           join_filter_create->set_is_shared_partition_join_filter();
       }
-      if (get_plan()->get_optimizer_context().get_query_ctx()->check_opt_compat_version(COMPAT_VERSION_4_3_5) &&
-          (DistAlgo::DIST_PARTITION_NONE == join_dist_algo || DistAlgo::DIST_PARTITION_HASH_LOCAL == join_dist_algo)) {
+      if ((DistAlgo::DIST_PARTITION_NONE == join_dist_algo || DistAlgo::DIST_PARTITION_HASH_LOCAL == join_dist_algo)) {
         ObLogicalOperator* child = get_child(first_child);
         if (OB_ISNULL(child)) {
           ret = OB_ERR_UNEXPECTED;
@@ -5491,8 +5448,7 @@ int ObLogicalOperator::allocate_normal_join_filter(const ObIArray<JoinFilterInfo
   int64_t extra_hash_count = 1; // at least one for hash join
   bool has_shared_join_filter = false;
   bool realistic_runtime_bloom_filter_size = !GCONF._preset_runtime_bloom_filter_size;
-  if (realistic_runtime_bloom_filter_size && enable_bloom_filter
-      && GET_MIN_CLUSTER_VERSION() >= CLUSTER_VERSION_4_3_3_0) {
+  if (realistic_runtime_bloom_filter_size && enable_bloom_filter) {
     can_join_filter_material = true;
   }
   int64_t last_valid_join_filter_info_idx = -1;
@@ -5696,7 +5652,7 @@ int ObLogicalOperator::calc_rf_max_wait_time(const ObLogicalOperator *node, uint
   if (OB_ISNULL(session = get_plan()->get_optimizer_context().get_session_info())) {
     ret = OB_INVALID_ARGUMENT;
     LOG_WARN("session is null", K(ret));
-  } else if (table_id != OB_INVALID_ID && GET_MIN_CLUSTER_VERSION() >= CLUSTER_VERSION_4_3_3_0) {
+  } else if (table_id != OB_INVALID_ID) {
     max_wait_time_ms = 10; // at least 10ms
     const OptTableMetas &table_metas = get_plan()->get_basic_table_metas();
     const OptTableMeta *table_meta = nullptr;
@@ -5813,13 +5769,13 @@ int ObLogicalOperator::pre_check_can_px_batch_rescan(bool &find_nested_rescan,
 int ObLogicalOperator::check_subplan_filter_child_exchange_rescanable()
 {
   int ret = OB_SUCCESS;
-  // 对于subplan filter右孩子如果是onetime expr,
-  // 则不需要将该子孩子exhange标记为px coord, 此时subpaln filter左孩子必须标记为px coord.
-  // 对于subplan filter右孩子没有onetime expr的场景,
-  // 从second child起, 均需要标记为px coord.
-  // 右孩子们是否标记为px coord取决于是否需要rescan.
-  // 左孩子是否标记为px, 取决于右子孩子是否有onetime expr, 原因是需要先获取expr值, 再下压至左孩子,
-  // 详见issue 
+  // For subplan filter right child if it is onetime expr,
+  // Then there is no need to mark this subchild exhange as px coord, at this time the left child of subpaln filter must be marked as px coord.
+  // For the scenario where the right child of subplan filter does not have an onetime expr,
+  // From second child, all need to be marked as px coord.
+  // Right children are marked as px coord depending on whether rescan is needed.
+  // Left child is marked as px depending on whether the right child has an onetime expr, the reason is that we need to get the expr value first, then push it down to the left child,
+  // See issue
   /*
     update:
     If an onetime expr contains at least two subqueries (e.g., subquery comparisons), the

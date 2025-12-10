@@ -1,18 +1,22 @@
-/**
- * Copyright (c) 2024 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include <gtest/gtest.h>
-#define private public  // 获取private成员
-#define protected public  // 获取protect成员
+#define private public  // get private member
+#define protected public  // get protected member
 #include "observer/table/ob_table_filter.h"
 
 using namespace oceanbase::common;
@@ -79,8 +83,7 @@ void TestTableAudit::construct_range_names(const char *col, Args... args) {
   query_.scan_range_columns_.push_back(ObString::make_string(col));
   construct_range_names(args...);
 }
-
-// 测试：表名为空
+// Test: table name is empty
 TEST_F(TestTableAudit, singleOpStmt1)
 {
   const int64_t buf_len = 128;
@@ -97,8 +100,7 @@ TEST_F(TestTableAudit, singleOpStmt1)
   ASSERT_EQ(strlen(result), pos);
   ASSERT_EQ(op.get_stmt_length(table_name), pos);
 }
-
-// 测试：列名为空
+// Test: column name is empty
 TEST_F(TestTableAudit, singleOpStmt2)
 {
   const int64_t buf_len = 128;
@@ -114,8 +116,7 @@ TEST_F(TestTableAudit, singleOpStmt2)
   ASSERT_EQ(strlen(result), pos);
   ASSERT_EQ(op.get_stmt_length(table_name), pos);
 }
-
-// 测试：buf为空
+// Test: buf is empty
 TEST_F(TestTableAudit, singleOpStmt3)
 {
   const int64_t buf_len = 128;
@@ -128,8 +129,7 @@ TEST_F(TestTableAudit, singleOpStmt3)
   ASSERT_EQ(OB_INVALID_ARGUMENT, op.generate_stmt(table_name, buf, buf_len, pos));
   ASSERT_EQ(0, pos);
 }
-
-// 测试：buf长度不足
+// Test: buf length is insufficient
 TEST_F(TestTableAudit, singleOpStmt4)
 {
   const int64_t buf_len = 1;
@@ -147,8 +147,7 @@ TEST_F(TestTableAudit, singleOpStmt4)
   pos = 0;
   ASSERT_EQ(OB_BUF_NOT_ENOUGH, op.generate_stmt(table_name, buf2, buf_len2, pos));
 }
-
-// 测试：操作类型
+// Test: operation type
 TEST_F(TestTableAudit, singleOpStmt5)
 {
   const int64_t buf_len = 128;
@@ -297,8 +296,7 @@ TEST_F(TestTableAudit, singleOpStmt5)
   ASSERT_EQ(strlen(result), pos);
   ASSERT_EQ(op.get_stmt_length(table_name), pos);
 }
-
-// 测试：表名为空
+// Test: table name is empty
 TEST_F(TestTableAudit, queryStmt1)
 {
   const int64_t buf_len = 128;
@@ -314,8 +312,7 @@ TEST_F(TestTableAudit, queryStmt1)
   ASSERT_EQ(strlen(result), pos);
   ASSERT_EQ(query_.get_stmt_length(table_name), pos);
 }
-
-// 测试：select column为空
+// Test: select column is empty
 TEST_F(TestTableAudit, queryStmt2)
 {
   const int64_t buf_len = 128;
@@ -330,8 +327,7 @@ TEST_F(TestTableAudit, queryStmt2)
   ASSERT_EQ(strlen(result), pos);
   ASSERT_EQ(query_.get_stmt_length(table_name), pos);
 }
-
-// 测试：scan column为空
+// Test: scan column is empty
 TEST_F(TestTableAudit, queryStmt3)
 {
   const int64_t buf_len = 128;
@@ -346,8 +342,7 @@ TEST_F(TestTableAudit, queryStmt3)
   ASSERT_EQ(strlen(result), pos);
   ASSERT_EQ(query_.get_stmt_length(table_name), pos);
 }
-
-// 测试：scan column为空
+// Test: scan column is empty
 TEST_F(TestTableAudit, queryStmt4)
 {
   const int64_t buf_len = 128;
@@ -362,8 +357,7 @@ TEST_F(TestTableAudit, queryStmt4)
   ASSERT_EQ(strlen(result), pos);
   ASSERT_EQ(query_.get_stmt_length(table_name), pos);
 }
-
-// 测试：index name为空
+// Test: index name is empty
 TEST_F(TestTableAudit, queryStmt5)
 {
   const int64_t buf_len = 128;
@@ -378,8 +372,7 @@ TEST_F(TestTableAudit, queryStmt5)
   ASSERT_EQ(strlen(result), pos);
   ASSERT_EQ(query_.get_stmt_length(table_name), pos);
 }
-
-// 测试：buf为空
+// Test: buf is empty
 TEST_F(TestTableAudit, queryStmt6)
 {
   const int64_t buf_len = 128;
@@ -392,8 +385,7 @@ TEST_F(TestTableAudit, queryStmt6)
   ASSERT_EQ(OB_INVALID_ARGUMENT, query_.generate_stmt(table_name, buf, buf_len, pos));
   ASSERT_EQ(0, pos);
 }
-
-// 测试：buf长度不足
+// Test: buf length is insufficient
 TEST_F(TestTableAudit, queryStmt7)
 {
   const int64_t buf_len = 1;
@@ -421,8 +413,7 @@ TEST_F(TestTableAudit, queryStmt7)
   pos = 0;
   ASSERT_EQ(OB_BUF_NOT_ENOUGH, query_.generate_stmt(table_name, buf4, buf_len4, pos));
 }
-
-// 测试：get_compare_op_name
+// Test: get_compare_op_name
 TEST_F(TestTableAudit, get_compare_op_name)
 {
   ASSERT_STRCASEEQ("EQUAL", FilterUtils::get_compare_op_name(CompareOperator::EQUAL));
@@ -435,8 +426,7 @@ TEST_F(TestTableAudit, get_compare_op_name)
   ASSERT_STRCASEEQ("IS", FilterUtils::get_compare_op_name(CompareOperator::IS));
   ASSERT_STRCASEEQ("IS_NOT", FilterUtils::get_compare_op_name(CompareOperator::IS_NOT));
 }
-
-// 测试：RowFilter
+// Test: RowFilter
 TEST_F(TestTableAudit, RowFilter)
 {
   Comparable cmp(ObString::make_string("hello"));
@@ -453,8 +443,7 @@ TEST_F(TestTableAudit, RowFilter)
   ASSERT_EQ(OB_INVALID_ARGUMENT, filter.get_format_filter_string(nullptr, buf_len, pos));
   ASSERT_EQ(OB_BUF_NOT_ENOUGH, filter.get_format_filter_string(buf, 0, pos));
 }
-
-// 测试：QualifierFilter
+// Test: QualifierFilter
 TEST_F(TestTableAudit, QualifierFilter)
 {
   Comparable cmp(ObString::make_string("hello"));
@@ -471,8 +460,7 @@ TEST_F(TestTableAudit, QualifierFilter)
   ASSERT_EQ(OB_INVALID_ARGUMENT, filter.get_format_filter_string(nullptr, buf_len, pos));
   ASSERT_EQ(OB_BUF_NOT_ENOUGH, filter.get_format_filter_string(buf, 0, pos));
 }
-
-// 测试：ValueFilter
+// Test: ValueFilter
 TEST_F(TestTableAudit, ValueFilter)
 {
   Comparable cmp(ObString::make_string("hello"));
@@ -489,8 +477,7 @@ TEST_F(TestTableAudit, ValueFilter)
   ASSERT_EQ(OB_INVALID_ARGUMENT, filter.get_format_filter_string(nullptr, buf_len, pos));
   ASSERT_EQ(OB_BUF_NOT_ENOUGH, filter.get_format_filter_string(buf, 0, pos));
 }
-
-// 测试：FilterList
+// Test: FilterList
 TEST_F(TestTableAudit, FilterList)
 {
   Comparable cmp(ObString::make_string("hello"));
@@ -545,8 +532,7 @@ TEST_F(TestTableAudit, FilterList)
   ASSERT_EQ(OB_INVALID_ARGUMENT, tb_or_filter.get_format_filter_string(nullptr, buf_len, pos));
   ASSERT_EQ(OB_BUF_NOT_ENOUGH, tb_or_filter.get_format_filter_string(buf, 0, pos));
 }
-
-// 测试：SkipFilter
+// Test: SkipFilter
 TEST_F(TestTableAudit, SkipFilter)
 {
   SkipFilter filter(nullptr);
@@ -573,8 +559,7 @@ TEST_F(TestTableAudit, SkipFilter)
   ASSERT_EQ(OB_INVALID_ARGUMENT, filter.get_format_filter_string(nullptr, buf_len, pos));
   ASSERT_EQ(OB_BUF_NOT_ENOUGH, filter.get_format_filter_string(buf, 0, pos));
 }
-
-// 测试：WhileMatchFilter
+// Test: WhileMatchFilter
 TEST_F(TestTableAudit, WhileMatchFilter)
 {
   WhileMatchFilter filter(nullptr);
@@ -601,8 +586,7 @@ TEST_F(TestTableAudit, WhileMatchFilter)
   ASSERT_EQ(OB_INVALID_ARGUMENT, filter.get_format_filter_string(nullptr, buf_len, pos));
   ASSERT_EQ(OB_BUF_NOT_ENOUGH, filter.get_format_filter_string(buf, 0, pos));
 }
-
-// 测试：SingleColumnValueFilter
+// Test: SingleColumnValueFilter
 TEST_F(TestTableAudit, SingleColumnValueFilter)
 {
   ObString family = ObString::make_string("family1");
@@ -621,8 +605,7 @@ TEST_F(TestTableAudit, SingleColumnValueFilter)
   ASSERT_EQ(OB_INVALID_ARGUMENT, filter.get_format_filter_string(nullptr, buf_len, pos));
   ASSERT_EQ(OB_BUF_NOT_ENOUGH, filter.get_format_filter_string(buf, 0, pos));
 }
-
-// 测试：PageFilter
+// Test: PageFilter
 TEST_F(TestTableAudit, PageFilter)
 {
   PageFilter filter(1);
@@ -638,8 +621,7 @@ TEST_F(TestTableAudit, PageFilter)
   ASSERT_EQ(OB_INVALID_ARGUMENT, filter.get_format_filter_string(nullptr, buf_len, pos));
   ASSERT_EQ(OB_BUF_NOT_ENOUGH, filter.get_format_filter_string(buf, 0, pos));
 }
-
-// 测试：ColumnCountGetFilter
+// Test: ColumnCountGetFilter
 TEST_F(TestTableAudit, ColumnCountGetFilter)
 {
   ColumnCountGetFilter filter(1);
@@ -655,8 +637,7 @@ TEST_F(TestTableAudit, ColumnCountGetFilter)
   ASSERT_EQ(OB_INVALID_ARGUMENT, filter.get_format_filter_string(nullptr, buf_len, pos));
   ASSERT_EQ(OB_BUF_NOT_ENOUGH, filter.get_format_filter_string(buf, 0, pos));
 }
-
-// 测试：CheckAndMutateFilter
+// Test: CheckAndMutateFilter
 TEST_F(TestTableAudit, CheckAndMutateFilter)
 {
   ObString family = ObString::make_string("family1");
@@ -675,8 +656,7 @@ TEST_F(TestTableAudit, CheckAndMutateFilter)
   ASSERT_EQ(OB_INVALID_ARGUMENT, filter.get_format_filter_string(nullptr, buf_len, pos));
   ASSERT_EQ(OB_BUF_NOT_ENOUGH, filter.get_format_filter_string(buf, 0, pos));
 }
-
-// 测试：ObTableCompareFilter
+// Test: ObTableCompareFilter
 TEST_F(TestTableAudit, ObTableCompareFilter)
 {
   Comparable cmp(ObString::make_string("hello"));
@@ -695,8 +675,7 @@ TEST_F(TestTableAudit, ObTableCompareFilter)
   ASSERT_EQ(OB_INVALID_ARGUMENT, filter.get_format_filter_string(nullptr, buf_len, pos));
   ASSERT_EQ(OB_BUF_NOT_ENOUGH, filter.get_format_filter_string(buf, 0, pos));
 }
-
-// 测试: ObTableAuditUtils
+// Test: ObTableAuditUtils
 TEST_F(TestTableAudit, ObTableAuditUtils)
 {
   ASSERT_EQ(StmtType::T_KV_GET, ObTableAuditUtils::get_stmt_type(ObTableOperationType::GET));
@@ -710,8 +689,7 @@ TEST_F(TestTableAudit, ObTableAuditUtils)
   ASSERT_EQ(StmtType::T_KV_PUT, ObTableAuditUtils::get_stmt_type(ObTableOperationType::PUT));
   ASSERT_EQ(StmtType::T_MAX, ObTableAuditUtils::get_stmt_type((ObTableOperationType::Type)-1)); // Test for invalid input
 }
-
-// 测试: ObTableAuditMultiOp
+// Test: ObTableAuditMultiOp
 TEST_F(TestTableAudit, ObTableAuditMultiOp)
 {
   const int64_t buf_len = 128;
@@ -786,8 +764,7 @@ TEST_F(TestTableAudit, ObTableAuditMultiOp)
   // test8: bug length too short
   ASSERT_EQ(OB_BUF_NOT_ENOUGH, multi_op.generate_stmt(table_name, buf, 7, pos));
 }
-
-// 测试: ObTableAuditRedisOp
+// Test: ObTableAuditRedisOp
 TEST_F(TestTableAudit, ObTableAuditRedisOp)
 {
   const int64_t buf_len = 128;

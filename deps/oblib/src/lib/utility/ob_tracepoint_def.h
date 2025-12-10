@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifdef GLOBAL_ERRSIM_POINT_DEF
@@ -206,7 +210,7 @@ GLOBAL_ERRSIM_POINT_DEF(197, EN_BACKUP_COMPLEMENT_LOG_TASK_FAILED, "");
 GLOBAL_ERRSIM_POINT_DEF(198, EN_BACKUP_USER_META_TASK_FAILED, "");
 GLOBAL_ERRSIM_POINT_DEF(199, EN_BACKUP_PREPARE_TASK_FAILED, "");
 GLOBAL_ERRSIM_POINT_DEF(200, EN_BACKUP_CHECK_TABLET_CONTINUITY_FAILED, "");
-// 下面请从201开始
+// Below please start from 201
 GLOBAL_ERRSIM_POINT_DEF(201, EN_CHECK_STANDBY_CLUSTER_SCHEMA_CONDITION, "");
 GLOBAL_ERRSIM_POINT_DEF(202, EN_ALLOCATE_LOB_BUF_FAILED, "");
 GLOBAL_ERRSIM_POINT_DEF(203, EN_ALLOCATE_DESERIALIZE_LOB_BUF_FAILED, "");
@@ -224,7 +228,7 @@ GLOBAL_ERRSIM_POINT_DEF(214, EN_WRITE_CONFIG_FILE_FAILED, "");
 GLOBAL_ERRSIM_POINT_DEF(215, EN_INVALID_ADDR_WEAK_READ_FAILED, "");
 GLOBAL_ERRSIM_POINT_DEF(216, EN_STACK_OVERFLOW_CHECK_EXPR_STACK_SIZE, "Discarded");
 GLOBAL_ERRSIM_POINT_DEF(217, EN_ENABLE_PDML_ALL_FEATURE, "");
-// slog checkpoint错误模拟占坑 218-230
+// slog checkpoint error simulation placeholder 218-230
 GLOBAL_ERRSIM_POINT_DEF(218, EN_SLOG_CKPT_ERROR, "");
 GLOBAL_ERRSIM_POINT_DEF(219, EN_FAST_RECOVERY_AFTER_ALLOC_FILE, "");
 GLOBAL_ERRSIM_POINT_DEF(220, EN_FAST_MIGRATE_ADD_MEMBER_FAIL, "");
@@ -380,6 +384,7 @@ GLOBAL_ERRSIM_POINT_DEF(542, EN_FTS_INDEX_BUILD_INDEX_FAILED, "");
 GLOBAL_ERRSIM_POINT_DEF(543, EN_FTS_INDEX_BUILD_DOC_WORD_FAILED, "");
 GLOBAL_ERRSIM_POINT_DEF(544, FTS_INDEX_SUBTASK_FAILED, "");
 GLOBAL_ERRSIM_POINT_DEF(545, FTS_INDEX_SUBTASK_BUILD_SSTABLE_FAILED, "");
+GLOBAL_ERRSIM_POINT_DEF(546, EN_FTS_INDEX_BUILD_PREPARE_FAILED, "");
 // SQL Optimizer related 551-599
 GLOBAL_ERRSIM_POINT_DEF(551, EN_EXPLAIN_GENERATE_PLAN_WITH_OUTLINE, "Used to enable outline validity check for explain query");
 GLOBAL_ERRSIM_POINT_DEF(552, EN_ENABLE_AUTO_DOP_FORCE_PARALLEL_PLAN, "Used to generate parallel plan with random dop");

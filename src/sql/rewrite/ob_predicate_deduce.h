@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OB_PREDICATE_DEDUCER_H
@@ -252,20 +256,15 @@ private:
   bool has_raw_const_equal_condition(int64_t param_idx);
 private:
   ObObjMeta cmp_type_; // the compare meta used by all exprs in the graph
-
-  /// 图中每个节点对应的表达式
+  /// The expression corresponding to each node in the graph
   ObSEArray<ObRawExpr *, 4> input_exprs_;
-
-  /// 构造连通图的输入谓词表达式
+  /// Construct the input predicate expression of the connected graph
   ObSEArray<ObRawExpr *, 4> input_preds_;
-
-  // 全连通图
+  // Fully connected graph
   ObArray<uint8_t> graph_;
-
-  /// 两个表达式之间的比较类型是否是否和 cmp_type_ 相同
+  /// The comparison type between two expressions is whether it is the same as cmp_type_
   ObArray<bool> type_safety_;
-
-  /// 按照大小关系进行拓扑排序后，图中节点的次序
+  /// After topological sorting based on size relationship, the order of nodes in the graph
   ObSEArray<int64_t, 4> topo_order_;
 
   ObDMLStmt &stmt_;

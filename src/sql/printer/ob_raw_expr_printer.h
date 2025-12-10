@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SQL_RESOLVER_EXPR_OB_RAW_EXPR_PRINTER_H_
@@ -98,9 +102,8 @@ class ObRawExprPrinter
     PRINT_IDENT(ident_str);               \
     PRINT_QUOT;                           \
   } while (0)
-  
-// cast函数在parse阶段用到这两个宏, 但定义在sql_parse_tab.c中
-// cast函数功能不完善，beta之前不会修改, 先定义在这里
+// cast function uses these two macros in the parse phase, but they are defined in sql_parse_tab.c
+// cast function functionality is incomplete, will not be modified before beta, define here first
 // TODO@nijia.nj
 #define BINARY_COLLATION 63
 #define INVALID_COLLATION 0
@@ -114,7 +117,7 @@ public:
 
   void init(char *buf, int64_t buf_len, int64_t *pos, ObSchemaGetterGuard *schema_guard,
             ObObjPrintParams print_params, const ParamStore *param_store = NULL);
-  // stmt中会出现若干expr, 为了避免反复实例化，这里将expr作为do_print的参数
+  // stmt will contain several exprs, to avoid repeated instantiation, here expr is passed as a parameter to do_print
   int do_print(ObRawExpr *expr, ObStmtScope scope, bool only_column_namespace = false, bool print_cte = false);
 private:
   int print_bool_expr(ObRawExpr *expr);

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include <gtest/gtest.h>
@@ -599,7 +603,7 @@ TEST_F(ObPhyOperatorTest, physical_plan_size)
     ObSqlExpressionFactory sql_expression_factory_;
     ObExprOperatorFactory expr_op_factory_;
     stmt::StmtType stmt_type_;
-    stmt::StmtType literal_stmt_type_; // 含义参考ObBasicStmt中对应定义
+    stmt::StmtType literal_stmt_type_; // meaning refers to the corresponding definition in ObBasicStmt
     ObPhyPlanType plan_type_;
     common::ObConsistencyLevel hint_consistency_;
     uint32_t next_phy_operator_id_; //share val
@@ -607,13 +611,13 @@ TEST_F(ObPhyOperatorTest, physical_plan_size)
     int16_t regexp_op_count_;
     bool is_sfu_;
     bool fetch_cur_time_;
-    bool is_contain_virtual_table_;//为虚拟表服务，如果判断出语句中涉及虚拟表
+    bool is_contain_virtual_table_;//for virtual table service, if it is determined that the statement involves a virtual table
     bool is_require_sys_tenant_priv_;
     //if the stmt  contains user variable assignment
     //such as @a:=123
     //we may need to serialize the map to remote server
     bool is_contains_assignment_;
-    bool affected_last_insert_id_; //不需要序列化远端，只在本地生成执行计划和open resultset的时候需要
+    bool affected_last_insert_id_; //No need to serialize remotely, only needed when generating execution plan and opening result set locally
     bool is_affect_found_row_; //not need serialize
   };
 

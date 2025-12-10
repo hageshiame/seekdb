@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_REWRITE
@@ -672,10 +676,10 @@ void TestRewrite::run_test(ObTransformerImpl &trans_util,
 //    exit(0);
 //  }
 //}
-/* todo:@linjing: 由于修改的result文件太大，超过了单次CR 50M的文件上限，合入后放开测试例
+/* todo:@linjing: Since the modified result file is too large, exceeding the 50M file limit for a single CR, remove the test case after merging
 TEST_F(TestRewrite, transform_simply)
 {
-  // result has the transformed stmt and plan
+  // result contains the transformed stmt and plan
   const char* test_file = "./test_transformer_simplify.sql";
   const char* stmt_after_trans_simplify_result_file = "./result/test_transformer_stmt_after_trans_simplify.result";
   const char* stmt_after_trans_simplify_file = "./result/test_transformer_stmt_after_trans_simplify.tmp";
@@ -715,7 +719,7 @@ TEST_F(TestRewrite, transform_simply)
 }
 */
 
-/* todo:@linjing: 由于修改的result文件太大，超过了单次CR 50M的文件上限，合入后放开测试例
+/* todo:@linjing: Due to the modified result file being too large, exceeding the 50M file limit for a single CR, release the test cases after merging
 TEST_F(TestRewrite, transform_set_op)
 {
   // result has the transformed stmt and plan
@@ -753,13 +757,12 @@ TEST_F(TestRewrite, transform_set_op)
              plan_after_trans_set_op_result_file, plan_after_trans_set_op_file,
              plan_no_trans_set_op_file, true, EXPLAIN_TRADITIONAL, true);
   }
-  OK(ret);
 }
 */
 
 #ifndef tmptest
 
-/* todo:@linjing: 由于修改的result文件太大，超过了单次CR 50M的文件上限，合入后放开测试例
+/* todo:@linjing: Due to the modified result file being too large, exceeding the 50M file limit for a single CR, remove the test case after merging
 TEST_F(TestRewrite, transform_aggregate)
 {
   // result has the transformed stmt and plan
@@ -811,7 +814,7 @@ TEST_F(TestRewrite, transform_aggregate)
 //      plan_result_file, plan_after_merge_file, plan_no_merge_file);
 //}
 
-/* todo:@linjing: 由于修改的result文件太大，超过了单次CR 50M的文件上限，合入后放开测试例
+/* todo:@linjing: Since the modified result file is too large, exceeding the 50M file limit for a single CR, remove the test case after merging
 TEST_F(TestRewrite, query_push_down) {
   // result has the transformed stmt and plan
   const char* test_file = "test_transformer_query_push_down.sql";
@@ -847,7 +850,6 @@ TEST_F(TestRewrite, query_push_down) {
     run_test(trans, test_file, stmt_merge_result_file, stmt_merge_file, stmt_no_merge_file,
              plan_result_file, plan_after_merge_file, plan_no_merge_file, true, EXPLAIN_TRADITIONAL);
   }
-  OK(ret);
 }
 */
 
@@ -905,7 +907,7 @@ TEST_F(TestStackCheck, test_resursive_level_check)
   ObTransformer::set_max_recursive_level(original_level);
 } */
 
-/* todo:@linjing: 由于修改的result文件太大，超过了单次CR 50M的文件上限，合入后放开测试例
+/* todo:@linjing: Due to the modified result file being too large, exceeding the 50M file limit for a single CR, remove the test case after merging
 TEST_F(TestRewrite, eliminate_outer_join)
 {
   const char* test_file = "./el.sql";
@@ -942,11 +944,10 @@ TEST_F(TestRewrite, eliminate_outer_join)
              stmt_el_file, stmt_no_el_file,
              plan_result_file, plan_after_el_file, plan_no_el_file, true, EXPLAIN_TRADITIONAL, true);
   }
-  OK(ret);
 }
 */
 
-/* todo(@ banliu.zyd): 这个测试目前没有放入基准的result文件，先注释了
+/* todo(@ banliu.zyd): This test is currently not included in the benchmark result file, so it is commented out
 TEST_F(TestRewrite, hualong)
 {
   // result has the transformed stmt and plan
@@ -971,7 +972,7 @@ TEST_F(TestRewrite, hualong)
 }
 */
 
-/* todo:@linjing: 由于修改的result文件太大，超过了单次CR 50M的文件上限，合入后放开测试例
+/* todo:@linjing: Due to the modified result file being too large, exceeding the 50M file limit for a single CR, remove the test case after merging
 TEST_F(TestRewrite, test_together)
 {
   // test the transformimpl using outer-join elimination view merge and where pull up
@@ -1004,7 +1005,7 @@ TEST_F(TestRewrite, test_together)
 }
 */
 
-/* todo:@linjing: 由于修改的result文件太大，超过了单次CR 50M的文件上限，合入后放开测试例
+/* todo:@linjing: Due to the modified result file being too large, exceeding the 50M file limit for a single CR, remove the test case after merging
 TEST_F(TestRewrite, transform_outline)
 {
   // result has the transformed stmt and plan

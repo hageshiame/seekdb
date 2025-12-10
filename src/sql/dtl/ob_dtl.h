@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OB_DTL_H
@@ -144,10 +148,10 @@ private:
       ObDtlFlowControl *dfc, const bool need_free_chan);
   int get_dtl_channel_manager(uint64_t hash_val, ObDtlChannelManager *&ch_mgr);
 private:
-  // bucket number必须是hash_cnt的整数倍，目前有依赖
-  // 当前认为一个ch_mgr管理一批bucket，采用hash_cnt的倍数关系进行上锁
-  // 如 ch_mgr(0) lock [0, 256, 512, ..., ]
-  // 所以hash_value对于ch_mgr和hash_table必须是同一个
+  // bucket number must be an integer multiple of hash_cnt, there is currently a dependency
+  // Currently it is considered that a ch_mgr manages a batch of buckets, using a multiple relationship of hash_cnt for locking
+  // like ch_mgr(0) lock [0, 256, 512, ..., ]
+  // So hash_value for ch_mgr and hash_table must be the same
   static const int64_t HASH_CNT = 8;
   static const int64_t BUCKET_NUM = 256;
   bool is_inited_;

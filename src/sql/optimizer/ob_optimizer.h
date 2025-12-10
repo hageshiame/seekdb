@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "share/ob_define.h"
@@ -101,7 +105,7 @@ namespace sql
     uint64_t num_include_monitoring_dump_;
     uint64_t branch_id_;
     uint64_t op_id_;
-    int64_t plan_depth_; // 算子在计划树的缩进层次，顶层算子从0算起
+    int64_t plan_depth_; // Operator indentation level in the plan tree, top-level operators start from 0
     bool going_up_;
   };
 
@@ -123,7 +127,7 @@ namespace sql
       next_px_id_ = (next_px_id_ <= 0) ? 1 : next_px_id_ + 1;
       return next_px_id_;
     }
-    // 栈顶 item 作为当前 px 的 dfo 计数器
+    // Stack top item as current px's dfo counter
     int next_dfo(int64_t &px_id, int64_t &dfo_id)
     {
       int ret = common::OB_SUCCESS;

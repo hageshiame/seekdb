@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_REWRITE
@@ -205,7 +209,7 @@ int ObTransformGroupByPullup::check_groupby_pullup_validity(ObDMLStmt *stmt,
   } else if (OB_FAIL(StmtUniqueKeyProvider::check_can_set_stmt_unique(stmt, has_unique_keys))) {
     LOG_WARN("failed to check stmt has unique keys", K(ret));
   } else if (!has_unique_keys) {
-    //如果当前stmt不能生成唯一键，do nothing
+    // If the current stmt cannot generate a unique key, do nothing
     OPT_TRACE("stmt can not generate unique keys, can not transform");
   } else {
     is_valid = true;
@@ -237,11 +241,11 @@ int ObTransformGroupByPullup::check_groupby_pullup_validity(ObDMLStmt *stmt,
   if (OB_SUCC(ret)) {
     if (OB_FAIL(check_on_conditions(*stmt, ignore_tables))) {
       LOG_WARN("failed to check ignore views", K(ret));
-    } else if (stmt->get_query_ctx()->check_opt_compat_version(COMPAT_VERSION_4_3_5_BP2)) {
+    } else {
       if (OB_FAIL(check_where_conditions(*stmt, ignore_tables))) {
         LOG_WARN("failed to check ignore views", K(ret));
       } else { /* do nothing */ }
-    } else { /* do nothing */ }
+    }
   }
   // check view validity
   for (int64_t i = 0; OB_SUCC(ret) && is_valid && i < stmt->get_from_item_size(); ++i) {
@@ -349,20 +353,20 @@ int ObTransformGroupByPullup::check_groupby_pullup_validity(ObDMLStmt *stmt,
     left_helper.parent_table_ = joined_table;
     right_helper.parent_table_ = joined_table;
     if (LEFT_OUTER_JOIN == joined_table->joined_type_) {
-      //LEFT OUTER JOIN的左表行为跟parent table相同
-      //LEFT OUTER JOIN的右表上拉group by要求不能有having条件
+      //LEFT OUTER JOIN's left table behavior is the same as parent table
+      //LEFT OUTER JOIN's right table pull-up group by requirement cannot have having condition
       right_helper.need_check_having_ = true;
       right_helper.need_check_null_propagate_ = true;
       check_left = false;
     } else if (RIGHT_OUTER_JOIN == joined_table->joined_type_) {
-      //RIGHT OUTER JOIN的左表上拉group by要求不能有having条件
+      // RIGHT OUTER JOIN's left table pull-up group by requirement cannot have having condition
       left_helper.need_check_having_ = true;
       left_helper.need_check_null_propagate_ = true;
       check_right = false;
-      //LEFT OUTER JOIN的右表行为跟parent table相同
+      //LEFT OUTER JOIN's right table rows are the same as the parent table
     } else if (INNER_JOIN == joined_table->joined_type_) {
-      //INNER JOIN的左表行为跟parent table相同
-      //INNER JOIN的右表行为跟parent table相同
+      // INNER JOIN's left table rows are the same as parent table
+      // INNER JOIN's right table row behavior is the same as parent table
     } else if (FULL_OUTER_JOIN == joined_table->joined_type_) {
       if (OB_ISNULL(joined_table->left_table_) ||
           OB_ISNULL(joined_table->right_table_)) {
@@ -370,7 +374,7 @@ int ObTransformGroupByPullup::check_groupby_pullup_validity(ObDMLStmt *stmt,
         LOG_WARN("joined table has null child table", K(ret));
       } else if (!joined_table->left_table_->is_basic_table() &&
                 !joined_table->right_table_->is_basic_table()) {
-        //full join要求两侧至少有一个basic table，否则不能保证能够生成严格唯一键
+        // full join requires at least one basic table on either side, otherwise it cannot guarantee generating a strictly unique key
         is_valid = false;
       } else {
         check_left = false;
@@ -594,7 +598,7 @@ int ObTransformGroupByPullup::check_null_propagate(ObDMLStmt *parent_stmt,
     } else if (OB_FAIL(ObTransformUtils::extract_table_exprs(*child_stmt, columns, from_tables, column_exprs))) {
       LOG_WARN("failed to extract table exprs", K(ret));
     } else {
-      //检查是否有空值拒绝表达式
+      // Check for null values in the reject expression
       bool find = false;
       ObRawExpr *not_null_column = NULL;
       for (int64_t i = 0; OB_SUCC(ret) && !find && i < child_stmt->get_select_item_size(); i++) {
@@ -695,7 +699,7 @@ int ObTransformGroupByPullup::find_not_null_column_with_condition(
     bool find = false;
     for (int64_t i = 0; OB_SUCC(ret) && !find && i < old_column_exprs.count(); ++i) {
       bool has_null_reject = false;
-      //首先找到null reject的select expr
+      //First find the null reject select expr
       if (OB_FAIL(ObTransformUtils::has_null_reject_condition(join_conditions,
                                                               old_column_exprs.at(i),
                                                               has_null_reject))) {
@@ -753,8 +757,7 @@ int ObTransformGroupByPullup::check_table_items(ObDMLStmt *stmt,
   } else if (stmt->get_table_size() > 1 && child_stmt->get_table_size() > 1 &&
              stmt->get_table_size() + child_stmt->get_table_size() - 1 > 10) {
     is_valid = false;
-  } else if (stmt->get_query_ctx()->check_opt_compat_version(
-                          COMPAT_VERSION_4_2_5, COMPAT_VERSION_4_3_0, COMPAT_VERSION_4_3_5)) {
+  } else {
     const TableItem *table = NULL;
     int64_t non_basic_table_count = 0;
     for (int64_t i = 0; OB_SUCC(ret) && is_valid && i < stmt->get_table_size(); ++i) {
@@ -836,12 +839,14 @@ int ObTransformGroupByPullup::do_groupby_pull_up(ObSelectStmt *stmt,
   } else if (OB_FAIL(append(stmt->get_group_exprs(), unique_exprs))) {
     LOG_WARN("failed to append group exprs", K(ret));
   }
-  /** 找到所有包含聚合函数的select item，拉出
-    * 拉出group by expr
-    * 拉出having condition
-    * 拉出包含的子查询
-    * 提取select item、group by expr、having condition的column expr，在视图内创建select item*/
-  //找到包含聚合函数的select expr，以及对应的column expr
+  /**
+ * Find all select items containing aggregate functions, extract
+ * extract group by expr
+ * extract having condition
+ * extract contained subqueries
+ * extract column expr from select item, group by expr, having condition, and create select item within the view
+ */
+  // Find the select expr containing aggregate functions, as well as the corresponding column expr
   ObSqlBitSet<> removed_idx;
   for (int64_t i = 0; OB_SUCC(ret) && i < subquery->get_select_item_size(); ++i) {
     ObRawExpr *select_expr = subquery->get_select_item(i).expr_;
@@ -854,7 +859,7 @@ int ObTransformGroupByPullup::do_groupby_pull_up(ObSelectStmt *stmt,
       //do nothing
     } else if (OB_FALSE_IT(column_id = i + OB_APP_MIN_COLUMN_ID)) {
     } else if (OB_ISNULL(col_expr = stmt->get_column_expr_by_id(table_item->table_id_, column_id))) {
-      //未引用的，直接删除
+      // Unreferenced, directly delete
       if (OB_FAIL(removed_idx.add_member(i))) {
         LOG_WARN("failed to add remove idx", K(ret));
       }
@@ -1229,9 +1234,7 @@ int ObTransformGroupByPullup::check_original_plan_validity(ObLogicalOperator* ro
   } else if (OB_FAIL(check_view_table_in_inner_path(parent_ops, *parent_stmt,
                                                     view_table_id, is_inner_path))) {
     LOG_WARN("failed to check view table in inner path", K(ret));
-  } else if (is_inner_path &&
-             child_stmt->get_query_ctx()->check_opt_compat_version(
-                          COMPAT_VERSION_4_2_5, COMPAT_VERSION_4_3_0, COMPAT_VERSION_4_3_5)) {
+  } else if (is_inner_path) {
     is_valid = false;
     OPT_TRACE("check original plan view table in inner path:", is_inner_path);
   } else if (OB_FAIL(extract_columns_in_join_conditions(parent_ops,

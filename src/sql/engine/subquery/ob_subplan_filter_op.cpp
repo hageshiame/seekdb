@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -194,7 +198,7 @@ void ObSubQueryIterator::drain_exch()
 
 int ObSubQueryIterator::rewind(const bool reset_onetime_plan /* = false */)
 {
-  //根据subplan filter的语义，reset row iterator，其它的成员保持不变
+  // According to the semantics of subplan filter, reset row iterator, other members remain unchanged
   int ret = OB_SUCCESS;
   if (onetime_plan_ && !reset_onetime_plan) {
     // for onetime expr
@@ -252,8 +256,7 @@ void ObSubQueryIterator::reuse()
   iter_end_ = false;
   das_batch_params_recovery_.reset();
 }
-
-//TODO 移到对应的expr， 设置一个标记确保只计算一次
+//TODO move to the corresponding expr, set a flag to ensure it is calculated only once
 int ObSubQueryIterator::prepare_init_plan()
 {
   int ret = OB_SUCCESS;
@@ -646,7 +649,7 @@ int ObSubPlanFilterOp::switch_iterator()
   if (OB_FAIL(ObOperator::inner_switch_iterator())) {
     LOG_WARN("failed to inner switch iterator", K(ret));
   } else if (OB_FAIL(child_->switch_iterator())) {
-    //TODO: 目前只支持对非相关子查询做多组迭代器切换，只切换主表
+    //TODO: Currently only supports multi-group iterator switch for non-correlated subqueries, only switches the main table
     if (OB_ITER_END != ret) {
       LOG_WARN("switch child operator iterator failed", K(ret));
     }
@@ -666,10 +669,10 @@ int ObSubPlanFilterOp::inner_open()
   CK(child_cnt_ == MY_SPEC.enable_px_batch_rescans_.count() ||
      0 == MY_SPEC.enable_px_batch_rescans_.count());
   if (OB_SUCC(ret)) {
-    //在subplan filter中，第一个child是对外输出的主表，后面的child都是subquery，
-    //subquery的结果需要参与表达式计算，所以为每个subquery生成一个row_iterator
+    // In subplan filter, the first child is the main table for external output, the following children are all subqueries,
+    // The result of subquery needs to participate in expression calculation, so generate a row_iterator for each subquery
     OZ(subplan_iters_.prepare_allocate(child_cnt_ - 1));
-    //TODO 移动到后面
+    //TODO move to the back
     if (MY_SPEC.exec_param_idxs_inited_ && child_cnt_ - 1 != MY_SPEC.exec_param_array_.count()) {
       ret = OB_ERR_UNEXPECTED;
       LOG_WARN("exec param idx array is unexpected", K(ret), K(MY_SPEC.exec_param_array_.count()));
@@ -686,7 +689,7 @@ int ObSubPlanFilterOp::inner_open()
         iter->set_parent(this);
         if (MY_SPEC.init_plan_idxs_.has_member(i)) {
           iter->set_init_plan();
-          //init plan 移到get_next_row之后
+          //init plan move to get_next_rowafter
         } else if (MY_SPEC.one_time_idxs_.has_member(i)) {
           iter->set_onetime_plan();
         } else if (!MY_SPEC.enable_px_batch_rescans_.empty() &&
@@ -1205,7 +1208,7 @@ int ObSubPlanFilterOp::inner_get_next_batch(const int64_t max_row_cnt)
   } else if (need_init_before_get_row_) {
     OZ(prepare_onetime_exprs());
   }
-  //从主表中获取一行数据
+  // Get a row of data from the main table
   clear_evaluated_flag();
   if(OB_FAIL(ret)) {
     LOG_WARN("prepare_onetime_expr fail.", K(ret));

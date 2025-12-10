@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -208,22 +212,22 @@ int ObMergeUnionOp::get_first_row_vectorize(const int64_t batch_size)
 }
 
 /**
- * 注释直接copy过来了
+ * Comment directly copied over
  * When UNION DISTINCT, we consider that left and right query already in ordered.
  * cur_child_operator: get current row from this operator in the first place
  * candidate_output_row && candidate_child_operator: the candidate output row from the candidate
  * child operator
  *
- * in distinct_get_nexr_row, we get the next row from the cur_child_operator as input_row at first,
+ * in distinct_get_next_row, we get the next row from the cur_child_operator as input_row at first,
  * input_row is distinct with the last output row
- * if in the end of the cur_child_opertor iterator, we must output the candidate_output_row
+ * if in the end of the cur_child_operator iterator, we must output the candidate_output_row
  * as the current row and switch the cur_child_operator to candidate_child_operator to get next row,
  *
  * if in the end of the candidate_child_operator iterator, we only need to get next row from the
- * cur_child_operator, and don't need to cmp_( with candidate_child_operator's row
+ * cur_child_operator, and don't need to cmp_ with candidate_child_operator's row
  *
- * if cur_child_operator and candidate_child_operator are present, we need to cmp_( input_row
- * with the  candidate_output_row, if input_row is less than candidate_output_row, return input_row
+ * if cur_child_operator and candidate_child_operator are present, we need to cmp_ input_row
+ * with the candidate_output_row, if input_row is less than candidate_output_row, return input_row
  * as the result, if input_row equal to candidate_output_row, return input_row as the result and
  * get the distinct candidate_output_row from the candidate_child_operator, otherwise, return
  * candidate_output_row as the result and switch candidate_child_operator with cur_child_operator

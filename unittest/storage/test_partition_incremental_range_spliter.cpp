@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX STORAGE
@@ -71,8 +75,8 @@ struct ObMockRowkeyRange
     return !(*this == other);
   }
 
-  int64_t start_; // 包含
-  int64_t end_;   // 不包含
+  int64_t start_; // include
+  int64_t end_;   // not inclusive
 };
 
 struct ObMockRowkeyRanges
@@ -672,7 +676,7 @@ private:
   ObMockSSTableV2 major_sstable_;
   ObSSTableMeta major_sstable_meta_;
   ObStorageMetaHandle mock_major_sstable_handle_;
-  ObSSTable minor_sstable_;  // 增量
+  ObSSTable minor_sstable_;  // incremental
   ObSSTableMeta minor_sstable_meta_;
   ObStorageMetaHandle mock_minor_sstable_handle_;
   compaction::ObTabletMergeCtx merge_ctx_;
@@ -852,7 +856,7 @@ int TestPartitionIncrementalRangeSliter::check_iterator_result(storage::ObIStore
 
     if (OB_SUCC(ret)) {
       if (length > 0) {
-        --length;  // 去掉末尾的','
+        --length;  // remove the trailing ','
       }
       buf_[length] = '\0';
       equal = (length == result.length() && ::memcmp(buf_, result.ptr(), length) == 0);
@@ -895,7 +899,7 @@ int TestPartitionIncrementalRangeSliter::check_ranges_result(const ObIArray<ObDa
     // STORAGE_LOG(DEBUG, "ranges result", KR(ret), K(buf_), K(result));
     if (OB_SUCC(ret)) {
       if (length > 0) {
-        --length;  // 去掉末尾的','
+        --length;  // remove the trailing ','
       }
       buf_[length] = '\0';
       equal = (length == result.length() && ::memcmp(buf_, result.ptr(), length) == 0);
@@ -941,7 +945,7 @@ void TestPartitionIncrementalRangeSliter::inner_test_get_next_meta(const ObStrin
   }
   ASSERT_EQ(OB_ITER_END, ret);
   if (length > 0) {
-    --length;  // 去掉末尾的','
+    --length;  // remove the trailing ','
   }
   buf_[length] = '\0';
   ASSERT_EQ(length, metas_str.length());

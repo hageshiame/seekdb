@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef LOGSERVICE_PALF_ELECTION_UTILS_ELECTION_EVENT_HISTORY_ACCESSOR_H
@@ -80,17 +84,17 @@ public:
   ls_id_(ls_id), self_addr_(self_addr), timer_(timer), need_report_(true) {}
   void set_need_report(const bool need_report) { need_report_ = need_report; }
   // proposer event
-  int report_decentralized_to_be_leader_event(const MemberListWithStates &member_list_with_states);// 当选Leader
-  int report_leader_lease_expired_event(const MemberListWithStates &member_list_with_states);// Leader续约失败卸任
-  int report_directly_change_leader_event(const ObAddr &dest_svr, const ObStringHolder &reason);// Leader直接切主，不走RCS流程
-  int report_prepare_change_leader_event(const ObAddr &dest_svr, const ObStringHolder &reason);// 旧Leader准备切主
-  int report_change_leader_to_revoke_event(const ObAddr &dest_svr);// 旧Leader卸任
-  int report_change_leader_to_takeover_event(const ObAddr &addr);// 新Leader上任
-  int report_member_list_changed_event(const MemberList &old_list, const MemberList &new_list);// 修改成员列表
+  int report_decentralized_to_be_leader_event(const MemberListWithStates &member_list_with_states);// Elected as Leader
+  int report_leader_lease_expired_event(const MemberListWithStates &member_list_with_states);// Leader lease renewal failed, resigning
+  int report_directly_change_leader_event(const ObAddr &dest_svr, const ObStringHolder &reason);// Leader directly switch to leader without going through the RCS process
+  int report_prepare_change_leader_event(const ObAddr &dest_svr, const ObStringHolder &reason);// Old Leader prepares for leader-follower switch
+  int report_change_leader_to_revoke_event(const ObAddr &dest_svr);// Old Leader resigns
+  int report_change_leader_to_takeover_event(const ObAddr &addr);// New Leader takes over
+  int report_member_list_changed_event(const MemberList &old_list, const MemberList &new_list);// Modify member list
   // acceptor event
-  int report_vote_event(const ObAddr &dest_svr, const ObStringHolder &reason);// 一呼百应prepare阶段投票
-  int report_acceptor_lease_expired_event(const Lease &lease);// Lease到期
-  int report_acceptor_witness_change_leader_event(const ObAddr &old_leader, const ObAddr &new_leader);// 见证切主事件
+  int report_vote_event(const ObAddr &dest_svr, const ObStringHolder &reason);// one-to-all prepare phase voting
+  int report_acceptor_lease_expired_event(const Lease &lease);// Lease expired
+  int report_acceptor_witness_change_leader_event(const ObAddr &old_leader, const ObAddr &new_leader);// witness leader switch event
   int64_t to_string(char *buf, const int64_t len) const;
 private:
   int report_event_(ElectionEventType type, const common::ObString &info);

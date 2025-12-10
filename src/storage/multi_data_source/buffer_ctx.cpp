@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2023 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "buffer_ctx.h"
@@ -33,7 +37,7 @@ int BufferCtxNode::serialize(char *buf, const int64_t buf_len, int64_t &pos) con
   int ret = OB_SUCCESS;
   MDS_TG(10_ms);
   if (OB_NOT_NULL(ctx_)) {
-    // 序列化时，如果ctx不为空，那么其类型必须是有效的，这里防御一下，否则反序列化的报错会增加排查难度
+    // When serializing, if ctx is not null, then its type must be valid, here we defend against it, otherwise the error during deserialization will increase the difficulty of troubleshooting
     MDS_ASSERT(ctx_->get_binding_type_id() != INVALID_VALUE);
     int64_t type_id = ctx_->get_binding_type_id();
     if (MDS_FAIL(serialization::encode(buf, buf_len, pos, type_id))) {

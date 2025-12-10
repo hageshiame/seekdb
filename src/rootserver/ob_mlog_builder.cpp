@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX RS
@@ -90,8 +94,9 @@ int ObMLogBuilder::MLogColumnUtils::add_sequence_column()
     rowkey_column->set_autoincrement(false);
     rowkey_column->set_is_hidden(false);
     rowkey_column->set_nullable(false);
-    rowkey_column->set_rowkey_position(0);
+    rowkey_column->set_rowkey_position(++rowkey_count_);
     rowkey_column->set_order_in_rowkey(ObOrderType::ASC);
+    rowkey_column->set_index_position(0);
     rowkey_column->set_column_id(OB_MLOG_SEQ_NO_COLUMN_ID);
     rowkey_column->set_data_type(ObIntType);
     rowkey_column->set_charset_type(CHARSET_BINARY);
@@ -115,10 +120,12 @@ int ObMLogBuilder::MLogColumnUtils::add_dmltype_column()
   } else {
     column->set_autoincrement(false);
     column->set_is_hidden(false);
+    column->set_nullable(false);
     column->set_rowkey_position(0);
     column->set_index_position(0);
     column->set_collation_type(ObCollationType::CS_TYPE_UTF8MB4_GENERAL_CI);
     column->set_data_type(ColumnType::ObVarcharType);
+    column->set_accuracy(ObAccuracy::MAX_ACCURACY[ObVarcharType]);
     column->set_data_length(1);
     column->set_column_id(OB_MLOG_DML_TYPE_COLUMN_ID);
     if (OB_FAIL(column->set_column_name(OB_MLOG_DML_TYPE_COLUMN_NAME))) {
@@ -139,10 +146,12 @@ int ObMLogBuilder::MLogColumnUtils::add_old_new_column()
   } else {
     column->set_autoincrement(false);
     column->set_is_hidden(false);
+    column->set_nullable(false);
     column->set_rowkey_position(0);
     column->set_index_position(0);
     column->set_collation_type(ObCollationType::CS_TYPE_UTF8MB4_GENERAL_CI);
     column->set_data_type(ColumnType::ObVarcharType);
+    column->set_accuracy(ObAccuracy::MAX_ACCURACY[ObVarcharType]);
     column->set_data_length(1);
     column->set_column_id(OB_MLOG_OLD_NEW_COLUMN_ID);
     if (OB_FAIL(column->set_column_name(OB_MLOG_OLD_NEW_COLUMN_NAME))) {
@@ -187,6 +196,7 @@ int ObMLogBuilder::MLogColumnUtils::add_base_table_pk_columns(
         // preserve the rowkey position of the column
         ref_column->set_autoincrement(false);
         ref_column->set_is_hidden(false);
+        ref_column->set_rowkey_position(++rowkey_count_);
         ref_column->set_index_position(0);
         ref_column->set_prev_column_id(UINT64_MAX);
         ref_column->set_next_column_id(UINT64_MAX);
@@ -198,8 +208,6 @@ int ObMLogBuilder::MLogColumnUtils::add_base_table_pk_columns(
         } else if (OB_FAIL(mlog_table_column_array_.push_back(ref_column))) {
           LOG_WARN("failed to push back column to mlog table column array",
               KR(ret), KP(ref_column));
-        } else {
-          ref_column->set_rowkey_position(++rowkey_count_);
         }
       }
     }
@@ -291,7 +299,6 @@ int ObMLogBuilder::MLogColumnUtils::implicit_add_base_table_part_key_columns(
         ref_column->set_is_hidden(false);
         ref_column->set_rowkey_position(0);
         ref_column->set_index_position(0);
-        ref_column->set_nullable(false);
         ref_column->set_prev_column_id(UINT64_MAX);
         ref_column->set_next_column_id(UINT64_MAX);
         ref_column->set_column_id(ObTableSchema::gen_mlog_col_id_from_ref_col_id(
@@ -343,17 +350,8 @@ int ObMLogBuilder::MLogColumnUtils::construct_mlog_table_columns(
     }
   };
   lib::ob_sort(mlog_table_column_array_.begin(), mlog_table_column_array_.end(), ColumnSchemaCmp());
-
   for (int64_t i = 0; OB_SUCC(ret) && (i < mlog_table_column_array_.count()); ++i) {
     ObColumnSchemaV2 *column = mlog_table_column_array_.at(i);
-    // columns referencing base table primary keys have already been assigned rowkey position
-    if ((column->is_part_key_column() || column->is_subpart_key_column())
-        && (0 == column->get_rowkey_position())) {
-      column->set_rowkey_position(++rowkey_count_);
-    } else if (OB_MLOG_SEQ_NO_COLUMN_ID == column->get_column_id()) {
-      // mlog seq_no column must be the last rowkey
-      column->set_rowkey_position(++rowkey_count_);
-    }
     if (OB_FAIL(mlog_schema.add_column(*column))) {
       LOG_WARN("failed to add column to mlog schema", KR(ret), KPC(column));
     }
@@ -781,6 +779,7 @@ int ObMLogBuilder::set_basic_infos(
     } else {
       mlog_schema.set_table_mode_flag(ObTableModeFlag::TABLE_MODE_QUEUING_EXTREME);
       mlog_schema.set_table_type(mlog_type);
+      mlog_schema.set_table_organization_mode(TOM_INDEX_ORGANIZED);
       mlog_schema.set_index_status(ObIndexStatus::INDEX_STATUS_UNAVAILABLE);
       mlog_schema.set_duplicate_attribute(base_table_schema.get_duplicate_scope(),
                                           base_table_schema.get_duplicate_read_consistency());

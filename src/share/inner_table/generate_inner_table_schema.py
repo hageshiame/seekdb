@@ -97,6 +97,7 @@ all_ora_mapping_virtual_table_org_tables = []
 all_ora_mapping_virtual_tables = []
 real_table_virtual_table_names = []
 cluster_private_tables = []
+core_related_tables = []
 all_only_sys_table_name = {}
 mysql_compat_agent_tables = {}
 column_collation = 'CS_TYPE_INVALID'
@@ -104,16 +105,20 @@ column_collation = 'CS_TYPE_INVALID'
 restrict_access_virtual_tables = []
 is_oracle_sys_table = False
 sys_index_tables = []
-copyright = """/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+copyright = """/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 """
 
@@ -938,7 +943,8 @@ def check_fileds(fields, keywords):
         raise IOError("no field {0} found in def_table_schema, table_name={1}".format(field, keywords["table_name"]))
 
   non_field_keywords = ('index', 'enable_column_def_enum', 'base_def_keywords',
-                        'self_tid', 'mapping_tid', 'real_vt', 'meta_record_in_sys')
+                        'self_tid', 'mapping_tid', 'real_vt', 'meta_record_in_sys',
+                        'is_core_related')
   for kw in keywords:
     if not kw.startswith("base_table_name") and kw not in fields and not keywords.has_key('index_name') and kw not in non_field_keywords and keywords['table_type'] != 'AUX_LOB_META' and keywords['table_type'] != 'AUX_LOB_PIECE':
       raise IOError("unknown field {0} found in def_table_schema, table_name={1}".format(kw, keywords["table_name"]))
@@ -979,13 +985,12 @@ def copy_keywords(keywords):
     keywords["base_table_name2"] = ''
 
   print "copy_keywords in: table_id=", tid, ",  table_name=" + tname, ", base_table_name=" + base_tname, ", base_table_name1=" + base_tname1, ", base_table_name2=" + base_tname2
-
-  # 默认base_table_name等于其表名
-  # base_table_name[1,2] 记录了多层schema嵌套定义场景的原始基表名
-  # 例如：15118号表schema，它嵌套定义了两层基表:
-  # 真实表名：ALL_VIRTUAL_GLOBAL_TRANSACTION
-  # 第一层基表：__all_tenant_global_transaction
-  # 第二层基表: __all_virtual_global_transaction
+  # Default base_table_name equals its table name
+  # base_table_name[1,2] records the original base table name in the scenario of multi-layer schema nested definitions
+  # For example: schema of table number 15118, which nestedly defines two layers of base tables:
+  # Real table name: ALL_VIRTUAL_GLOBAL_TRANSACTION
+  # First layer base table: __all_tenant_global_transaction
+  # Second layer base table: __all_virtual_global_transaction
   if base_tname == '':
     base_tname = tname;
     keywords["base_table_name"] = tname;
@@ -997,8 +1002,7 @@ def copy_keywords(keywords):
     keywords["base_table_name2"] = tname;
   elif base_tname1 != '' and base_tname2 != '' and tname != base_tname and tname != base_tname1 and tname != base_tname2:
     print "ERROR: should not be here. need design new base_table_name"
-
-  # 执行拷贝
+  # Execute copy
   new_keywords = copy.deepcopy(keywords)
 
   print "copy_keywords out: table_id=", tid, ",  table_name=" + tname, ", base_table_name=" + base_tname, ", base_table_name1=" + base_tname1, ", base_table_name2=" + base_tname2
@@ -1768,6 +1772,7 @@ def def_table_schema(**keywords):
   global column_collation
   global is_oracle_sys_table
   global cluster_private_tables
+  global core_related_tables
   global lob_aux_data_def
   global lob_aux_meta_def
 
@@ -1837,6 +1842,9 @@ def def_table_schema(**keywords):
     table_name_postfix_table_names.append((keywords['table_name']+ keywords['name_postfix'], keywords['table_name']))
 
     table_name_ids.append((keywords['table_name'], int(keywords['table_id']), keywords['base_table_name'], keywords['base_table_name1'], keywords['base_table_name2']))
+
+  if keywords.has_key('is_core_related') and keywords['is_core_related']:
+    core_related_tables.append(int(keywords['table_id']))
 
   print "\table_id=",  keywords['table_id'], ", table_name=" + keywords['table_name'], ", base_table_name=", keywords['base_table_name'], ", base_table_name1=" + keywords['base_table_name1'], ", base_table_name2=" + keywords['base_table_name2']
 
@@ -2166,17 +2174,15 @@ def end_generate_cpp():
 """
   cpp_f.write(end)
   cpp_f.close()
-
-# 在生成constants.h的同时，生成table_id_to_name文件
+# While generating constants.h, generate the table_id_to_name file
 def generate_constants_h_content():
   global constants_h_f
   global id_to_name_f
   last_table_id = 0;
 
-  id_to_name_f.write("########## Table ID 到 Table Name 映射 ##########\n")
-  id_to_name_f.write("# 为了方便分析占位情况，同一个ID可能会映射多个Name\n\n")
-
-  ################# 生成xx_TID定义 ################
+  id_to_name_f.write("########## Table ID to Table Name mapping ##########\n")
+  id_to_name_f.write("# For easy analysis of occupancy, the same ID may map to multiple Names\n\n")
+  ################# Generate xx_TID definition ################
   table_id_line = 'const uint64_t OB_{0}_TID = {1}; // "{2}"\n'
   for (table_name, table_id) in table_name_postfix_ids:
     constants_h_f.write(table_id_line.format(table_name.replace('$', '_').upper().strip('_'), table_id, table_name))
@@ -2188,9 +2194,8 @@ def generate_constants_h_content():
 
   constants_h_f.write("\n")
   ###################################################
-
-  ################# 生成xx_TNAME定义 ################
-  # 同时生成table_id_to_name文件
+  ################# Generate xx_TNAME definition ################
+  # Generate table_id_to_name file simultaneously
   table_name_line = 'const char *const OB_{0}_TNAME = "{1}";\n'
   for (table_name_postfix, table_name) in table_name_postfix_table_names:
     constants_h_f.write(table_name_line.format(table_name_postfix.replace('$', '_').upper().strip('_'), table_name))
@@ -2200,10 +2205,10 @@ def generate_constants_h_content():
   base_table_id_to_name_line1 = '# {0}: {1}  # BASE_TABLE_NAME1\n'
   base_table_id_to_name_line2 = '# {0}: {1}  # BASE_TABLE_NAME2\n'
   for (table_name, table_id, base_table_name, base_table_name1, base_table_name2) in table_name_ids:
-    # lob表不记录在table_id_to_name文件中
+    # lob table is not recorded in the table_id_to_name file
     if not is_lob_table(table_id):
       id_to_name_f.write(table_id_to_name_line.format(table_id, table_name))
-      # 如果base_table_name不同，则输出base_table_name
+      # If base_table_name is different, then output base_table_name
       if base_table_name != table_name:
         id_to_name_f.write(base_table_id_to_name_line.format(table_id, base_table_name))
       if base_table_name1 != '' and base_table_name1 != table_name:
@@ -2235,9 +2240,7 @@ def generate_constants_h_content():
 
   constants_h_f.write("\n")
   ###################################################
-
-
-  ########### 生成all_privilege_init_data ###########
+  ########### Generate all_privilege_init_data ###########
   gen_all_privilege_init_data(constants_h_f);
   ###################################################
 
@@ -2284,6 +2287,12 @@ private:
     if is_core_table(table_id) and table_id != kv_core_table_id:
       h_f.write(method_name.format(table_name.replace('$', '_').lower().strip('_'), table_name))
       core_table_count = core_table_count + 1
+  h_f.write("  NULL,};\n\n")
+
+  h_f.write("const schema_create_func core_related_table_schema_creators [] = {\n")
+  for (table_name, table_id) in new_table_name_postfix_ids:
+    if int(table_id) in core_related_tables and not is_virtual_table(table_id):
+      h_f.write(method_name.format(table_name.replace('$', '_').lower().strip('_'), table_name))
   h_f.write("  NULL,};\n\n")
 
   h_f.write("const schema_create_func sys_table_schema_creators [] = {\n")

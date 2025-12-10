@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_EXE
@@ -143,13 +147,13 @@ int ObGranuleUtil::split_granule_by_total_byte(ObIAllocator &allocator, int64_t 
     if (OB_ISNULL(range = OB_NEWx(ObNewRange, (&allocator)))) {
       ret = OB_ERR_UNEXPECTED;
       LOG_WARN("failed to new a ptr", K(ret));
-    } else if (OB_FAIL(ObExternalTableUtils::make_external_table_scan_range(part_str,  // file 实际上不需要
-                    0,  // external_info.part_id_ 原来part id会存在列中可以反解出分区列的值, 现在不需要了
-                    0,          // table id不需要用外表的参数
-                    0,          // 开始位置 这个数值这理不使用
-                    INT64_MAX,  // 到结束为止 这个数值这里不使用
+    } else if (OB_FAIL(ObExternalTableUtils::make_external_table_scan_range(part_str,  // file actually does not need
+                    0,  // external_info.part_id_ the original part id would exist in the column and could be decoded to get the partition column value, now it's not needed
+                    0,          // table id does not need to use the outer parameter
+                    0,          // start position this value is not used here
+                    INT64_MAX,  // to the end this value is not used here
                     session_str,
-                    start_split_idx,  // split 左闭右开
+                    start_split_idx,  // split left-closed right-open
                     start_split_idx + split_count,
                     allocator,
                     *range))) {
@@ -181,8 +185,8 @@ int ObGranuleUtil::split_granule_by_total_row(ObIAllocator &allocator, int64_t p
       ret = OB_ERR_UNEXPECTED;
       LOG_WARN("failed to new a ptr", K(ret));
     } else if (OB_FAIL(ObExternalTableUtils::make_external_table_scan_range(part_str,  // session has kown partition
-                    0,  // external_info.part_id_ 原来partid会存在列中可以反解出分区列的值, 现在不需要了
-                    0,                // table id不需要用外表的参数
+                    0,  // external_info.part_id_ originally partid would exist in the column and could be decoded to get the partition column value, now it's not needed
+                    0,                // table id does not need to use outer parameters
                     start_row_count,  // start index of all table
                     split_count,        // number of records
                     session_str,
@@ -327,7 +331,7 @@ int ObGranuleUtil::split_block_ranges(ObExecContext &exec_ctx,
   } else if (force_partition_granule
              || only_empty_range) {
     // partition granule iterator
-    // 按照partition粒度切分任务的情况下，任务的个数等于partition的个数（`tablets.count()`)
+    // In the case of task splitting by partition granularity, the number of tasks equals the number of partitions (`tablets.count()`)
     int64_t pk_idx = 0;
     FOREACH_CNT_X(tablet, tablets, OB_SUCC(ret)) {
       FOREACH_CNT_X(range, ranges, OB_SUCC(ret)) {
@@ -468,7 +472,7 @@ int ObGranuleUtil::split_block_granule(ObExecContext &exec_ctx,
       LOG_WARN("compute task count failed", K(ret));
     } else {
       esti_task_cnt_by_data_size += empty_partition_cnt;
-      // 确保total task count是大于等于partition的个数的
+      // Ensure total task count is greater than or equal to the number of partitions
       if (esti_task_cnt_by_data_size < tablets.count()) {
         esti_task_cnt_by_data_size = tablets.count();
       }

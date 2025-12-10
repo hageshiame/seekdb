@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_LIB_OBMYSQL_OB_CTYPE_
@@ -287,10 +291,10 @@ typedef struct ObCollationHandler
   bool (*init)(ObCharsetInfo *, ObCharsetLoader *);
   void (*uninit)(ObCharsetInfo *);
   /* Collation routines */
-  // 进行字符串比较的函数
+  // The function for string comparison
   int     (*strnncoll)(const struct ObCharsetInfo *,
                const unsigned char *, size_t, const unsigned char *, size_t, bool);
-  // 字符串比较时忽略尾部空格
+  // String comparison ignores trailing spaces
   int     (*strnncollsp)(const struct ObCharsetInfo *,
                          const unsigned char *, size_t, const unsigned char *, size_t,
                          bool diff_if_only_endspace_difference);
@@ -298,7 +302,7 @@ typedef struct ObCollationHandler
   size_t  (*strnxfrm)(const struct ObCharsetInfo *,
                       unsigned char *dst, size_t dstlen, unsigned int nweights,
                       const unsigned char *src, size_t srclen, unsigned int flags, bool *is_valid_unicode);
-  // 获取weight_string结果的长度
+  // Get the length of the weight_string result
   size_t (*strnxfrmlen)(const struct ObCharsetInfo *, size_t);
   // makes a sortkey suitable for memcmp() corresponding to the given variable length string
   size_t  (*strnxfrm_varlen)(const struct ObCharsetInfo*,
@@ -306,8 +310,7 @@ typedef struct ObCollationHandler
                              const unsigned char *src, size_t srclen,
                              bool is_memcmp, bool *is_valid_unicode);
   //size_t    (*strnxfrmlen)(const struct ObCharsetInfo *, size_t);
-
-  // creates a LIKE range, for optimizer，query range模块使用到了
+  // creates a LIKE range, for optimizer, query range module uses it
   // prifix_len should return **byte** length before the first '%'
   bool (*like_range)(const struct ObCharsetInfo *,
             const char *s, size_t s_length,

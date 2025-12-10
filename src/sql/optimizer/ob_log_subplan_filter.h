@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SQL_OB_LOG_SUBPLAN_FILTER_H_
@@ -160,10 +164,9 @@ protected:
   common::ObSEArray<ObQueryRefRawExpr *, 8, common::ModulePageAllocator, true> subquery_exprs_;
   common::ObSEArray<ObExecParamRawExpr *, 8, common::ModulePageAllocator, true> exec_params_;
   common::ObSEArray<ObExecParamRawExpr *, 8, common::ModulePageAllocator, true> onetime_exprs_;
-
-  //InitPlan idxs，InitPlan只算一次，需要存储结果
+  // InitPlan idxs, InitPlan only counts once, need to store the result
   common::ObBitSet<> init_plan_idxs_;
-  //One-Time idxs，One-Time只算一次，不用存储结果
+  //One-Time idxs，One-Time only counts once, no need to store the result
   common::ObBitSet<> one_time_idxs_;
   bool update_set_;
   common::ObSEArray<bool , 8, common::ModulePageAllocator, true> enable_px_batch_rescans_;

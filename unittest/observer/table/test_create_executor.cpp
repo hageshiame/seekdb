@@ -1,18 +1,22 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include <gtest/gtest.h>
-#define private public  // 获取private成员
-#define protected public  // 获取protect成员
+#define private public  // get private member
+#define protected public  // get protected member
 #include "observer/table/ob_table_cg_service.cpp"
 #include "observer/table/ob_table_cache.h"
 #include "../share/schema/mock_schema_service.h"
@@ -67,10 +71,10 @@ void fill_table_schema(ObTableSchema &table)
   table.get_sub_part_option().set_part_expr (ObString::make_string("rand() mod 111"));
   table.get_sub_part_option().set_part_num(666);
 }
-// 填充一个column_schema，类型：ObIntType
-// rowkey_pos： >0时为rowkey列，表示rowkey的顺序
-// index_key_pos：>0时为索引列，表示索引列顺序
-// part_key_pos：>0时为分区键，表示分区间顺序
+// Fill a column_schema, type: ObIntType
+// rowkey_pos: >0 when it is the rowkey column, indicating the order of the rowkey
+// index_key_pos: >0 when it is an index column, indicating the order of the index column
+// part_key_pos: >0 when it is a partition key, indicating the order between partitions
 void fill_column_schema(ObColumnSchemaV2 &column, uint64_t id, const char *name,
                         uint64_t rowkey_pos = 1, uint64_t index_key_pos = 1,
                         uint64_t part_key_pos = 1, ObOrderType rowkey_order = ObOrderType::ASC)

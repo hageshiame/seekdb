@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef _OB_TRANSFORM_VIEW_MERGE_H
@@ -125,11 +129,11 @@ private:
 
   /**
    * @brief wrap_case_when
-   * 如果当前视图是left outer join的右表或者right outer join的左表
-   * 需要对null rejuect的new column expr包裹一层case when
-   * 需要寻找视图的非空列，如果null_reject_columns不为空，
-   * 直接拿第一个使用，否则需要在stmt中查找非空列，
-   * 也可以是试图内基表的pk，但不能是outer join的补null侧
+   * If the current view is the right table of a left outer join or the left table of a right outer join
+   * need to wrap the new column expr for null reject with a case when
+   * need to find a non-null column in the view, if null_reject_columns is not empty,
+   * directly use the first one, otherwise need to find a non-null column in stmt,
+   * it can also be the pk of the base table within the view, but cannot be the null side of the outer join
    */
   int wrap_case_when(ObSelectStmt &child_stmt,
                     ObRawExpr *not_null_column,

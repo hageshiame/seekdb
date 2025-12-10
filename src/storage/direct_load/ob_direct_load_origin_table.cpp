@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 #define USING_LOG_PREFIX STORAGE
 
@@ -318,7 +322,7 @@ int ObDirectLoadOriginTableAccessor::init_table_access_param()
   } else if (OB_FAIL(table_schema->get_store_column_count(store_column_count))) {
     LOG_WARN("fail to get store column count", KR(ret));
   }
-  // schema_param_里面的列顺序是 get_column_ids(column_ids, false/*no_virtual*/), 与存储顺序是一致的, 只需要把虚拟生成列跳过
+  // schema_param_ column order is get_column_ids(column_ids, false/*no_virtual*/), consistent with storage order, just need to skip virtual generated columns
   for (int64_t i = 0; OB_SUCC(ret) && i < schema_param_.get_columns().count(); ++i) {
     if (schema_param_.get_columns().at(i)->is_virtual_gen_col()) {
       // skip
@@ -360,7 +364,7 @@ int ObDirectLoadOriginTableAccessor::init_table_access_ctx(bool skip_read_lob)
                          false /*whole_macro_scan*/,
                          false /*full_row*/,
                          false /*index_back*/,
-                         false /*query_stat*/); //whole_macro_scan use false，otherwise query range is not overlap with sstable range will report error
+                         false /*query_stat*/); // whole_macro_scan use false, otherwise query range is not overlap with sstable range will report error
   ObVersionRange trans_version_range;
   query_flag.multi_version_minor_merge_ = false;
   if (skip_read_lob) {
@@ -439,6 +443,7 @@ int ObDirectLoadOriginTableScanner::open(const ObDatumRange &query_range)
     LOG_WARN("Invalid argument", KR(ret), K(query_range));
   } else {
     scan_merge_.reuse();
+    allocator_.reuse();
     if (OB_FAIL(scan_merge_.open(query_range))) {
       LOG_WARN("fail to open scan merge", KR(ret), K(query_range));
     }
@@ -500,6 +505,7 @@ int ObDirectLoadOriginTableGetter::open(const ObDatumRowkey &key)
     LOG_WARN("Invalid argument", KR(ret), K(key));
   } else {
     single_merge_.reuse();
+    allocator_.reuse();
     if (OB_FAIL(single_merge_.open(key))) {
       LOG_WARN("fail to open multi merge", KR(ret), K(key));
     }

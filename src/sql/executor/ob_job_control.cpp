@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_EXE
@@ -54,8 +58,8 @@ int ObJobControl::create_job(ObIAllocator &allocator,
     ret = OB_ERR_UNEXPECTED;
     LOG_WARN("fail to new ObJob", K(ret), K(ob_execution_id));
   } else {
-    // job_id之所以全局递增，是因为execution_id是从ObIDMap的assign函数中获取的，
-    // 有可能会重复，所以job_id在本进程内必须不能重复。
+    // job_id is globally incremented because execution_id is obtained from the assign function of ObIDMap,
+    // There might be duplicates, so job_id must not be duplicated within this process.
     ObJobID ob_job_id;
     uint64_t job_id = ATOMIC_FAA(&global_job_id_, 1);
     ob_job_id.set_ob_execution_id(ob_execution_id);
@@ -138,8 +142,7 @@ int ObJobControl::init_job_finish_queue(ObExecContext &ctx)
 //  }
 //  return ret;
 //}
-
-// 如果超过buf_len则会被截断
+// If it exceeds buf_len it will be truncated
 int ObJobControl::print_status(char *buf, int64_t buf_len,
                                bool ignore_normal_state/* = false*/) const
 {

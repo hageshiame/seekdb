@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -144,7 +148,7 @@ int ObDynamicParamSetter::update_dynamic_param(ObEvalCtx &eval_ctx, ObDatum &dat
         LOG_WARN("fail to deep copy datum", K(ret), K(eval_ctx), K(*dst_));
       }
     }
-    //初始化param store, 用于query range计算
+    // Initialize param store, used for query range calculation
     ParamStore &param_store = phy_ctx->get_param_store_for_update();
     if (OB_FAIL(ret)) {
     } else if (OB_UNLIKELY(param_idx_ < 0 || param_idx_ >= param_store.count())) {
@@ -336,7 +340,7 @@ int ObOpSpec::create_op_input_recursive(ObExecContext &exec_ctx) const
   if (OB_SUCC(ret) && create_child_cnt > 0) {
     for (int64_t i = 0; OB_SUCC(ret) && i < create_child_cnt; i++) {
       if (nullptr == children_[i]) {
-        // 这里如果有child但为nullptr，说明是receive算子
+        // Here if there is a child but it is nullptr, it means it is a receive operator
         if (!IS_PX_RECEIVE(type_)) {
           ret = OB_ERR_UNEXPECTED;
           LOG_WARN("only receive is leaf in px", K(ret), K(type_), K(id_));
@@ -386,7 +390,7 @@ int ObOpSpec::create_operator_recursive(ObExecContext &exec_ctx, ObOperator *&op
       LOG_DEBUG("trace create spec", K(ret), K(id_), K(type_));
       for (int64_t i = 0; OB_SUCC(ret) && i < child_cnt_; i++) {
         if (NULL == children_[i]) {
-          // 这里如果有child但为nullptr，说明是receive算子
+          // Here if there is a child but it is nullptr, it means it is a receive operator
           if (!IS_PX_RECEIVE(type_)) {
             ret = OB_ERR_UNEXPECTED;
             LOG_WARN("only receive is leaf in px", K(ret), K(type_), K(id_));
@@ -447,7 +451,7 @@ int ObOpSpec::create_operator_recursive(ObExecContext &exec_ctx, ObOperator *&op
         for (int64_t i = 0; OB_SUCC(ret) && i < create_child_cnt; i++) {
           ObOperator *child_op = NULL;
           if (nullptr == children_[i]) {
-            // 这里如果有child但为nullptr，说明是receive算子
+            // Here if there is a child but it is nullptr, it means it is a receive operator
             if (!IS_PX_RECEIVE(type_)) {
               ret = OB_ERR_UNEXPECTED;
               LOG_WARN("only receive is leaf in px", K(ret), K(type_), K(id_));

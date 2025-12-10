@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_RESV
@@ -66,8 +70,8 @@ int ObDropFunctionResolver::resolve(const ParseNode &parse_tree)
   bool if_exist = false;
   bool pl_y = true;
   bool need_try_pl_function = true;
-  // 因为mysql.y和pl_mysql.y的if exists语法结构不一样，mysql.y的已经被很多用了，
-  // 没办法改成一致，暂时只能写成两套了。
+  // Because the if exists syntax structure in mysql.y and pl_mysql.y is different, mysql.y has already been widely used,
+  // Can't change to be consistent, temporarily can only write as two sets.
   if (parse_tree.type_ == T_DROP_FUNC) {
     if (OB_ISNULL(parse_tree.children_)
         || OB_UNLIKELY(parse_tree.num_child_ != 2)
@@ -103,7 +107,7 @@ int ObDropFunctionResolver::resolve(const ParseNode &parse_tree)
       ret = OB_ERR_NO_DB_SELECTED == ret && lib::is_mysql_mode() ? OB_SUCCESS : ret;
       LOG_WARN("resolve sp name failed", K(ret));
     }
-    // drop ddl function 和 drop pl function公用语法, 需要先检查是否是ddl function
+    // drop ddl function and drop pl function share syntax, need to check if it is ddl function first
     if (OB_FAIL(ret)) {
     } else if (pl_y
                && OB_LIKELY(2 == name_node->num_child_)

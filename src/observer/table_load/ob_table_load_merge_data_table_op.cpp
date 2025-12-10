@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2024 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SERVER
@@ -83,7 +87,7 @@ int ObTableLoadMergeDataTableOp::inner_init()
   // merge_mode_
   if (OB_SUCC(ret)) {
     switch (ctx_->param_.method_) {
-      // 全量
+      // full amount
       case ObDirectLoadMethod::FULL:
         switch (ctx_->param_.insert_mode_) {
           case ObDirectLoadInsertMode::NORMAL:
@@ -99,7 +103,7 @@ int ObTableLoadMergeDataTableOp::inner_init()
             break;
         }
         break;
-      // 增量
+      // Incremental
       case ObDirectLoadMethod::INCREMENTAL:
         if (store_table_ctx->schema_->is_table_without_pk_) {
           inner_ctx_.merge_mode_ = ObDirectLoadMergeMode::NORMAL;
@@ -109,7 +113,7 @@ int ObTableLoadMergeDataTableOp::inner_init()
               inner_ctx_.merge_mode_ = ObDirectLoadMergeMode::MERGE_WITH_CONFLICT_CHECK;
               break;
             case ObDirectLoadInsertMode::INC_REPLACE:
-              // 有lob或索引的时候还是需要进行冲突检测
+              // Conflict detection is still required when there are lobs or indexes
               if (!store_table_ctx->schema_->lob_column_idxs_.empty() ||
                   !store_table_ctx->schema_->index_table_ids_.empty()) {
                 inner_ctx_.merge_mode_ = ObDirectLoadMergeMode::MERGE_WITH_CONFLICT_CHECK;
@@ -155,7 +159,7 @@ int ObTableLoadMergeDataTableOp::inner_close()
       LOG_WARN("fail to close build index table", KR(ret));
     }
   }
-  // 关闭insert_table_ctx
+  // close insert_table_ctx
   if (OB_SUCC(ret)) {
     if (OB_FAIL(merge_table_ctx_->insert_table_ctx_->collect_sql_stats(store_ctx_->dml_stats_,
                                                                        store_ctx_->sql_stats_))) {
@@ -248,7 +252,7 @@ int ObTableLoadMergeDeletePhaseDataTableOp::inner_close()
       LOG_WARN("fail to close build index table", KR(ret));
     }
   }
-  // 关闭insert_table_ctx
+  // close insert_table_ctx
   if (OB_SUCC(ret)) {
     if (OB_FAIL(store_ctx_->data_store_table_ctx_->close_insert_table_ctx())) {
       LOG_WARN("fail to close insert table ctx", KR(ret));
@@ -312,7 +316,7 @@ int ObTableLoadMergeAckPhaseDataTableOp::inner_close()
 {
   int ret = OB_SUCCESS;
   FLOG_INFO("ObTableLoadMergeAckPhaseDataTableOp FINISH");
-  // 关闭insert_table_ctx
+  // close insert_table_ctx
   if (OB_FAIL(store_ctx_->data_store_table_ctx_->close_insert_table_ctx())) {
     LOG_WARN("fail to close insert table ctx", KR(ret));
   }

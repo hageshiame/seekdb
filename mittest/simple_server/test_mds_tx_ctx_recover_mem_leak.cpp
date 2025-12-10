@@ -1,16 +1,20 @@
 // owner: zk250686
 // owner group: transaction
 
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 #include <gtest/gtest.h>
 #define USING_LOG_PREFIX STORAGE
@@ -126,7 +130,7 @@ TEST_F(ObTestMdsTxCtxRecoverMemLeakAfterRecover, after_recover_test)
   ASSERT_EQ(OB_SUCCESS, delete_tenant("tt1"));
   OCCAM_LOG(INFO, "step 11: after delete tenant");
   int64_t result_num = 0;
-  // 等待租户的MTL组建析构，此时会检查内存泄露
+  // Wait for the tenant's MTL construction destruction, at this time it will check for memory leaks
   do {
     char where_condition[512] = { 0 };
     databuff_printf(where_condition, 512, "where event = 'remove_tenant' and value1 = 1002");

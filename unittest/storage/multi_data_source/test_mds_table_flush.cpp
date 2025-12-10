@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 #define UNITTEST_DEBUG
 static bool MDS_FLUSHER_ALLOW_ALLOC = true;
@@ -139,12 +143,11 @@ TEST_F(TestMdsTableFlush, normal_flush) {
   ASSERT_EQ(OB_SUCCESS, construct_tested_mds_table(handle));
   share::SCN rec_scn;
   ASSERT_EQ(OB_SUCCESS, handle.get_rec_scn(rec_scn));
-  ASSERT_EQ(mock_scn(50), rec_scn);// 没转储的时候是最小的node的redo scn值
-
-  // 第一次转储
-  ASSERT_EQ(OB_SUCCESS, handle.flush(mock_scn(1000), mock_scn(125)));// 因为max_decided_scn较小，所以会用125做flush
+  ASSERT_EQ(mock_scn(50), rec_scn);// The redo scn value of the smallest node when no dump occurs
+  // First dump
+  ASSERT_EQ(OB_SUCCESS, handle.flush(mock_scn(1000), mock_scn(125)));// Because max_decided_scn is smaller, so it will use 125 for flush
   bool is_flusing = false;
-  ASSERT_EQ(OB_SUCCESS, handle.is_flushing(is_flusing));// 在flush流程中
+  ASSERT_EQ(OB_SUCCESS, handle.is_flushing(is_flusing)); // in the flush process
   ASSERT_EQ(true, is_flusing);
   ASSERT_EQ(mock_scn(125), handle.p_mds_table_base_->flushing_scn_);
   int scan_cnt = 0;
@@ -157,18 +160,16 @@ TEST_F(TestMdsTableFlush, normal_flush) {
   ASSERT_EQ(OB_SUCCESS, handle.get_rec_scn(rec_scn));
   OCCAM_LOG(INFO, "print rec scn", K(rec_scn));
   ASSERT_EQ(mock_scn(200), rec_scn);
-
-  // 第二次转储
+  // Second dump
   ASSERT_EQ(OB_SUCCESS, handle.flush(mock_scn(1000), mock_scn(140)));
   ASSERT_EQ(OB_SUCCESS, handle.is_flushing(is_flusing));
-  ASSERT_EQ(false, is_flusing);// 依然触发转储
+  ASSERT_EQ(false, is_flusing);// still trigger dump
   ASSERT_EQ(OB_SUCCESS, handle.get_rec_scn(rec_scn));
   OCCAM_LOG(INFO, "print rec scn", K(rec_scn));
-  ASSERT_EQ(mock_scn(200), rec_scn);// 没变化
-
-  // 第三次转储
+  ASSERT_EQ(mock_scn(200), rec_scn);// No change
+  // Third dump
   ASSERT_EQ(OB_SUCCESS, handle.flush(mock_scn(1000), mock_scn(275)));
-  ASSERT_EQ(OB_SUCCESS, handle.is_flushing(is_flusing));// 在flush流程中
+  ASSERT_EQ(OB_SUCCESS, handle.is_flushing(is_flusing)); // in the flush process
   ASSERT_EQ(true, is_flusing);
   ASSERT_EQ(mock_scn(249), handle.p_mds_table_base_->flushing_scn_);
   scan_cnt = 0;
@@ -182,10 +183,9 @@ TEST_F(TestMdsTableFlush, normal_flush) {
   ASSERT_EQ(OB_SUCCESS, handle.get_rec_scn(rec_scn));
   OCCAM_LOG(INFO, "print rec scn", K(rec_scn));
   ASSERT_EQ(mock_scn(250), rec_scn);
-
-  // 第四次转储
+  // Fourth dump
   ASSERT_EQ(OB_SUCCESS, handle.flush(mock_scn(1000), mock_scn(550)));
-  ASSERT_EQ(OB_SUCCESS, handle.is_flushing(is_flusing));// 在flush流程中
+  ASSERT_EQ(OB_SUCCESS, handle.is_flushing(is_flusing)); // in the flush process
   ASSERT_EQ(true, is_flusing);
   ASSERT_EQ(mock_scn(499), handle.p_mds_table_base_->flushing_scn_);
   scan_cnt = 0;
@@ -199,22 +199,20 @@ TEST_F(TestMdsTableFlush, normal_flush) {
   ASSERT_EQ(OB_SUCCESS, handle.get_rec_scn(rec_scn));
   OCCAM_LOG(INFO, "print rec scn", K(rec_scn));
   ASSERT_EQ(mock_scn(500), rec_scn);
-
-  // 第五次转储
+  // Fifth dump
   ASSERT_EQ(OB_SUCCESS, handle.flush(mock_scn(1000), mock_scn(600)));
   ASSERT_EQ(OB_SUCCESS, handle.is_flushing(is_flusing));
   ASSERT_EQ(false, is_flusing);
   ASSERT_EQ(OB_SUCCESS, handle.get_rec_scn(rec_scn));
   OCCAM_LOG(INFO, "print rec scn", K(rec_scn));
-  ASSERT_EQ(mock_scn(500), rec_scn);// 没变化
-
-  // 第六次转储
+  ASSERT_EQ(mock_scn(500), rec_scn);// No change
+  // Sixth dump
   ASSERT_EQ(OB_SUCCESS, handle.flush(mock_scn(1000), mock_scn(590)));
   ASSERT_EQ(OB_SUCCESS, handle.is_flushing(is_flusing));
-  ASSERT_EQ(false, is_flusing);// 没转储
+  ASSERT_EQ(false, is_flusing);// No dump
   ASSERT_EQ(OB_SUCCESS, handle.get_rec_scn(rec_scn));
   OCCAM_LOG(INFO, "print rec scn", K(rec_scn));
-  ASSERT_EQ(mock_scn(500), rec_scn);// 没变化
+  ASSERT_EQ(mock_scn(500), rec_scn);// No change
 }
 
 TEST_F(TestMdsTableFlush, advance_rec_scn_consider_about_max_aborted_scn_on_mds_table) {
@@ -229,7 +227,7 @@ TEST_F(TestMdsTableFlush, advance_rec_scn_consider_about_max_aborted_scn_on_mds_
   ctx.on_redo(mock_scn(474));
   ctx.on_abort(mock_scn(477));
   ASSERT_EQ(OB_SUCCESS, handle.flush(mock_scn(475), MOCK_MAX_CONSEQUENT_CALLBACKED_SCN));
-  ASSERT_EQ(OB_SUCCESS, handle.is_flushing(is_flusing));// 在flush流程中
+  ASSERT_EQ(OB_SUCCESS, handle.is_flushing(is_flusing)); // in the flush process
   ASSERT_EQ(true, is_flusing);
   ASSERT_EQ(mock_scn(475), handle.p_mds_table_base_->flushing_scn_);
   scan_cnt = 0;
@@ -245,7 +243,7 @@ TEST_F(TestMdsTableFlush, advance_rec_scn_consider_about_max_aborted_scn_on_mds_
 
   MOCK_MAX_CONSEQUENT_CALLBACKED_SCN = mock_scn(478);
   ASSERT_EQ(OB_SUCCESS, handle.flush(mock_scn(478), MOCK_MAX_CONSEQUENT_CALLBACKED_SCN));
-  ASSERT_EQ(OB_SUCCESS, handle.is_flushing(is_flusing));// 在flush流程中
+  ASSERT_EQ(OB_SUCCESS, handle.is_flushing(is_flusing)); // in the flush process
   ASSERT_EQ(true, is_flusing);
   ASSERT_EQ(mock_scn(478), handle.p_mds_table_base_->flushing_scn_);
   scan_cnt = 0;

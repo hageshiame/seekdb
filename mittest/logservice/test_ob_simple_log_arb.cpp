@@ -1,15 +1,21 @@
 // owner: yunlong.cb
 // owner group: log
 
-// Copyright (c) 2021 OceanBase
-// OceanBase is licensed under Mulan PubL v2.
-// You can use this software according to the terms and conditions of the Mulan PubL v2.
-// You may obtain a copy of Mulan PubL v2 at:
-//          http://license.coscl.org.cn/MulanPubL-2.0
-// THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
-// EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
-// MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
-// See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 #define private public
 #include "env/ob_simple_log_cluster_env.h"
 #undef private
@@ -92,7 +98,7 @@ TEST_F(TestObSimpleLogClusterArbService, test_2f1a_degrade_upgrade)
   EXPECT_EQ(OB_SUCCESS, get_cluster_palf_handle_guard(id, palf_list));
   const int64_t another_f_idx = (leader_idx+1)%3;
   EXPECT_EQ(OB_SUCCESS, submit_log(leader, 100, id));
-  // 为备副本设置location cb，用于备副本找leader
+  // Set location cb for the backup copy to find the leader
   palf_list[another_f_idx]->get_palf_handle_impl()->set_location_cache_cb(&loc_cb);
   block_net(leader_idx, another_f_idx);
   // do not check OB_SUCCESS, may return OB_NOT_MASTER during degrading member
@@ -240,7 +246,7 @@ TEST_F(TestObSimpleLogClusterArbService, test_2f1a_reconfirm_degrade_upgrade)
   ARB_TIMEOUT_ARG = 15 * 1000 * 1000;
   block_net(leader_idx, another_f_idx);
   block_net(leader_idx, arb_replica_idx);
-  // block_net后会理解进行降级操作，导致旧主上有些单副本写成功的日志被committed
+  // block_net after will perform a downgrade operation, leading to some single replica writes that succeeded on the old master being committed
   submit_log(leader, 20, id);
   // submit some logs which will be truncated
 
@@ -341,7 +347,7 @@ TEST_F(TestObSimpleLogClusterArbService, test_2f1a_config_change)
   common::ObMember dummy_member;
 	EXPECT_EQ(OB_SUCCESS, create_paxos_group_with_arb(id, arb_replica_idx, leader_idx, leader));
   EXPECT_EQ(OB_SUCCESS, get_cluster_palf_handle_guard(id, palf_list));
-  // 为备副本设置location cb，用于备副本找leader
+  // Set location cb for the backup copy to find the leader
   const int64_t another_f_idx = (leader_idx+1)%3;
   loc_cb.leader_ = leader.palf_handle_impl_->self_;
   palf_list[another_f_idx]->get_palf_handle_impl()->set_location_cache_cb(&loc_cb);
@@ -398,7 +404,7 @@ TEST_F(TestObSimpleLogClusterArbService, test_2f1a_arb_with_highest_version)
   common::ObMember dummy_member;
 	EXPECT_EQ(OB_SUCCESS, create_paxos_group_with_arb(id, arb_replica_idx, leader_idx, leader));
   EXPECT_EQ(OB_SUCCESS, get_cluster_palf_handle_guard(id, palf_list));
-  // 为备副本设置location cb，用于备副本找leader
+  // Set location cb for the backup copy to find the leader
   const int64_t another_f_idx = (leader_idx+1)%3;
   loc_cb.leader_ = leader.palf_handle_impl_->self_;
   palf_list[another_f_idx]->get_palf_handle_impl()->set_location_cache_cb(&loc_cb);
@@ -478,7 +484,7 @@ TEST_F(TestObSimpleLogClusterArbService, test_2f1a_defensive)
   common::ObMember dummy_member;
 	EXPECT_EQ(OB_SUCCESS, create_paxos_group_with_arb(id, arb_replica_idx, leader_idx, leader));
   EXPECT_EQ(OB_SUCCESS, get_cluster_palf_handle_guard(id, palf_list));
-  // 为备副本设置location cb，用于备副本找leader
+  // Set location cb for the backup copy to find the leader
   const int64_t another_f_idx = (leader_idx+1)%3;
   loc_cb.leader_ = leader.palf_handle_impl_->self_;
   palf_list[another_f_idx]->get_palf_handle_impl()->set_location_cache_cb(&loc_cb);
@@ -564,7 +570,7 @@ TEST_F(TestObSimpleLogClusterArbService, test_multi_meta_block)
   common::ObMember dummy_member;
 	EXPECT_EQ(OB_SUCCESS, create_paxos_group_with_arb(id, arb_replica_idx, leader_idx, leader));
   EXPECT_EQ(OB_SUCCESS, get_cluster_palf_handle_guard(id, palf_list));
-  // 为备副本设置location cb，用于备副本找leader
+  // Set location cb for the backup copy to find the leader
   const int64_t another_f_idx = (leader_idx+1)%3;
   loc_cb.leader_ = leader.palf_handle_impl_->self_;
   palf_list[another_f_idx]->get_palf_handle_impl()->set_location_cache_cb(&loc_cb);
@@ -668,7 +674,7 @@ TEST_F(TestObSimpleLogClusterArbService, test_2f1a_degrade_when_no_leader)
   common::ObMember dummy_member;
 	EXPECT_EQ(OB_SUCCESS, create_paxos_group_with_arb(id, arb_replica_idx, leader_idx, leader));
   EXPECT_EQ(OB_SUCCESS, get_cluster_palf_handle_guard(id, palf_list));
-  // 为备副本设置location cb，用于备副本找leader
+  // Set location cb for the backup copy to find the leader
   const int64_t another_f_idx = (leader_idx+1)%3;
   loc_cb.leader_ = leader.palf_handle_impl_->self_;
   palf_list[another_f_idx]->get_palf_handle_impl()->set_location_cache_cb(&loc_cb);
@@ -743,7 +749,7 @@ TEST_F(TestObSimpleLogClusterArbService, test_2f1a_upgrade_when_no_leader)
   common::ObMember dummy_member;
 	EXPECT_EQ(OB_SUCCESS, create_paxos_group_with_arb(id, arb_replica_idx, leader_idx, leader));
   EXPECT_EQ(OB_SUCCESS, get_cluster_palf_handle_guard(id, palf_list));
-  // 为备副本设置location cb，用于备副本找leader
+  // Set location cb for the backup copy to find the leader
   const int64_t another_f_idx = (leader_idx+1)%3;
   loc_cb.leader_ = leader.palf_handle_impl_->self_;
   palf_list[another_f_idx]->get_palf_handle_impl()->set_location_cache_cb(&loc_cb);

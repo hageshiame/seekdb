@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_REWRITE
@@ -124,10 +128,6 @@ int ObTransformerImpl::set_transformation_parameters(ObQueryCtx *query_ctx)
   }
   if (OB_FAIL(ret)) {
     // do nothing
-  } else if (!query_ctx->check_opt_compat_version(COMPAT_VERSION_4_2_5, COMPAT_VERSION_4_3_0,
-                                                  COMPAT_VERSION_4_3_5) ||
-             query_ctx->get_query_hint().has_outline_data()) {
-    ctx_->cbqt_policy_ = TransPolicy::ENABLE_TRANS;
   } else if (OB_FAIL(session_info->get_optimizer_cost_based_transformation(opt_param_val))) {
     LOG_WARN("failed to get optimizer cost based transformation", K(ret));
   } else if (OB_FAIL(query_ctx->get_global_hint().opt_params_.get_integer_opt_param(
@@ -274,7 +274,7 @@ int ObTransformerImpl::do_transform(ObDMLStmt *&stmt)
         LOG_WARN("failed to transform one rule set", K(ret));
       }
     } else {
-      //unlikely need_types 特殊处理, 把所有位置取出来重新排序。
+      //unlikely need_types special processing, put all positions out and re-sort.
       if (OB_FAIL(transform_random_order(stmt, query_ctx, need_types, iter_count))) {
         LOG_WARN("failed to transform random order", K(ret));
       }
@@ -546,7 +546,7 @@ int ObTransformerImpl::choose_rewrite_rules(ObDMLStmt *stmt, uint64_t &need_type
     ret = OB_ERR_UNEXPECTED;
     LOG_WARN("stmt is null", K(ret), K(stmt));
   } else if (sql_ctx->is_batch_params_execute()) {
-    need_types = 0; //如果是batch优化暂时不做改写
+    need_types = 0; // if it is batch optimization, do not rewrite for now
   } else if (OB_FAIL(check_stmt_functions(stmt, func))) {
     LOG_WARN("failed to check stmt functions", K(ret));
   } else if (OB_FAIL(check_temp_table_functions(stmt, func))) {

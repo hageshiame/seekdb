@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef _OB_SQL_INIT_H
@@ -43,9 +47,9 @@ namespace sql
 
 inline int init_sql_factories()
 {
-  //**注意**,不要把这行日志删了, 该日志是为了初始化ObLog中线程局部
-  //变量LogBufferMgr, 避免其在jit malloc hook中进行该线程局部变量的
-  //new操作，导致malloc hook和日志模块的循环调用。
+  //**Note**, do not delete this line of log, the log is for initializing ObLog's thread-local
+  //variable LogBufferMgr, to avoid new operation on this thread-local variable in jit malloc hook,
+  //which leads to a circular call between malloc hook and log module.
   SQL_LOG(INFO, "init sql factories");
   int ret = common::OB_SUCCESS;
   ObExprOperatorFactory::register_expr_operators();

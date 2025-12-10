@@ -2,15 +2,19 @@
 // owner group: log
 
 /*
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define private public
@@ -194,7 +198,7 @@ TEST_F(TestObSimpleSharedLogSingleReplica, test_shared_log_interface)
     EXPECT_EQ(OB_SUCCESS, ObSharedLogUtils::delete_blocks(MTL_ID(), ObLSID(id), 0, 1));
     block_id_t oldest_block;
     EXPECT_EQ(OB_ENTRY_NOT_EXIST, ObSharedLogUtils::get_oldest_block(MTL_ID(), ObLSID(id), oldest_block));
-    // LSN(0)时，会产生默认的PalfBaseInfo
+    // When LSN(0), the default PalfBaseInfo will be generated
     EXPECT_EQ(OB_SUCCESS, log_handler.get_palf_base_info(LSN(PALF_INITIAL_LSN_VAL), base_info));
     EXPECT_EQ(OB_ERR_OUT_OF_LOWER_BOUND, log_handler.get_palf_base_info(LSN(PALF_BLOCK_SIZE), base_info));
 
@@ -384,7 +388,7 @@ TEST_F(TestObSimpleSharedLogSingleReplica, test_shared_log_interface)
     EXPECT_EQ(curr_lsn,leader.palf_handle_impl_->get_max_lsn());
     EXPECT_EQ(curr_base_info.prev_log_info_, default_palf_base_info.prev_log_info_);
     EXPECT_EQ(OB_ERR_OUT_OF_LOWER_BOUND, log_handler.locate_by_lsn_coarsely(curr_lsn, locate_scn));
-    // palf内部会将传入的lsn替换为committed_end_lsn
+    // palf internally will replace the incoming lsn with committed_end_lsn
     EXPECT_EQ(OB_ERR_OUT_OF_LOWER_BOUND, log_handler.locate_by_lsn_coarsely(curr_lsn+2*PALF_BLOCK_SIZE, locate_scn));
     EXPECT_EQ(OB_SUCCESS, submit_log_with_expected_size(leader, id, 3));
     EXPECT_EQ(OB_SUCCESS, wait_until_has_committed(leader, leader.palf_handle_impl_->get_max_lsn()));

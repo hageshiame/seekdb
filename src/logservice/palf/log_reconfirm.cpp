@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX PALF
@@ -564,7 +568,7 @@ int LogReconfirm::reconfirm()
             && OB_EAGAIN != ret) {
           PALF_LOG(WARN, "confirm_start_working_log failed", K_(self), K_(palf_id));
         } else {
-          // 记录进入start_working阶段时的end_lsn
+          // Record the end_lsn at the start of the start_working phase
           saved_end_lsn_ = last_end_lsn;
           state_ = START_WORKING;
           PALF_EVENT("Reconfirm come into START_WORKING state", palf_id_, K(new_proposal_id_),
@@ -581,15 +585,15 @@ int LogReconfirm::reconfirm()
         const bool need_skip_log_barrier = mode_mgr_->need_skip_log_barrier();
         const int64_t leader_epoch = state_mgr_->get_leader_epoch();
         if (OB_SUCC(mm_->confirm_start_working_log(new_proposal_id_, leader_epoch, sw_config_version_))) {
-          // check_ms_log_committed()检查若未达成多数派会尝试重发start_working log
-          // 重发时依然用之前取的lsn和proposal_id，因此saved_end_lsn_也无需更新
+          // check_ms_log_committed() checks if a majority is not reached, it will attempt to resend the start_working log
+          // Resend using the previously retrieved lsn and proposal_id, therefore saved_end_lsn_ also does not need to be updated
           const LSN curr_max_lsn = sw_->get_max_lsn();
           if (curr_max_lsn != saved_end_lsn_) {
             ret = OB_ERR_UNEXPECTED;
             PALF_LOG(ERROR, "max_lsn is not equal to saved_end_lsn_, unexpected", K_(palf_id), K_(self),
                 K(curr_max_lsn), K_(saved_end_lsn));
           } else if (OB_FAIL(sw_->try_advance_committed_end_lsn(saved_end_lsn_))) {
-            // start_working达成多数派后，leader推进committed_end_lsn至之前记录的位点(预期等于当前的max_lsn)
+            // After start_working reaches a majority, leader advances committed_end_lsn to the previously recorded point (expected to equal the current max_lsn)
           } else if (!sw_->is_all_committed_log_slided_out(last_slide_lsn, last_slide_log_id, committed_end_lsn)) {
             // There is some log has not slided out, need wait and retry.
             if (palf_reach_time_interval(5 * 1000 * 1000, wait_slide_print_time_us_)) {

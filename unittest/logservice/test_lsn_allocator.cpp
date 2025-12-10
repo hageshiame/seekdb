@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include <gtest/gtest.h>
@@ -76,8 +80,8 @@ void init_offset_allocator()
 
 TEST_F(TestLSNAllocator, test_struct_field_value_upper_bound)
 {
-  // 测试struct中的int64_t是否会比uint64_t多消耗一位用于存储符号
-  // 测试结论：使用int类型作为field，当最高位置为1时，直接读取它的value就会变成负数
+  // Test if int64_t in struct consumes one more bit than uint64_t for storing the sign
+  // Test conclusion: Using int type as field, when the highest bit is 1, directly reading its value will become negative
   union TestMeta
   {
     uint64_t val64_;
@@ -90,7 +94,7 @@ TEST_F(TestLSNAllocator, test_struct_field_value_upper_bound)
   };
   TestMeta val;
   val.id_ = 1;
-  // val.id_ = (1 << 2) - 1;  // 这行编译会报错，implicit truncation from 'int' to bit-field changes value from 3 to -1
+  // val.id_ = (1 << 2) - 1;  // This line will cause a compilation error, implicit truncation from 'int' to bit-field changes value from 3 to -1
   val.ts_ = 100;
   std::cout << val.id_ << ", sizeof(val):" << sizeof(val) << std::endl;
 
@@ -108,7 +112,7 @@ TEST_F(TestLSNAllocator, test_struct_field_value_upper_bound)
   printf("val.id_ is 0x%x\n", val.id_); // 0xffffffff
   val.id_++;
   std::cout << "val.id_ is " << val.id_ << std::endl;  // 0
-  std::cout << "val.id_ & 0x11 is " << (val.id_ & 0x3) << std::endl;  // 0, 加溢出了
+  std::cout << "val.id_ & 0x11 is " << (val.id_ & 0x3) << std::endl;  // 0, overflow occurred
   printf("val.id_ is 0x%x\n", val.id_); // 0x0
 
   union TestMeta2
@@ -123,7 +127,7 @@ TEST_F(TestLSNAllocator, test_struct_field_value_upper_bound)
   };
   TestMeta2 val2;
   val2.id_ = 1;
-  // val2.id_ = (1 << 2) - 1;  // 这行编译会报错，implicit truncation from 'int' to bit-field changes value from 3 to -1
+  // val2.id_ = (1 << 2) - 1;  // This line will cause a compilation error, implicit truncation from 'int' to bit-field changes value from 3 to -1
   std::cout << val2.id_ << ", sizeof(val2):" << sizeof(val2) << std::endl;
 
   val2.id_ = 0;
@@ -140,7 +144,7 @@ TEST_F(TestLSNAllocator, test_struct_field_value_upper_bound)
   printf("val2.id_ is 0x%x\n", val2.id_); // 0x3
   val2.id_++;
   std::cout << "val2.id_ is " << val2.id_ << std::endl;  // 0
-  std::cout << "val2.id_ & 0x11 is " << (val2.id_ & 0x3) << std::endl;  // 0, 加溢出了
+  std::cout << "val2.id_ & 0x11 is " << (val2.id_ & 0x3) << std::endl;  // 0, overflow occurred
   printf("val2.id_ is 0x%x\n", val2.id_); // 0x0
 
 }
@@ -246,7 +250,7 @@ TEST_F(TestLSNAllocator, test_lsn_allocator_truncate)
   EXPECT_EQ(OB_SUCCESS, lsn_allocator_.inc_update_last_log_info(tmp_lsn, tmp_log_id, tmp_scn));
   EXPECT_EQ(OB_SUCCESS, lsn_allocator_.alloc_lsn_scn(b_scn, size, log_id_upper_bound, lsn_upper_bound, lsn, log_id, scn,
             is_new_log, need_gen_padding_entry, padding_len));
-  EXPECT_EQ(truncate_log_id + 1, log_id);  // 聚合到上一条日志中
+  EXPECT_EQ(truncate_log_id + 1, log_id);  // Aggregate into the previous log
   // update success
   tmp_lsn.val_ = 10000000;
   EXPECT_EQ(OB_SUCCESS, lsn_allocator_.inc_update_last_log_info(tmp_lsn, tmp_log_id, tmp_scn));
@@ -254,10 +258,9 @@ TEST_F(TestLSNAllocator, test_lsn_allocator_truncate)
   EXPECT_EQ(OB_SUCCESS, lsn_allocator_.alloc_lsn_scn(b_scn, size, log_id_upper_bound, lsn_upper_bound, lsn, log_id, scn,
             is_new_log, need_gen_padding_entry, padding_len));
   EXPECT_EQ(tmp_log_id + 1, log_id);
-
-  // 由于之前alloc的size比较大，故当前is_need_cut为true，这里会报-4109
+  // Since the previously allocated size was large, hence the current is_need_cut is true, here it will report -4109
   EXPECT_EQ(OB_STATE_NOT_MATCH, lsn_allocator_.try_freeze_by_time(end_lsn, end_log_id));
-  // 生成一条新的小日志，预期is_need_cut会为false
+  // Generate a new small log, expect is_need_cut to be false
   size = 10;
   EXPECT_EQ(OB_SUCCESS, lsn_allocator_.alloc_lsn_scn(b_scn, size, log_id_upper_bound, lsn_upper_bound, lsn, log_id, scn,
             is_new_log, need_gen_padding_entry, padding_len));
@@ -310,8 +313,7 @@ TEST_F(TestLSNAllocator, test_alloc_offset_single_thread)
   std::cout << ROUND << " round 100w alloc avg cost time ns:" << avg_cost / ROUND << std::endl;
   std::cout << "finish test_alloc_offset_single_thread" << std::endl;
 }
-
-// 下面测试多线程alloc_lsn_scn的性能
+// Below tests the performance of multi-threaded alloc_lsn_scn
 class TestThread
 {
 public:
@@ -381,8 +383,7 @@ TEST_F(TestLSNAllocator, test_alloc_offset_multi_thread)
     threads[tidx].join();
   }
 };
-
-// 测试多线程 inc_update_last_log_info
+// Test multithreaded inc_update_last_log_info
 const int64_t UPDATE_MAX_LSN_CNT = 1 * 1000 * 1000;
 const int64_t GAP_PER_THREAD = 0;
 const int64_t LOG_ID_BASE = LSNAllocator::LOG_ID_DELTA_UPPER_BOUND - 1000;

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SQL_SESSION_OB_SYSTEM_VARIABLE_
@@ -44,8 +48,7 @@ public:
   // OB_SV_SYSTEM_TIME_ZONE
   const static int64_t SYSTEM_TIME_ZONE_MAX_LEN = 64;
   static char system_time_zone_str_[SYSTEM_TIME_ZONE_MAX_LEN];
-
-  // charset和collation相关
+  // charset and collation related
   static const int64_t COLL_INT_STR_MAX_LEN = 64;
   static char default_coll_int_str_[COLL_INT_STR_MAX_LEN];
 
@@ -123,14 +126,14 @@ class ObSysVarTypeLib
 {
 public:
   //ObSysVarTypeLib() : count_(0), type_names_(NULL) {}
-  ObSysVarTypeLib(const char **type_names) //传入的char*数组的最后一个元素必须为0
+  ObSysVarTypeLib(const char **type_names) // The last element of the passed char* array must be 0
     : count_(0),
       type_names_(NULL)
   {
     if (OB_ISNULL(type_names)) {
       SQL_SESSION_LOG_RET(ERROR, common::OB_ERR_UNEXPECTED, "type names is NULL");
     } else {
-      // 这里没法按照编码规范检查下标
+      // Here it's not possible to check the index according to the coding standards
       for (count_ = 0; 0 != type_names[count_]; count_++);
       type_names_ = type_names;
     }
@@ -167,7 +170,7 @@ public:
                            const ObBasicSysVar &sys_var,
                            common::ObObj &result_obj);
   typedef common::ObObjType (*GetMetaTypeFunc)();
-  //非varchar类型的sys variable才可能为NULL
+  //sys variable of non-varchar type may be NULL
   static inline bool is_null_value(const common::ObString & value, int64_t flag)
   {
     return (flag & ObSysVarFlag::NULLABLE)
@@ -220,7 +223,7 @@ public:
   virtual int session_update(sql::ObExecContext &ctx, const ObSetVar &set_var, const common::ObObj &val);
   virtual int update(sql::ObExecContext &ctx, const ObSetVar &set_var, const common::ObObj &val);
 
-  virtual common::ObObjType inner_get_meta_type() const; // select @@XXX的时候meta data里面的类型
+  virtual common::ObObjType inner_get_meta_type() const; // select @@XXX when the type in meta data
   virtual int inner_to_select_obj(common::ObIAllocator &allocator,
                                   const sql::ObBasicSessionInfo &session,
                                   common::ObObj &select_obj) const;
@@ -268,11 +271,11 @@ public:
   DECLARE_TO_STRING;
 
 protected:
-  // 目前base_value和inc_value的设置操作有一个简单原则：
-  // 1. 有且只有base_value会和min_value/max_value一起设置，并且不需要判断base_value是否有效。
-  //    目前只有init接口。
-  // 2. 有且只有inc_value会单独设置，并且可能根据min_value/max_value判断inc_value是否有效。
-  //    目前只有set_value接口。
+  // The current setting operation for base_value and inc_value follows a simple principle:
+  // 1. Only base_value will be set together with min_value/max_value, and there is no need to check if base_value is valid.
+  //    Currently only the init interface.
+  // 2. Only inc_value will be set individually, and inc_value may be validated based on min_value/max_value.
+  //    Currently only the set_value interface.
   int64_t base_version_;
   common::ObObj base_value_;
   common::ObObj inc_value_;
@@ -576,8 +579,7 @@ private:
 private:
   DISALLOW_COPY_AND_ASSIGN(ObIntSysVar);
 };
-
-// 严格范围的int，这个类遇到set语句的值超出范围的时候会报错，而不是像ObIntSysVar那样截断
+// Strict range int, this class will throw an error when the value set by a set statement is out of range, rather than truncating like ObIntSysVar
 class ObStrictRangeIntSysVar : public ObIntSysVar
 {
 public:
@@ -1124,11 +1126,13 @@ public:
   ObPreProcessSysVars() {}
   virtual ~ObPreProcessSysVars() {}
 public:
-  static int init_sys_var();
+  static int init_sys_var() { return init_sys_var(common::ObArray<std::pair<common::ObString, common::ObString>>()); }
+  static int init_sys_var(const common::ObIArray<std::pair<common::ObString, common::ObString>> &sys_vars);
 
 private:
   static int init_config_sys_vars(); //require observer deploy to determine value
   static int change_initial_value();
+  static int change_base_values(const common::ObIArray<std::pair<common::ObString, common::ObString>> &sys_vars);
 private:
   DISALLOW_COPY_AND_ASSIGN(ObPreProcessSysVars);
 };

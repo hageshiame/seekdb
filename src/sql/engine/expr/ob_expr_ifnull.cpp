@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -17,6 +21,7 @@
 
 #include "sql/engine/expr/ob_expr_promotion_util.h"
 #include "sql/session/ob_sql_session_info.h"
+#include "sql/engine/expr/ob_expr_result_type_util.h"
 
 
 namespace oceanbase
@@ -59,7 +64,24 @@ int ObExprIfNull::calc_result_type2(ObExprResType &type,
     type.set_collation_type(CS_TYPE_BINARY);
   }
 
-  if (OB_SUCC(ret)) {
+  if (OB_FAIL(ret)) {
+  } else if (ob_is_collection_sql_type(type.get_type())) {
+    ObSQLSessionInfo *sess = const_cast<ObSQLSessionInfo *>(type_ctx.get_session());
+    ObExecContext *exec_ctx = sess->get_cur_exec_ctx();
+    ObExprResType coll_calc_type = type;
+    if (OB_ISNULL(exec_ctx)) {
+      ret = OB_ERR_UNEXPECTED;
+      LOG_WARN("exec ctx is null", K(ret));
+    } else if (type1.get_subschema_id() == type2.get_subschema_id()) {
+      type.set_collection(type1.get_subschema_id());
+    } else if (OB_FAIL(ObExprResultTypeUtil::get_array_calc_type(exec_ctx, type1, type2, coll_calc_type))) {
+      LOG_WARN("deduce calc type failed", K(ret));
+    } else {
+      type1.set_calc_meta(coll_calc_type);
+      type2.set_calc_meta(coll_calc_type);
+      type.set_collection(coll_calc_type.get_subschema_id());
+    }
+  } else {
     if (type.get_type() == type1.get_type()) {
       type.set_accuracy(type1.get_accuracy());
     } else {
@@ -74,7 +96,7 @@ int ObExprIfNull::calc_result_type2(ObExprResType &type,
         int signed_type_diff = static_cast<int>(signed_type) - static_cast<int>(ObTinyIntType);
         int unsigned_type_diff = static_cast<int>(unsigned_type) - static_cast<int>(ObUTinyIntType);
         int res_type_diff = (unsigned_type_diff >= signed_type_diff) ? (unsigned_type_diff + 1) : signed_type_diff;
-        //对于 int 和uint64的混合类型，需要提升类型至decimal
+        // For int and uint64 mixed types, need to promote type to decimal
         if (res_type_diff > (static_cast<int>(ObIntType) - static_cast<int>(ObTinyIntType))) {
           type.set_type(ObNumberType);
           type.set_accuracy(ObAccuracy::DDL_DEFAULT_ACCURACY[ObIntType].get_accuracy());
@@ -103,10 +125,12 @@ int ObExprIfNull::calc_result_type2(ObExprResType &type,
       }
     }
     type.set_length(MAX(type1.get_length(), type2.get_length()));
-    type1.set_calc_meta(type.get_obj_meta());
-    type1.set_calc_accuracy(type.get_accuracy());
-    type2.set_calc_meta(type.get_obj_meta());
-    type2.set_calc_accuracy(type.get_accuracy());
+    if (OB_SUCC(ret)) {
+      type1.set_calc_meta(type.get_obj_meta());
+      type1.set_calc_accuracy(type.get_accuracy());
+      type2.set_calc_meta(type.get_obj_meta());
+      type2.set_calc_accuracy(type.get_accuracy());
+    }
   }
 
   return ret;
@@ -118,7 +142,7 @@ int ObExprIfNull::calc_ifnull_expr(const ObExpr &expr, ObEvalCtx &ctx, ObDatum &
   // ifnull(arg0, arg1);
   ObDatum *arg0 = NULL;
   ObDatum *arg1 = NULL;
-  // MySQL ifnull是短路的
+  // MySQL ifnull is short-circuiting
   if (OB_FAIL(expr.args_[0]->eval(ctx, arg0))) {
     LOG_WARN("eval arg0 failed", K(ret));
   } else if (!arg0->is_null()) {

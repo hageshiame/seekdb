@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_STORAGE_DDL_OB_DIRECT_LOAD_COMMON_H
@@ -405,6 +409,7 @@ public:
       data_format_version_(0),
       snapshot_version_(0),
       table_key_(),
+      arena_(ObMemAttr(MTL_ID(), "DDL_Mrg_Par")),
       user_data_(),
       trans_id_(),
       seq_no_(),
@@ -436,6 +441,7 @@ public:
   ObITable::TableKey table_key_; // table key is only used in idem type direct load mgr
 
   /* optional val */
+  ObArenaAllocator arena_; // for user_data_
   ObTabletDDLCompleteMdsUserData user_data_;
   transaction::ObTransID trans_id_; // for inc-major direct load only
   transaction::ObTxSEQ seq_no_; // for inc-major direct load only
@@ -449,14 +455,13 @@ struct ObDDLTabletMergeDagParamV2
 public:
   ObDDLTabletMergeDagParamV2():
     for_major_(false), for_lob_(false), for_replay_(false), merge_all_slice_(false), direct_load_type_(ObDirectLoadType::DIRECT_LOAD_INVALID), start_scn_(share::SCN::min_scn()),
-    rec_scn_(share::SCN::min_scn()),  ddl_task_param_(), tablet_ctx_(nullptr), merge_helper_(nullptr), is_inited_(false) {}
+    rec_scn_(share::SCN::min_scn()),  ddl_task_param_(), tablet_ctx_(nullptr), is_inited_(false) {}
   int init(const bool for_major,
            const bool for_lob,
            const bool for_replay,
            const share::SCN start_scn,
            const ObDirectLoadType &direct_load_type,
            const ObDDLTaskParam &task_param,
-           ObIAllocator &allocator,
            ObDDLTabletContext *tablet_ctx_,
            const transaction::ObTransID &trans_id = transaction::ObTransID(),
            const transaction::ObTxSEQ &seq_no = transaction::ObTxSEQ());
@@ -474,7 +479,7 @@ public:
   bool need_merge_all_slice() const { return for_major_ || merge_all_slice_; }
   ObDDLTabletContext *get_tablet_ctx() { return tablet_ctx_; }
   ObDDLTabletContext *get_tablet_ctx() const { return tablet_ctx_; }
-  ObIDDLMergeHelper *get_merge_helper() const { return merge_helper_; }
+  int get_merge_helper(ObIDDLMergeHelper *&merge_helper);
   VIRTUAL_TO_STRING_KV(K(for_major_), K(for_replay_), K(for_lob_), K(merge_all_slice_), K(direct_load_type_), K(start_scn_), K(rec_scn_), K(table_key_), K(ddl_task_param_), K_(trans_id), K_(seq_no), KPC(tablet_ctx_));
 public:
   bool for_major_;
@@ -490,8 +495,6 @@ public:
   ObITable::TableKey table_key_;
 private:
   ObDDLTabletContext *tablet_ctx_;
-  ObIDDLMergeHelper  *merge_helper_;
-
   bool is_inited_;
 };
 

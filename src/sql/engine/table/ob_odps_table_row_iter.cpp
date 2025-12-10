@@ -1,14 +1,18 @@
 #ifdef OB_BUILD_CPP_ODPS
-/**
- * Copyright (c) 2023 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -211,8 +215,8 @@ int ObODPSTableRowIterator::init(const storage::ObTableScanParam *scan_param)
       }
     }
   }
-  // 如果成功的话revert析构
-  // 如果失败的话析构函数析构
+  // If successful revert destruction
+  // If failed, the destructor will destruct
   return ret;
 }
 
@@ -1149,7 +1153,7 @@ int ObODPSTableRowIterator::decode_odps_array(std::shared_ptr<apsara::odps::sdk:
           LOG_WARN("get unexpected null", KP(helper.child_helper_));
         } else if (OB_FAIL(decode_odps_array(odps_child_array, *helper.child_helper_))) {
           LOG_WARN("failed to print child array info");
-        // 这个init函数需要在child_array中的元素已经填充完毕后调用，即在child_decoder->decode之后调用。否则无法正确初始化类成员。
+        // This init function needs to be called after the elements in child_array have been filled, i.e., after child_decoder->decode. Otherwise, the class members cannot be initialized correctly.
         } else if (OB_FAIL(helper.child_helper_->array_->init())) {
           LOG_WARN("failed to init child array");
         } else if (OB_FAIL(nested_array->push_back(*helper.child_helper_->array_))) {
@@ -1795,7 +1799,7 @@ int ObODPSTableRowIterator::get_next_row()
       } while (OB_SUCC(ret) && OB_SUCC(THIS_WORKER.check_status()) && need_retry);
     }
   }
-  // 这里不能隐含假设：返回OB_ITER_END的时候不返回数据
+  // Here we cannot implicitly assume: when returning OB_ITER_END no data is returned
   OZ(calc_exprs_for_rowid(1));
   return ret;
 }
@@ -2752,7 +2756,7 @@ int ObOdpsPartitionDownloaderMgr::commit_upload()
         uploader->record_writer_->Close();
         blocks.push_back(block_id);
         block_id++;
-        // 所有线程都成功才commit
+        // All threads must succeed before commit
         if (block_id == task_count && true == ATOMIC_LOAD(&need_commit_)) {
           uploader->upload_->Commit(blocks);
         }

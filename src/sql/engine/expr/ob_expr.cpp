@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -23,6 +27,13 @@ namespace oceanbase
 using namespace common;
 namespace sql
 {
+// index number for args_ in ObExpr
+const int64_t ARGS_IDX_ZERO  = 0;
+const int64_t ARGS_IDX_ONE   = 1;
+const int64_t ARGS_IDX_TWO   = 2;
+const int64_t ARGS_IDX_THREE = 3;
+const int64_t ARGS_IDX_FOUE  = 4;
+const int64_t ARGS_IDX_FIVE  = 5;
 
 // ObPrecision and ObLengthSemantics are union field in ObDatumMeta,
 // need to be same size to make sure serialization works.
@@ -527,7 +538,7 @@ int ObDatumObjParam::construct_array_param_datum(const ObObjParam &obj_param, Ob
       datum_array->element_ = array_obj->element_;
     }
     for (int64_t i = 0; OB_SUCC(ret) && i < array_obj->count_; ++i) {
-      // 每一个datum数据都有自己的类型，datum_array->element_不再准确，但是这个只适用于insert values场景
+      // Every datum has its own type, datum_array->element_ is no longer accurate, but this only applies to insert values scenario
       ObObjDatumMapType obj_datum_map = ObDatum::get_obj_datum_map_type(
           array_obj->data_[i].get_type());
       if (OB_LIKELY(OBJ_DATUM_NULL != obj_datum_map)) {

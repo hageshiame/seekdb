@@ -1,17 +1,17 @@
 /*
- * Copyright (c) 2022 OceanBase Technology Co.,Ltd.
- * OceanBase is licensed under Mulan PubL v1.
- * You can use this software according to the terms and conditions of the Mulan PubL v1.
- * You may obtain a copy of Mulan PubL v1 at:
- *          http://license.coscl.org.cn/MulanPubL-1.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v1 for more details.
- * ---------------------------------------------------------------------------------------
- * Authors:
- *   Juehui <>
- * ---------------------------------------------------------------------------------------
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 #include "observer/virtual_table/ob_virtual_span_info.h"
 
@@ -279,9 +279,9 @@ int ObVirtualSpanInfo::check_ip_and_port(bool &is_valid)
 {
   int ret = OB_SUCCESS;
   is_valid = true;
-  // is_serving_tenant被改成 (svr_ip, svr_port) in (ip1, port1), (ip2, port2), ...
-  // 抽出来的query range为[(ip1, port1), (ip1, port1)], [(ip2, port2), (ip2, port2)], ...
-  // 需要遍历所有query range，判断本机的ip & port是否落在某一个query range中
+  // is_serving_tenant changed to (svr_ip, svr_port) in (ip1, port1), (ip2, port2), ...
+  // The extracted query range is [(ip1, port1), (ip1, port1)], [(ip2, port2), (ip2, port2)], ...
+  // Need to traverse all query ranges, and determine if the local ip & port falls within any one of the query ranges
   if (key_ranges_.count() >= 1) {
     is_valid = false;
     for (int64_t i = 0; OB_SUCC(ret) && !is_valid && i < key_ranges_.count(); i++) {

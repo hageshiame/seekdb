@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #pragma once
@@ -34,7 +38,7 @@ public:
   ObTableLoadTransBucketWriter(ObTableLoadTransCtx *trans_ctx);
   ~ObTableLoadTransBucketWriter();
   int init();
-  // 只在对应工作线程中调用, 串行执行
+  // Only called in the corresponding worker thread, executed serially
   int write(int32_t session_id, table::ObTableLoadObjRowArray &obj_rows);
   int flush(int32_t session_id);
 public:
@@ -58,10 +62,10 @@ private:
                              const common::ObObj &obj,
                              common::ObObj &out_obj,
                              common::ObArenaAllocator &cast_allocator);
-  // 非分区表
+  // Non-partitioned table
   int write_for_non_partitioned(SessionContext &session_ctx,
                                 const table::ObTableLoadObjRowArray &obj_rows);
-  // 分区表
+  // partition table
   int write_for_partitioned(SessionContext &session_ctx,
                             const table::ObTableLoadObjRowArray &obj_rows);
   int get_load_bucket(SessionContext &session_ctx, const table::ObTableLoadPartitionId &partition_id,
@@ -82,7 +86,7 @@ private:
     ~SessionContext();
     void reset();
     int32_t session_id_;
-    // 以下参数只在对应工作线程中访问
+    // The following parameters are only accessed in the corresponding worker thread
     common::ObArenaAllocator allocator_;
     // for non-partitioned table
     table::ObTableLoadPartitionId partition_id_;
@@ -90,7 +94,7 @@ private:
     // for partitioned table
     common::hash::ObHashMap<common::ObAddr, ObTableLoadBucket *> load_bucket_map_;
     common::ObArray<ObTableLoadBucket *> load_bucket_array_;
-    // 以下参数加锁访问
+    // The following parameters are accessed with a lock
     lib::ObMutex mutex_;
     uint64_t last_receive_sequence_no_;
   };

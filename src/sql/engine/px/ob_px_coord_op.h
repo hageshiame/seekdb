@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_ENGINE_PX_EXCHANGE_OB_PX_COORD_OP_H_
@@ -135,7 +139,7 @@ protected:
   common::ObArenaAllocator allocator_;
   common::ObArenaAllocator row_allocator_;
   ObPxCoordInfo coord_info_;
-  ObDfo *root_dfo_; // 指向 QC
+  ObDfo *root_dfo_; // point to QC
   ObPxRootReceiveChProvider root_receive_ch_provider_;
   bool first_row_fetched_;
   bool first_row_sent_;
@@ -143,10 +147,10 @@ protected:
   bool register_interrupted_;
   /*
     *   px_sequnce_id  explaination
-    *   在中断功能和dtl buffer中均对key的唯一性有要求
-    *   执行嵌套px的计划按照此前的设计将存在key的id不唯一的缺陷.
-    *   引入px_sequence_id, 该id可以保证在该server下的每一个px都是唯一递增的.
-    *   配合server_id使用即可全集群唯一.
+    *   There is a requirement for the uniqueness of the key in both interrupt functions and dtl buffer.
+    *   Executing nested px plans according to the previous design will have the defect of non-unique key ids.
+    *   Introducing px_sequence_id, this id can ensure that every px under this server is uniquely and incrementally increasing.
+    *   Using it in conjunction with server_id will make it unique across the entire cluster.
     * */
   uint64_t px_sequence_id_;
   ObInterruptibleTaskID interrupt_id_;
@@ -186,12 +190,12 @@ public:
   }
   TableLocationFixedArray &get_table_locations()
   { return table_locations_; }
-  int64_t px_expected_worker_count_; // 当前 px 可以分到的线程数上限，用于multi-px 限流场景
+  int64_t px_expected_worker_count_; // The upper limit of threads that px can be allocated, used for multi-px rate limiting scenarios
   int64_t qc_id_;
-  // px在支持分布式batch rescan时需要感知做rescan的算子id以及算子类型
-  // 是1对1的对应关系
+  // px needs to be aware of the operator id and operator type performing the rescan when supporting distributed batch rescan
+  // is 1 to 1 correspondence
   ObPxCoordOp::ObPxBatchOpInfo batch_op_info_;
-  // 对于有条件下推的table_location, 需要序列化
+  // For table_location with conditional pushdown, serialization is required
   TableLocationFixedArray table_locations_;
 };
 

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_LIB_STORAGE_IO_DEFINE
@@ -62,10 +66,10 @@ enum class ObIOMode : uint8_t { READ = 0, WRITE = 1, MAX_MODE };
 enum class ObIOGroupMode : uint8_t { LOCALREAD = 0, LOCALWRITE = 1, REMOTEREAD = 2, REMOTEWRITE = 3, MODECNT };
 
 enum class ObIOPriority : uint8_t {
-  EMERGENT = 0,  // 预留
-  HIGH = 1,      // 转储写、中间层索引读取
-  MIDDLE = 2,    // 合并写、临时文件写
-  LOW = 3        // 后台任务读写，例如CRC校验
+  EMERGENT = 0,  // Reserved
+  HIGH = 1,      // dump write, middle layer index read
+  MIDDLE = 2,    // merge write, temporary file write
+  LOW = 3        // background task read/write, for example CRC check
 };
 
 const char *get_io_mode_string(const ObIOMode mode);
@@ -728,8 +732,8 @@ public:
     TO_STRING_KV(K_(mode), K_(deleted), K_(cleared), K_(min_percent), K_(max_percent), K_(weight_percent));
 
   public:
-    bool deleted_;  // group被删除的标记
-    bool cleared_;  // group被清零的标记，以后有新的directive就会重置
+    bool deleted_;  // flag indicating that the group has been deleted
+    bool cleared_;  // flag indicating that the group has been cleared, will be reset with new directive
     char group_name_[common::OB_MAX_RESOURCE_PLAN_NAME_LENGTH];
     int64_t min_percent_;
     int64_t max_percent_;

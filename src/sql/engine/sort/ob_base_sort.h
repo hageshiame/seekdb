@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef UNITTEST_SQL_ENGINE_SORT_OB_BASE_SORT_H_
@@ -22,11 +26,11 @@ namespace oceanbase
 {
 namespace sql
 {
-// ObSortColumn没有设置OB_UNIS_VERSION，不能走序列化框架的逻辑，也就没有办法新加类型
-// 定义一个ObSortColumnExtra是为了解决ObSortColumn的扩展问题
-// is_ascending_这个成员在序列化的时候是按照1个字节的大小来序列化的，
-// 但是bool值只需要用到1位，那么剩余7位可以用一位来作为一个版本控制，
-// 如果解析时发现设置了版本号，那么就继续反序列化后面的ObSortColumnExtra
+// ObSortColumn has not set OB_UNIS_VERSION, cannot follow the serialization framework logic, thus it is impossible to add new types
+// Define an ObSortColumnExtra to solve the extension problem of ObSortColumn
+// is_ascending_this member is serialized with a size of 1 byte when serializing,
+// But bool value only needs 1 bit, then the remaining 7 bits can be used as a version control,
+// If the version number is set during parsing, then continue deserializing the following ObSortColumnExtra
 struct ObSortColumnExtra
 {
   OB_UNIS_VERSION(1);

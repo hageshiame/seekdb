@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2023 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SERVER
@@ -166,12 +170,12 @@ int ObTableLoadBackupPartScanner_V_1_4::locate_subpart_macro_block(int64_t subpa
   if (total_macro_block_count > 0) {
     int64_t valid_subpart_count = subpart_count;
     if (total_macro_block_count < subpart_count * MIN_SUBPART_MACRO_BLOCK_COUNT) {
-      // 宏块数目太少, 分不出subpart_count份, 重新计算能分出几份
+      // The number of macroblocks is too small, cannot be divided into subpart_count parts, recalculate how many parts can be divided
       valid_subpart_count =  MAX(total_macro_block_count / MIN_SUBPART_MACRO_BLOCK_COUNT, 1);
     }
     const int64_t count_per_subpart = total_macro_block_count / valid_subpart_count;
     const int64_t remain_count = total_macro_block_count - count_per_subpart * valid_subpart_count;
-    // 比如16个宏块分成5份: 4 3 3 3 3
+    // For example, 16 macroblocks divided into 5 parts: 4 3 3 3 3
     // count_per_subpart = 3
     // remain_count = 1
     // [0, 4) [4, 7) [7, 10) [10, 13) [13, 16)

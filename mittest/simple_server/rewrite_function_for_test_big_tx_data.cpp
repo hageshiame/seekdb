@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2023 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "storage/tx_table/ob_tx_table_iterator.h"
@@ -58,7 +62,7 @@ int ObTxTable::check_with_tx_data(ObReadTxDataArg &read_tx_data_arg, ObITxDataCh
     return ret;
   }
   /**************************************************************************************************/
-  // 跳过读缓存
+  // skip read cache
   /**************************************************************************************************/
 
   // step 3 : read tx data in tx_ctx table and tx_data table
@@ -96,8 +100,8 @@ int ObTxData::add_undo_action(ObTxTable *tx_table,
     STORAGE_LOG(WARN, "tx data table in tx table is nullptr.", KR(ret));
   } else {
 /**************************************************************************************************/
-    // 在测试big tx data的时候，连续挂很多无效的undo action上去，并且disable掉merge的逻辑
-    // 可以节省测试时间，否则构建big tx data的耗时太长，没办法加到farm里
+    // When testing big tx data, continuously attach many invalid undo actions and disable the merge logic
+    // Can save test time, otherwise building big tx data takes too long, can't be added to farm
     int loop_times = 10000;
     while (OB_SUCC(ret) && --loop_times) {
       ObUndoStatusNode *new_node = nullptr;

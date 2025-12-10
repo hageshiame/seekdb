@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "election_priority_impl.h"
@@ -124,7 +128,7 @@ int ElectionPriorityImpl::deserialize(const char* buf, const int64_t data_len, i
         } else if (OB_UNLIKELY(!functor.is_decoded_success())) {
           COORDINATOR_LOG_(INFO, "this type not found in tuple, maybe is a new priority type, just skip the buffer");
           pos = functor.get_started_pos();
-          pos += data_size;// 跳过这个对象
+          pos += data_size;// skip this object
         } else {
           COORDINATOR_LOG_(DEBUG, "decode element success");
         }
@@ -191,7 +195,7 @@ int ElectionPriorityImpl::compare_with(const ElectionPriority &rhs,
 {
   LC_TIME_GUARD(1_s);
   int ret = OB_SUCCESS;
-  // 这里如果转型失败直接抛异常，但设计上转型不会失败
+  // Here, if the cast fails, an exception is thrown directly, but by design, the cast will not fail
   const ElectionPriorityImpl &rhs_impl = dynamic_cast<const ElectionPriorityImpl &>(rhs);
   GetClosestVersionPriority functor1(compare_version);
   GetClosestVersionPriority functor2(compare_version);

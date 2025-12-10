@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SERVER
@@ -72,7 +76,7 @@ int ObTableLoadObjCaster::cast_obj(ObTableLoadCastObjCtx &cast_obj_ctx,
   const ObObjType expect_type = column_schema->get_meta_type().get_type();
   const ObAccuracy &accuracy = column_schema->get_accuracy();
   if (column_schema->is_unused()) {
-    // 快速删除列, 直接填充null
+    // Fast delete column, directly fill with null
     if (OB_UNLIKELY(!src.is_nop_value())) {
       ret = OB_ERR_UNEXPECTED;
       LOG_WARN("unexpected insert specify deleted column", KR(ret), K(src), KPC(column_schema));
@@ -80,7 +84,7 @@ int ObTableLoadObjCaster::cast_obj(ObTableLoadCastObjCtx &cast_obj_ctx,
       dst.set_null();
     }
   } else if (src.is_nop_value()) {
-    // 默认值是表达式
+    // Default value is expression
     if (lib::is_mysql_mode() && column_schema->get_cur_default_value().is_ext()) {
       ret = OB_NOT_SUPPORTED;
       LOG_WARN("column default value is ext", KR(ret), KPC(column_schema));
@@ -88,8 +92,8 @@ int ObTableLoadObjCaster::cast_obj(ObTableLoadCastObjCtx &cast_obj_ctx,
       ret = OB_NOT_SUPPORTED;
       LOG_WARN("column default value is expr", KR(ret), KPC(column_schema));
     }
-    // 没有默认值, 且为NOT NULL
-    // 例外:枚举类型默认为第一个
+    // No default value, and is NOT NULL
+    // Exception: Enum type defaults to the first one
     else if (column_schema->is_not_null_for_write() &&
              column_schema->get_cur_default_value().is_null()) {
       if (column_schema->get_meta_type().is_enum()) {
@@ -100,17 +104,17 @@ int ObTableLoadObjCaster::cast_obj(ObTableLoadCastObjCtx &cast_obj_ctx,
         LOG_WARN("column can not be null", KR(ret), KPC(column_schema));
       }
     }
-    // mysql模式
+    // mysql mode
     else if (lib::is_mysql_mode()) {
-      // char,nchar,binary需要转换
+      // char,nchar,binary need conversion
       if (column_schema->get_meta_type().is_fixed_len_char_type() || column_schema->get_meta_type().is_binary()) {
         convert_src_obj = &(column_schema->get_cur_default_value());
       } else {
-        // 直接用default value
+        // directly use default value
         dst = column_schema->get_cur_default_value();
       }
     }
-    // oracle模式需要转换
+    // Oracle mode needs conversion
     else {
       convert_src_obj = &(column_schema->get_cur_default_value());
     }
@@ -316,7 +320,7 @@ int ObTableLoadObjCaster::string_to_set(ObIAllocator &alloc, const ObObj &src,
           LOG_WARN("data truncate", K(pos), K(val_str), K(in_str), K(ret));
         }
       } else {
-        pos %= 64; // MySQL中，如果value存在重复，则value_count可以大于64
+        pos %= 64; // In MySQL, if value exists duplicate, then value_count can be greater than 64
         value |= (1ULL << pos);
       }
     } while (OB_SUCC(ret) && !is_last_value);

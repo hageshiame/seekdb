@@ -1,16 +1,20 @@
 // owner: yunlong.cb
 // owner group: log
 
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define private public
@@ -222,8 +226,7 @@ TEST_F(TestObSimpleLogClusterAccessMode, add_member)
     EXPECT_EQ(OB_SUCCESS, leader.palf_handle_impl_->change_access_mode(curr_proposal_id, mode_version, palf::AccessMode::RAW_WRITE, share::SCN::min_scn()));
     unblock_net(leader_idx, follower1_idx);
     block_net(leader_idx, follower2_idx);
-
-    // new_leader需要在delete_paxos_group()之前析构，否则palf_handle引用计数无法清零
+    // new_leader needs to be destructed before delete_paxos_group(), otherwise palf_handle reference count cannot be reset to zero
     PalfHandleImplGuard new_leader;
     int64_t new_leader_idx;
     EXPECT_EQ(OB_SUCCESS, get_leader(id, new_leader, new_leader_idx));

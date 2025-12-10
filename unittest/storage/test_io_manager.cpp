@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX COMMON
@@ -577,7 +581,7 @@ TEST_F(TestIOStruct, Test_Size)
   LOG_INFO("qilu :check size", K(size1), K(size2), K(size3), K(size4), K(size5), K(size6), K(max_callback_size));
   LOG_INFO("qilu :check size", K(size_request), K(size_result), K(size_info), K(size_thread_cond), K(size_flag),
           K(ref_size), K(time_size), K(return_size), K(fd_size), K(trace_size));
-  //mark: max_callback_size=208(ObMultiDataBlockIOCallback、ObStorageMetaIOCallback)
+  //mark: max_callback_size=208(ObMultiDataBlockIOCallback, ObStorageMetaIOCallback)
 }
 
 TEST_F(TestIOStruct, IOResult)
@@ -1414,7 +1418,7 @@ TEST_F(TestIOStruct, IOTracer)
     IOTracerSwitch *tracer_switch = new (modifyer_buf + i * sizeof(IOTracerSwitch)) IOTracerSwitch();
     IOPerfTenant &curr_tenant = perf_tenants.at(i);
     int64_t switch_init_ts = start_ts;
-    int64_t switch_delay_ts = 1000000L; //1s后打开开关
+    int64_t switch_delay_ts = 1000000L; // 1 second after turn on the switch
     ASSERT_SUCC(tracer_switch->init(switch_init_ts, switch_delay_ts, curr_tenant));
     ASSERT_SUCC(switches.push_back(tracer_switch));
   }
@@ -1489,7 +1493,7 @@ TEST_F(TestIOStruct, ModifyIOPS)
     IOConfModify *modifyer=new (modifyer_buf + i * sizeof(IOConfModify)) IOConfModify();
     IOPerfTenant &curr_tenant = perf_tenants.at(i);
     int64_t modify_init_ts = start_ts;
-    int64_t modify_delay_ts = 3000000L; //2s后开始修改
+    int64_t modify_delay_ts = 3000000L; // 2 seconds after start modification
     ASSERT_SUCC(modifyer->init(modify_init_ts, modify_delay_ts, curr_tenant));
     ASSERT_SUCC(modifyers.push_back(modifyer));
   }
@@ -1563,7 +1567,7 @@ TEST_F(TestIOStruct, ModifyCallbackThread)
     IOCallbackModifier *modifier=new (modifier_buf + i * sizeof(IOCallbackModifier)) IOCallbackModifier();
     IOPerfTenant &curr_tenant = perf_tenants.at(i);
     int64_t modify_init_ts = start_ts;
-    int64_t modify_delay_ts = 2000000L; //2s后开始修改
+    int64_t modify_delay_ts = 2000000L; // 2 seconds after start modification
     ASSERT_SUCC(modifier->init(modify_init_ts, modify_delay_ts, curr_tenant));
     ASSERT_SUCC(modifiers.push_back(modifier));
   }
@@ -1639,7 +1643,7 @@ TEST_F(TestIOStruct, ModifyGroupIO)
     if (curr_tenant.tenant_id_ == 1002) {
       IOGroupModify *modifyer=new (modifyer_buf + i * sizeof(IOGroupModify)) IOGroupModify();
       int64_t modify_init_ts = start_ts;
-      int64_t modify_delay_ts = 3000000L; //3s后开始修改
+      int64_t modify_delay_ts = 3000000L; // 3 seconds after start modification
       ASSERT_SUCC(modifyer->init(modify_init_ts, modify_delay_ts, curr_tenant));
       ASSERT_SUCC(modifyers.push_back(modifyer));
     }

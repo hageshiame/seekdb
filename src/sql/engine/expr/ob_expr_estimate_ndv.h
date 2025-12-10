@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SQL_ENGINE_EXPR_ESTIMATE_NDV_H_
@@ -26,8 +30,8 @@ public:
                                 common::ObExprTypeCtx &type_ctx) const;
   static void llc_estimate_ndv(int64_t &result, const common::ObString &bitmap_str);
   static int llc_estimate_ndv(double &estimate_ndv, const common::ObString &bitmap_buf);
-  // 计算value的leading zeros。在HyperLogLogCount中，一个hash值的前面若干位要用来做分桶，
-  // 这里的传入参数value是通过左移移除掉分桶部分后的部分，它的实际有效位数是高bit_width位。
+  // Calculate the leading zeros of value. In HyperLogLogCount, several leading bits of a hash value are used for bucketing,
+  // Here the input parameter value is obtained by left-shifting to remove the bucket part, and its actual effective bit width is the high bit_width bits.
   static uint64_t llc_leading_zeros(uint64_t value, uint64_t bit_width);
   static bool llc_is_num_buckets_valid(int64_t num_buckets);
   // for engine 3.0
@@ -36,10 +40,10 @@ public:
   static int calc_estimate_ndv_expr(const ObExpr &expr, ObEvalCtx &ctx,
                                     ObDatum &res_datum);
 private:
-  // 计算HyperLogLogCount中的 alpha * m^2 的函数。计算涉及变量m(uint64_t)
-  // 转double的步骤，调用者需要考虑可能的精度损失（目前m通常不超过4096，无损失）。
+  // Calculate the function for alpha * m^2 in HyperLogLogCount. The calculation involves variable m(uint64_t)
+  // Convert to double steps, caller needs to consider possible precision loss (currently m usually does not exceed 4096, no loss).
   static inline double llc_alpha_times_m_square(const uint64_t m);
-  // 根据Google的HLLC论文桶数至少取2^4(16)个，至多取2^16(65536)个。
+  // According to Google's HLLC paper, the number of buckets should be at least 2^4 (16) and at most 2^16 (65536).
   static const int LLC_NUM_BUCKETS_MIN = (1 << 4);
   static const int LLC_NUM_BUCKETS_MAX = (1 << 16);
 private:

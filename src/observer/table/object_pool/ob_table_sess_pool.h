@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2025 OceanBase
- * OceanBase is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_OBSERVER_OB_TABLE_SESS_POOL_H_
@@ -62,8 +66,8 @@ private:
   common::ObFIFOAllocator allocator_;
   bool is_inited_;
   CacheKeyNodeMap key_node_map_;
-  // 已经淘汰的node，等待被后台删除
-  // 前台login时、后台淘汰时都会操作retired_nodes_，因此需要加锁
+  // obsolete node, waiting to be deleted by the background
+  // Frontend login and backend eviction will both operate on retired_nodes_, so locking is required
   common::ObDList<ObTableApiSessNode> retired_nodes_;
   ObSpinLock retired_nodes_lock_; // for lock retired_nodes_
   int64_t last_update_ts_;
@@ -88,7 +92,7 @@ public:
   void destroy();
   sql::ObSQLSessionInfo& get_sess_info() { return sess_info_; }
   int init_sess_info();
-  void reset_tx_desc() { // 防止异步提交场景在 session 析构的时候 rollback 事务
+  void reset_tx_desc() { // Prevent rollback of transaction during session destruction in asynchronous submission scenario
     sql::ObSQLSessionInfo::LockGuard guard(sess_info_.get_thread_data_lock());
     sess_info_.get_tx_desc() = nullptr;
   }
@@ -174,9 +178,9 @@ public:
   ObTableApiSessGuard()
       : sess_node_val_(nullptr)
   {}
-  // 析构需要做的两件事：
-  // 1. reset事务描述符，避免session析构时，回滚事务
-  // 2. 将session归还到队列，归还失败直接释放（destroy()会将owner_node_设置为null,需要提前记录owner_node）
+  // Two things to do during destruction:
+  // 1. reset transaction descriptor, avoid rolling back the transaction when session is destructed
+  // 2. Return the session to the queue, and release it directly if the return fails (destroy() will set owner_node_ to null, so the owner_node needs to be recorded in advance)
   ~ObTableApiSessGuard()
   {
     if (OB_NOT_NULL(sess_node_val_)) {

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX  LIB_TIME
@@ -395,8 +399,7 @@ int ObDFMUtil::parse_one_elem(ObDFMParseCtx &ctx, ObDFMElem &elem, const bool su
 
   return ret;
 }
-
-//用于dfm_ele的打印，应该不需要修改，新flag不需要改，直接打印即可，因为不需要考虑大小写。
+// Used for printing dfm_ele, should not need modification, new flags do not need to be changed, just print directly, because case does not need to be considered.
 int ObDFMUtil::special_mode_sprintf(char *buf, const int64_t buf_len, int64_t &pos,
                                     const ObTimeConstStr &str, const ObDFMElem::UpperCaseMode mode, int64_t padding) {
   int ret = OB_SUCCESS;
@@ -446,8 +449,7 @@ int ObDFMUtil::special_mode_sprintf(char *buf, const int64_t buf_len, int64_t &p
 
   return ret;
 }
-
-//检查语义，新flag不需要修改，无冲突
+// Check semantics, new flag does not need modification, no conflict
 int ObDFMUtil::check_semantic(const ObDFMElemArr &elements, ObFixedBitSet<OB_DEFAULT_BITSET_SIZE_FOR_DFM> &flag_bitmap, uint64_t mode)
 {
   int ret = OB_SUCCESS;
@@ -518,9 +520,7 @@ int ObDFMUtil::check_semantic(const ObDFMElemArr &elements, ObFixedBitSet<OB_DEF
   }
   return ret;
 }
-
-
-//需要适配新flag
+// Need to adapt to new flag
 ObString ObDFMElem::get_elem_name() const
 {
   ObString result;

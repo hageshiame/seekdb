@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX PL
@@ -107,7 +111,7 @@ int ObPLRouter::analyze(ObString &route_sql, ObIArray<ObDependencyInfo> &dep_inf
       func_ast.set_pipelined();
     }
     if (OB_FAIL(simple_resolve(func_ast))) {
-      // 兼容mysql，部分resolve阶段错误需要在创建时抛出
+      // Compatible with MySQL, some resolve stage errors need to be thrown at creation time
       if (OB_FAIL(check_error_in_resolve(ret))) {
         LOG_WARN("resolve error with error code", K(ret));
       } else {
@@ -166,7 +170,7 @@ int ObPLRouter::simple_resolve(ObPLFunctionAST &func_ast)
   if (routine_info_.is_udt_routine()) {
       func_ast.set_is_udt_routine();
   }
-  //添加参数列表
+  //Add parameter list
   for (int64_t i = 0; OB_SUCC(ret) && i < routine_info_.get_routine_params().count(); ++i) {
     ObRoutineParam *param = routine_info_.get_routine_params().at(i);
     ObPLDataType param_type;
@@ -191,7 +195,7 @@ int ObPLRouter::simple_resolve(ObPLFunctionAST &func_ast)
                                                NULL,
                                                &param->get_extended_type_info(),
                                                param->is_in_sp_param(),
-                                               param->is_self_param()))) { //输入参数的default值在编译时候没用
+                                               param->is_self_param()))) { //The default value of the input parameter is not used at compile time
         LOG_WARN("failed to add argument", K(param->get_param_name()), K(param->get_param_type()), K(ret));
       } else {
         // do nothing
@@ -206,7 +210,7 @@ int ObPLRouter::simple_resolve(ObPLFunctionAST &func_ast)
   //Parser
   ObStmtNodeTree *parse_tree = NULL;
   if (OB_SUCC(ret)) {
-    ObString body = routine_info_.get_routine_body(); //获取body字符串
+    ObString body = routine_info_.get_routine_body(); // get body string
     ObPLParser parser(inner_allocator_, session_info_.get_charsets4parser(), session_info_.get_sql_mode());
     CHECK_COMPATIBILITY_MODE(&session_info_);
 

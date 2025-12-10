@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "election_member_list.h"
@@ -56,30 +60,30 @@ bool MemberList::operator==(const MemberList &rhs) const
 {
   ELECT_TIME_GUARD(500_ms);
   bool ret = false;
-  // 检查旧的成员组的信息是否一致
+  // Check if the information of the old member group is consistent
   int valid_member_list_count = 0;
   valid_member_list_count += rhs.is_valid() ? 1 : 0;
   valid_member_list_count += this->is_valid() ? 1 : 0;
-  if (valid_member_list_count == 0) {// 两个都是无效的
+  if (valid_member_list_count == 0) {// both are invalid}
     ret = true;
-  } else if (valid_member_list_count == 2) {// 两个都是有效的
+  } else if (valid_member_list_count == 2) {// both are valid
     if (membership_version_ == rhs.membership_version_ && replica_num_ == rhs.replica_num_) {
-      // 成员版本号和副本数量相等
-      if (addr_list_.count() == rhs.addr_list_.count()) {// 成员列表的数量一致
+      // Member version number and replica count are equal
+      if (addr_list_.count() == rhs.addr_list_.count()) {// The number of members in the list is consistent
         ret = true;
         for (int64_t i = 0; i < addr_list_.count() && ret; ++i) {
-          // 判断对于自己成员列表中的每一个成员是否都能在rhs中找到
-          if (addr_list_[i] != rhs.addr_list_[i]) {// 要求成员列表的顺序和成员是一致的
+          // Determine if every member in our member list can be found in rhs
+          if (addr_list_[i] != rhs.addr_list_[i]) {// The order and members of the member list must be consistent
             ret = false;
           }
         }
-      } else {// 成员列表的数量不一致
+      } else {// The number of members in the list is inconsistent
         ret = false;
       }
-    } else {// 成员版本号和副本数量不等
+    } else {// member version number and replica count are not equal
       ret = false;
     }
-  } else {// 其中一个有效，一个无效
+  } else {// one is valid, the other is invalid
     ret = false;
   }
   return ret;

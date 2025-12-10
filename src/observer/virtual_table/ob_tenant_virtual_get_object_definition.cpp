@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SERVER
@@ -166,8 +170,8 @@ int ObGetObjectDefinition::get_ddl_creation_str(ObString &ddl_str,
   int ret = OB_SUCCESS;
   switch(object_type) {
     case T_GET_DDL_TABLE:
-      // table, procedure, package仍使用原来的实现方式，未使用tenant_virtual_object_definition虚拟表
-      // 在下一个barrier版本的下一个版本改为使用tenant_virtual_object_definition虚拟表，并删去旧的虚拟表
+      // table, procedure, package still use the original implementation method, without using the tenant_virtual_object_definition virtual table
+      // In the version after the next barrier version, change to use the tenant_virtual_object_definition virtual table and delete the old virtual table
       //ret = get_table_definition(ddl_str, object_id);
       ret = OB_NOT_SUPPORTED;
       break;
@@ -634,8 +638,8 @@ int ObGetObjectDefinition::get_user_definition(ObString &ddl_str,
     ret = print_error_log(object_type, db_name, user_name);
     LOG_WARN("user not found", K(ret));
   } else if (users_info.count() > 1) {
-    //用户名不能作为用户的唯一标识，username+hostname才是。
-    //但是由于oracle模式创建用户时会同时创建同名数据库，所以不会允许创建username相同的用户，即使它们的hostname不同。
+    //Username cannot be used as the unique identifier for a user, username+hostname is required.
+    //However, since Oracle mode creates a database with the same name as the user when creating a user, it will not allow the creation of users with the same username, even if their hostnames are different.
     ret = OB_ERR_UNEXPECTED;
     LOG_WARN("users with same name is not allowed in oracle mode", K(ret));
   } else if (OB_ISNULL(user_info = users_info.at(0))) {

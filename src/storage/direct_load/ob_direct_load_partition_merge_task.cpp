@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 #define USING_LOG_PREFIX STORAGE
 
@@ -47,25 +51,12 @@ ObDirectLoadPartitionMergeTask::ObDirectLoadPartitionMergeTask()
     affected_rows_(0),
     need_handle_dml_row_(false),
     is_stop_(false),
-    allocator_("TLD_MergeExec"),
     is_inited_(false)
 {
-  allocator_.set_tenant_id(MTL_ID());
-  row_iters_.set_block_allocator(ModulePageAllocator(allocator_));
 }
 
 ObDirectLoadPartitionMergeTask::~ObDirectLoadPartitionMergeTask()
 {
-  for (int64_t i = 0; i < row_iters_.count(); ++i) {
-    ObDirectLoadIStoreRowIterator *row_iter = row_iters_.at(i);
-    if (row_iter != nullptr) {
-      row_iter->~ObDirectLoadIStoreRowIterator();
-      allocator_.free(row_iter);
-      row_iter = nullptr;
-    }
-  }
-  row_iters_.reset();
-  allocator_.reset();
 }
 
 int ObDirectLoadPartitionMergeTask::inner_init(ObDirectLoadTabletMergeCtx *merge_ctx,
@@ -112,7 +103,7 @@ int ObDirectLoadPartitionMergeTask::process()
       ret = OB_ERR_UNEXPECTED;
       LOG_WARN("ddl agent should not be null", K(ret));
     }
-    // 对于全量导入, 无论一个分区有没有数据, 都需要创建ddl对象来为该分区创建major sstable
+    // For full import, regardless of whether a partition has data or not, a ddl object needs to be created to create a major sstable for that partition
     else if (OB_FAIL(ObDDLUtil::init_macro_block_seq(parallel_idx_, block_start_seq))) {
       LOG_WARN("fail to set parallel degree", KR(ret), K(parallel_idx_));
     } else if (OB_FAIL(insert_tablet_ctx_->open_sstable_slice(block_start_seq, parallel_idx_/*slice_idx*/, slice_id, ddl_agent))) {
@@ -129,7 +120,7 @@ int ObDirectLoadPartitionMergeTask::process()
         ret = OB_CANCELED;
         LOG_WARN("merge task canceled", KR(ret));
       } else {
-        // batch mode不支持同时写insert和delete行
+        // batch mode does not support writing insert and delete lines simultaneously
         if (use_batch_mode) {
           if (OB_FAIL(fill_sstable_slice_batch(slice_id, row_iters))) {
             LOG_WARN("fail to fill sstable slice batch", KR(ret), K(slice_id));
@@ -229,15 +220,10 @@ int ObDirectLoadPartitionMergeTask::init_iterator(ObITabletSliceRowIterator *&ro
     row_iterator = nullptr;
     ObDirectLoadDagInsertTableRowIterator *iter = nullptr;
     ObMemAttr attr(MTL_ID(), "TLD_SliceIter");
-    if (OB_UNLIKELY(!row_iters_.empty())) {
-      ret = OB_ERR_UNEXPECTED;
-      LOG_WARN("unexpected row iters not empty", KR(ret));
-    } else if (OB_FAIL(construct_row_iters(row_iters_, allocator_))) {
-      LOG_WARN("fail to construct row iters", KR(ret));
-    } else if (OB_ISNULL(iter = OB_NEW(ObDirectLoadDagInsertTableRowIterator, attr))) {
+    if (OB_ISNULL(iter = OB_NEW(ObDirectLoadDagInsertTableRowIterator, attr))) {
       ret = OB_ALLOCATE_MEMORY_FAILED;
       LOG_WARN("fail to alloc memory", KR(ret));
-    } else if (OB_FAIL(iter->init(insert_tablet_ctx_, parallel_idx_ /*slice_idx*/, row_iters_,
+    } else if (OB_FAIL(iter->init(insert_tablet_ctx_, parallel_idx_ /*slice_idx*/, this,
                                   need_handle_dml_row_ ? merge_param_->dml_row_handler_ : nullptr,
                                   ObDirectLoadMergeMode::NORMAL == merge_param_->merge_mode_))) {
       LOG_WARN("fail to init insert table row iter", KR(ret));
@@ -913,7 +899,7 @@ int ObDirectLoadPartitionHeapTableMultipleAggregateMergeTask::construct_row_iter
 {
   int ret = OB_SUCCESS;
   row_iters.reset();
-  // 1. 构造origin iter
+  // 1. construct origin iter
   ObDirectLoadOriginTableScanner *origin_scanner = nullptr;
   if (OB_FAIL(origin_table_->scan(whole_range_, allocator, origin_scanner, false /*skip_read_lob*/))) {
     LOG_WARN("fail to scan origin table", KR(ret));
@@ -927,7 +913,7 @@ int ObDirectLoadPartitionHeapTableMultipleAggregateMergeTask::construct_row_iter
       origin_scanner = nullptr;
     }
   }
-  // 2. 构造multiple_heap_table iter
+  // 2. construct multiple_heap_table iter
   if (OB_SUCC(ret)) {
     RowIterator *row_iter = nullptr;
     if (OB_ISNULL(row_iter = OB_NEWx(RowIterator, &allocator))) {

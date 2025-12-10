@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_OPT
@@ -220,7 +224,7 @@ int ObLogInsert::compute_plan_type()
              ObPhyPlanType::OB_PHY_PLAN_DISTRIBUTED != phy_plan_type_ &&
              !get_plan()->get_stmt()->has_instead_of_trigger() &&
              is_insert_select()) {
-    // 包含instead of trigger的view是没有table_partition_info_的,不需要走下面的逻辑
+    // The view containing instead of trigger does not have table_partition_info_, no need to go through the logic below
     ObTableLocationType location_type = OB_TBL_LOCATION_UNINITIALIZED;
     ObAddr &server = get_plan()->get_optimizer_context().get_local_server_addr();
     if (OB_ISNULL(table_partition_info_)) {
@@ -229,7 +233,7 @@ int ObLogInsert::compute_plan_type()
     } else if (OB_FAIL(table_partition_info_->get_location_type(server, location_type))) {
       LOG_WARN("get location type failed", K(ret));
     } else if (child->is_local() && ObTableLocationType::OB_TBL_LOCATION_REMOTE == location_type  ) {
-      // 特殊insert case处理：insert table是remote，child对应的是local，需要将计划设置为dist plan
+      // Special insert case handling: insert table is remote, child corresponds to local, need to set the plan to dist plan
       phy_plan_type_ = ObPhyPlanType::OB_PHY_PLAN_DISTRIBUTED;
       exchange_allocated_ = true;
     } else { /*do nothing*/ }

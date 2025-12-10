@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2025 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX STORAGE
@@ -225,7 +229,7 @@ int TestCGMicroMacroWriteOp::initialize_args_and_env(const ObObjType *col_types,
   ddl_dag_.direct_load_type_ = ObDirectLoadMgrUtil::ddl_get_direct_load_type(GCTX.is_shared_storage_mode(), tenant_data_version);
   ddl_dag_.ddl_task_param_.target_table_id_ = ddl_table_id;
   ddl_dag_.ddl_task_param_.execution_id_ = ddl_execution_id;
-  ddl_dag_.direct_load_type_ = ObDirectLoadType::DIRECT_LOAD_DDL;
+  ddl_dag_.direct_load_type_ = ObDirectLoadType::SN_IDEM_DIRECT_LOAD_DDL;
   ddl_dag_.set_start_time();
   ddl_dag_.ObDDLIndependentDag::is_inited_ = true;
   ddl_dag_.is_inited_ = true;
@@ -697,7 +701,8 @@ TEST_F(TestCGMicroMacroWriteOp, test_cg_row_files_generater)
                                                     batch_size,
                                                     cg_row_file_memory_limit,
                                                     ddl_dag_.ddl_table_schema_.column_items_,
-                                                    false/*is_generation_sync_output*/));
+                                                    false/*is_generation_sync_output*/,
+                                                    false/*is_sorted_table_load_with_column_store_replica*/));
   for (int64_t i = 0; i < test_batch_count; ++i) {
     EXPECT_EQ(OB_SUCCESS, batch_rows_gen.get_batch_rows(batch_rows, batch_size));
     if (i + 1 == test_batch_count) {

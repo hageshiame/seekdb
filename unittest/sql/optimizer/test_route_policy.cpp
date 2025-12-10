@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_OPT
@@ -482,7 +486,7 @@ TEST_F(ObRoutePolicyTest, ALL_EMPTY)
 
 TEST_F(ObRoutePolicyTest, INTERSECT_SAME_PRIORITY)
 {
-  //测试多个partition存在交集，并且交集中的server priority均相同时，应该随机去选择server
+  // Test multiple partitions exist with intersections, and when the server priorities in the intersection are the same, a server should be randomly selected
   route_policy_ctx_.policy_type_ = READONLY_ZONE_FIRST;
   route_policy_ctx_.consistency_level_ = WEAK;
   bool is_hit_partition = false;
@@ -531,15 +535,14 @@ TEST_F(ObRoutePolicyTest, INTERSECT_SAME_PRIORITY)
   ObRoutePolicy::CandidateReplica candi_replica2;
   ASSERT_EQ(OB_SUCCESS, phy_part_loc_info1.get_selected_replica(candi_replica1));
   ASSERT_EQ(OB_SUCCESS, phy_part_loc_info2.get_selected_replica(candi_replica2));
-
-  //由于intersect中所有server的priority相同，因此selected replica具有随机性
+  // Since all servers in intersect have the same priority, therefore the selected replica is random
   ASSERT_EQ(true, candi_replica1.replica_idx_ == 0 || candi_replica1.replica_idx_ == 1);
   ASSERT_EQ(true, candi_replica2.replica_idx_ == 0 || candi_replica2.replica_idx_ == 1);
 }
 
 TEST_F(ObRoutePolicyTest, INTERSECT_SAME_PRIORITY_WITH_IDC)
 {
-  //测试多个partition存在交集，交集中server有SAME_SERVER和SAME_IDC两种，server选择时应该选中SAME_SERVER
+  // Test multiple partitions exist with intersection, the intersection includes two types of servers: SAME_SERVER and SAME_IDC, server selection should choose SAME_SERVER
   route_policy_ctx_.policy_type_ = READONLY_ZONE_FIRST;
   route_policy_ctx_.consistency_level_ = WEAK;
   bool is_hit_partition = false;
@@ -588,15 +591,14 @@ TEST_F(ObRoutePolicyTest, INTERSECT_SAME_PRIORITY_WITH_IDC)
   ObRoutePolicy::CandidateReplica candi_replica2;
   ASSERT_EQ(OB_SUCCESS, phy_part_loc_info1.get_selected_replica(candi_replica1));
   ASSERT_EQ(OB_SUCCESS, phy_part_loc_info2.get_selected_replica(candi_replica2));
-
-  //position type为SAME_SERVER的应该被选中
+  // position type of SAME_SERVER should be selected
   ASSERT_EQ(1, candi_replica1.replica_idx_);
   ASSERT_EQ(1, candi_replica2.replica_idx_);
 }
 
 TEST_F(ObRoutePolicyTest, NO_INTERSECT_WITH_RAND_SELECTED)
 {
-  //两个partition没有intersect的情况，但是每个partition都具有多个相同priority的server，此时应该随机选择
+  // Two partition do not intersect, but each partition has multiple servers with the same priority, at this time a random selection should be made
   route_policy_ctx_.policy_type_ = READONLY_ZONE_FIRST;
   route_policy_ctx_.consistency_level_ = WEAK;
   bool is_hit_partition = false;
@@ -645,15 +647,14 @@ TEST_F(ObRoutePolicyTest, NO_INTERSECT_WITH_RAND_SELECTED)
   ObRoutePolicy::CandidateReplica candi_replica2;
   ASSERT_EQ(OB_SUCCESS, phy_part_loc_info1.get_selected_replica(candi_replica1));
   ASSERT_EQ(OB_SUCCESS, phy_part_loc_info2.get_selected_replica(candi_replica2));
-
-  //priority 相同，随机选择
+  //priority the same, randomly select
   ASSERT_EQ(true, candi_replica1.replica_idx_ == 0 || candi_replica1.replica_idx_ == 1);
   ASSERT_EQ(true, candi_replica2.replica_idx_ == 0 || candi_replica2.replica_idx_ == 1);
 }
 
 TEST_F(ObRoutePolicyTest, NO_INTERSECT_WITH_SAME_SERVER_SELECTED)
 {
-  //两个partition没有intersect的情况，但是每个partition都具有多个priority, 此时position type为SAME SERVER的应该被选中
+  // Two partition do not intersect, but each partition has multiple priorities, at this time position type of SAME SERVER should be selected
   route_policy_ctx_.policy_type_ = READONLY_ZONE_FIRST;
   route_policy_ctx_.consistency_level_ = WEAK;
   bool is_hit_partition = false;
@@ -702,8 +703,7 @@ TEST_F(ObRoutePolicyTest, NO_INTERSECT_WITH_SAME_SERVER_SELECTED)
   ObRoutePolicy::CandidateReplica candi_replica2;
   ASSERT_EQ(OB_SUCCESS, phy_part_loc_info1.get_selected_replica(candi_replica1));
   ASSERT_EQ(OB_SUCCESS, phy_part_loc_info2.get_selected_replica(candi_replica2));
-
-  //position type为SAME_SERVER的应该被选中
+  // position type of SAME_SERVER should be selected
   ASSERT_EQ(1, candi_replica1.replica_idx_);
   ASSERT_EQ(1, candi_replica2.replica_idx_);
 }

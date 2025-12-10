@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define private public
@@ -27,7 +31,7 @@ namespace unittest
 
 void init_gtest_output(std::string &gtest_log_name)
 {
-  // 判断是否处于Farm中
+  // Determine if it is within the Farm
   char *mit_network_start_port_env = getenv("mit_network_start_port");
   char *mit_network_port_num_env = getenv("mit_network_port_num");
   if (mit_network_start_port_env != nullptr && mit_network_port_num_env != nullptr) {
@@ -739,7 +743,7 @@ int ObSimpleLogClusterTestEnv::switch_leader(const int64_t id, const int64_t new
     CLOG_LOG(INFO, "switch_leader success", K(ret), "prev_leader:", cluster[prev_leader_idx_]->get_addr(), "new_leader:", cluster[new_leader_idx]->get_addr(),
              "old_leader:", cluster[old_leader_idx]->get_addr(), K(old_leader_idx), K(new_leader_idx));
     prev_leader_idx_ = new_leader_idx;
-    // 确保election已经切主成功.
+    // Ensure election has successfully switched to the new master.
     do {
       ret = get_leader(id, leader, old_leader_idx);
     } while (old_leader_idx != new_leader_idx);
@@ -781,7 +785,7 @@ int ObSimpleLogClusterTestEnv::check_replica_sync(const int64_t id, PalfHandleIm
       } else if (end_lsn_1 < max_lsn_1) {
         usleep(1 * 1000);
       } else if (max_lsn_2 < end_lsn_1) {
-        // 目前用max_lsn与leader的end_lsn比较
+        // Currently compare max_lsn with leader's end_lsn
         usleep(1 * 1000);
       } else if (max_lsn_2 > end_lsn_1) {
         ret = OB_ERR_UNEXPECTED;

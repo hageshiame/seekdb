@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SQL_CODE_GENERATOR_OB_CODE_GENERATOR_
@@ -44,10 +48,9 @@ public:
       param_store_(param_store)
   {}
   virtual ~ObCodeGenerator() {}
-
-  //生成执行计划
-  //@param [in]  log_plan 逻辑执行计划
-  //@param [out] phy_plan 物理执行计划
+  //Generate execution plan
+  //@param [in]  log_plan logical execution plan
+  //@param [out] phy_plan physical execution plan
   int generate(const ObLogPlan &log_plan, ObPhysicalPlan &phy_plan);
 
   // detect batch row count for vectorized execution.
@@ -55,16 +58,15 @@ public:
       const ObLogPlan &log_plan, int64_t &batch_size);
 
 private:
-  //生成表达式
-  //@param [in]  log_plan 逻辑执行计划
-  //@param [out] phy_plan 物理执行计划, 会初始化物理对象中rt_exprs_, 和frame_info_
+  //Generate expression
+  //@param [in]  log_plan logical execution plan
+  //@param [out] phy_plan physical execution plan, will initialize rt_exprs_ and frame_info_ in the physical object
   int generate_exprs(const ObLogPlan &log_plan,
                      ObPhysicalPlan &phy_plan,
                      const uint64_t cur_cluster_version);
-
-  //生成物理算子
-  //@param [in]  log_plan 逻辑执行计划
-  //@param [out] phy_plan 物理执行计划
+  //Generate physical operators
+  //@param [in]  log_plan logical execution plan
+  //@param [out] phy_plan physical execution plan
   int generate_operators(const ObLogPlan &log_plan,
                          ObPhysicalPlan &phy_plan,
                          const uint64_t cur_cluster_version);
@@ -75,7 +77,7 @@ private:
   //TODO shengle remove
   bool use_jit_;
   uint64_t min_cluster_version_;
-  //所有参数化后的常量对象
+  // All parameterized constant objects
   DatumParamStore *param_store_;
 };
 

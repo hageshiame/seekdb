@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -93,8 +97,8 @@ int ObFastColumnConvExpr::set_const_value(const ObObj &value)
   }
   return ret;
 }
-//由于在14x的版本中ObExprColumnConv使用的是父类ObExprOperator的序列化函数
-//为了保证兼容性，这里先序列化父类ObExprOperator的成员，再序列化自身的成员
+// Due to ObExprColumnConv using the serialization function of the parent class ObExprOperator in version 14x
+// To ensure compatibility, serialize the members of the parent class ObExprOperator first, then serialize its own members
 OB_SERIALIZE_MEMBER(ObExprColumnConv, row_dimension_, real_param_num_, result_type_, input_types_, id_, str_values_);
 
 ObExprColumnConv::ObExprColumnConv(ObIAllocator &alloc)
@@ -103,7 +107,7 @@ ObExprColumnConv::ObExprColumnConv(ObIAllocator &alloc)
                          INTERNAL_IN_MYSQL_MODE, INTERNAL_IN_ORACLE_MODE)
 {
   disable_operand_auto_cast();
-  //obexprcolumnconv有自己特殊处理，不走字符集自动转换框架
+  // obexprcolumnconv has its own special handling, does not go through the character set auto-conversion framework
   need_charset_convert_ = false;
 }
 
@@ -194,7 +198,7 @@ int ObExprColumnConv::convert_skip_null_check(ObObj &result,
   }
   if (OB_SUCC(ret)) {
     if (res_obj != &result) {
-      //res_obj没有指向result的地址，需要将res_obj的值拷贝到result中
+      // res_obj does not point to the address of result, need to copy the value of res_obj to result
       result = *res_obj;
     }
 //    if (is_not_null && (result.is_null())) {

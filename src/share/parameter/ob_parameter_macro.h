@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SHARE_PARAMETER_OB_PARAMETER_MACRO_H_
@@ -189,10 +193,7 @@ access_specifier:                                                               
 
 #define DEF_WORK_AREA_POLICY(args...)                                          \
   _DEF_PARAMETER_SCOPE_WORK_AREA_POLICY_EASY(public, String, args)
-
-
-
-// 对于 ERRSIM 模式下才生效的配置项，必须使用下面的宏来定义。
+// For configuration items that only take effect in ERRSIM mode, the following macro must be used to define.
 
 #ifdef ERRSIM
 
@@ -284,9 +285,8 @@ access_specifier:                                                               
 #define DEPRECATED_DEF_LOG_ARCHIVE_OPTIONS_WITH_CHECKER(args...)
 #define DEPRECATED_DEF_LOG_LEVEL(args...)
 #define DEPRECATED_DEF_WORK_AREA_POLICY(args...)
-
-// 对于临时使用的配置项（正式发版前会删除），必须使用下面的宏来定义。
-// ver 请写成 v4.2,  v3.2 等字样，不要写成 master
+// For configuration items used temporarily (to be deleted before official release), the following macro must be used to define.
+// ver Please write as v4.2, v3.2, etc., do not write as master
 #define TEMP_DEF_INT(ver, args...)                                                       \
   _DEF_PARAMETER_SCOPE_RANGE_EASY(public, Int, args)
 

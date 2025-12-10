@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef SHARE_OB_TABLE_ACCESS_HELPER_H
@@ -147,7 +151,7 @@ public:
     return ret;
     #undef PRINT_WRAPPER
   }
-  // 获取单行信息
+  // Get single line information
   template <int N, typename ...T>
   static int read_single_row(const uint64_t tenant_id,
                              const char* (&columns)[N],
@@ -194,7 +198,7 @@ public:
     return ret;
     #undef PRINT_WRAPPER
   }
-  // 获取多行的信息
+  // Get multi-line information
   template <int N, typename ...T>
   static int read_multi_row(const uint64_t tenant_id,
                             const char* (&columns)[N],
@@ -666,7 +670,7 @@ private:
     }
     return ret;
   }
-  // 可变参数模版展开的递归基
+  // Recursive base for variadic template expansion
   template <int FLOOR>
   static int get_values_from_row_(common::sqlclient::ObMySQLResult *row, const char **columns)
   {
@@ -674,7 +678,7 @@ private:
     UNUSED(columns);
     return OB_SUCCESS;
   }
-  // 可变参数模版展开，从行中获取每一个入参
+  // Variable parameter template expansion, get each argument from the line
   template <int FLOOR, typename V, typename ...T>
   static int get_values_from_row_(common::sqlclient::ObMySQLResult *row,
                                   const char **columns,
@@ -694,11 +698,11 @@ private:
   }
   template <int FLOOR, typename ...T>
   friend class AccessHelper;
-  // 便特化必须靠类定义来协助
+  // Specialization must rely on class definitions to assist
   template <int FLOOR, typename ...T>
   struct AccessHelper
   {
-    // 从行中获取元组中的每一个元素
+    // Get each element from the tuple in the line
     static int get_values_to_tuple_from_row(common::sqlclient::ObMySQLResult *row,
                                             const char **columns,
                                             ObTuple<T...> &tuple)
@@ -714,11 +718,11 @@ private:
       return ret;
     }
   };
-  // 模版偏特化递归基
+  // template partial specialization base case
   template <typename ...T>
   struct AccessHelper<0, T...>
   {
-    // 从行中获取元组中的每一个元素的递归基
+    // Get the base case of each element in the tuple from the line
     static int get_values_to_tuple_from_row(common::sqlclient::ObMySQLResult *row,
                                             const char **columns,
                                             ObTuple<T...> &tuple)

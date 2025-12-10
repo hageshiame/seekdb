@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 #define USING_LOG_PREFIX SERVER
 
@@ -65,7 +69,7 @@ int ObTableLoadDataRowInsertHandler::handle_insert_row(const ObTabletID &tablet_
     LOG_WARN("ObTableLoadDataRowInsertHandler not init", KR(ret), KP(this));
   } else {
     if (ObDirectLoadMethod::is_incremental(store_ctx_->ctx_->param_.method_)) {
-      // 构造索引数据
+      // Construct index data
       for (int64_t i = 0; OB_SUCC(ret) && i < store_ctx_->index_store_table_ctxs_.count(); ++i) {
         ObTableLoadStoreIndexTableCtx *index_table_ctx = store_ctx_->index_store_table_ctxs_.at(i);
         ObTableLoadIndexTableBuilder *index_builder = nullptr;
@@ -90,7 +94,7 @@ int ObTableLoadDataRowInsertHandler::handle_insert_row(const ObTabletID &tablet_
     LOG_WARN("ObTableLoadDataRowInsertHandler not init", KR(ret), KP(this));
   } else {
     if (ObDirectLoadMethod::is_incremental(store_ctx_->ctx_->param_.method_)) {
-      // 构造索引数据
+      // Construct index data
       for (int64_t i = 0; OB_SUCC(ret) && i < store_ctx_->index_store_table_ctxs_.count(); ++i) {
         ObTableLoadStoreIndexTableCtx *index_table_ctx = store_ctx_->index_store_table_ctxs_.at(i);
         ObTableLoadIndexTableBuilder *index_builder = nullptr;
@@ -117,7 +121,7 @@ int ObTableLoadDataRowInsertHandler::handle_insert_batch(const ObTabletID &table
     // do nothing
   } else {
     if (ObDirectLoadMethod::is_incremental(store_ctx_->ctx_->param_.method_)) {
-      // 构造索引数据
+      // Construct index data
       for (int64_t i = 0; OB_SUCC(ret) && i < store_ctx_->index_store_table_ctxs_.count(); ++i) {
         ObTableLoadStoreIndexTableCtx *index_table_ctx = store_ctx_->index_store_table_ctxs_.at(i);
         ObTableLoadIndexTableBuilder *index_builder = nullptr;
@@ -279,9 +283,9 @@ int ObTableLoadDataRowInsertHandler::handle_update_row(const ObTabletID &tablet_
       LOG_WARN("unexpected dup action", KR(ret), K_(dup_action));
     }
     if (OB_SUCC(ret) && result_row == &new_row) {
-      // 发生replace
+      // replace occurs
       if (ObDirectLoadMethod::is_incremental(store_ctx_->ctx_->param_.method_)) {
-        // 删除旧行的lob
+        // Delete the lob of the old row
         if (nullptr != store_ctx_->data_store_table_ctx_->lob_table_ctx_) {
           ObTableLoadStoreLobTableCtx *lob_table_ctx =
             store_ctx_->data_store_table_ctx_->lob_table_ctx_;
@@ -292,7 +296,7 @@ int ObTableLoadDataRowInsertHandler::handle_update_row(const ObTabletID &tablet_
             LOG_WARN("fail to append delete row", KR(ret), K(tablet_id), K(old_row));
           }
         }
-        // 删除旧行的索引, 插入新行的索引
+        // Delete the index of the old row, insert the index of the new row
         for (int64_t i = 0; OB_SUCC(ret) && i < store_ctx_->index_store_table_ctxs_.count(); ++i) {
           ObTableLoadStoreIndexTableCtx *index_table_ctx =
             store_ctx_->index_store_table_ctxs_.at(i);

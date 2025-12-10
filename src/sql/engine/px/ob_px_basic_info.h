@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef __OCEANBASE_SQL_ENGINE_PX_OB_PX_BASIC_INFO_H__
@@ -24,9 +28,7 @@ namespace sql
       (type) == PHY_PX_MERGE_SORT_COORD ||\
       (type) == PHY_PX_ORDERED_COORD ||\
       (type) == PHY_VEC_PX_MERGE_SORT_COORD)
-
-
-// NOTE：可能会有多种 receive op type，这里都需要判断. 目前只有一种
+// NOTE: There may be multiple receive op types, all of which need to be judged. Currently, there is only one.
 #define IS_PX_RECEIVE(type) \
      ((type) == PHY_PX_FIFO_RECEIVE || \
       (type) == PHY_PX_MERGE_SORT_RECEIVE || \
@@ -53,10 +55,7 @@ namespace sql
    (type) == PHY_PX_MULTI_PART_DELETE || \
    (type) == PHY_PX_MULTI_PART_INSERT || \
    (type) == PHY_TABLE_DIRECT_INSERT)
-
-
-
-// 判断一个运算符是否为Transmit的子类，用于切分Job
+// Determine if an operator is a subclass of Transmit, used for splitting Job
 #define IS_TRANSMIT(type) \
     ((type) == PHY_DIRECT_TRANSMIT || \
      (type) == PHY_DISTRIBUTED_TRANSMIT || \

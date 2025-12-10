@@ -1,16 +1,20 @@
 // owner: zjf225077
 // owner group: log
 
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define private public
@@ -144,7 +148,7 @@ TEST_F(TestObSimpleLogDataIntergrity, accumlate_checksum)
   }
   EXPECT_EQ(OB_SUCCESS, delete_paxos_group(id));
   PALF_LOG(INFO, "runlin trace delete_paxos_group");
-  // 模拟最后一条的LogEntry非原子写入(LogEntry没有写入)，报错OB_INVALID_DATA, 重启成功，预期log_tail是该日志头
+  // Simulate the last LogEntry not being atomically written (LogEntry not written), error OB_INVALID_DATA, restart successful, expected log_tail to be this log header
   LSN expected_log_tail;
   {
     id = ATOMIC_AAF(&palf_id_, 1);
@@ -162,7 +166,7 @@ TEST_F(TestObSimpleLogDataIntergrity, accumlate_checksum)
     EXPECT_EQ(OB_SUCCESS, iterator.next());
     EXPECT_EQ(OB_SUCCESS, iterator.get_entry(entry, curr_lsn));
     EXPECT_EQ(curr_lsn, max_lsn);
-    // LogEntry完全被写坏
+    // LogEntry is completely corrupted
     char *output_buf = NULL;
     int64_t pos = sizeof(LogGroupEntryHeader);
     DataFaultInject inject = [&pos, &entry](char *buf) {
@@ -190,7 +194,7 @@ TEST_F(TestObSimpleLogDataIntergrity, accumlate_checksum)
   PALF_LOG(INFO, "runlin trace second restart_paxos_groups begin");
   EXPECT_EQ(OB_SUCCESS, restart_paxos_groups());
   PALF_LOG(INFO, "runlin trace second restart_paxos_groups end");
-  // 模拟最后一条的LogEntry非原子写入(LogEntry部分写入, datacheck sum以及后续的数据被写坏为0)，报错OB_CHECKSUM_ERROR, 重启成功，预期log_tail是该日志头
+  // Simulate the last LogEntry not being atomically written (LogEntry part is written, data checksum and subsequent data are corrupted to 0), error OB_CHECKSUM_ERROR, restart successful, expected log_tail is this log header
   {
     PalfHandleImplGuard leader;
     EXPECT_EQ(OB_SUCCESS, get_leader(id, leader, leader_idx));
@@ -206,7 +210,7 @@ TEST_F(TestObSimpleLogDataIntergrity, accumlate_checksum)
     EXPECT_EQ(OB_SUCCESS, iterator.next());
     EXPECT_EQ(OB_SUCCESS, iterator.get_entry(entry, curr_lsn));
     EXPECT_EQ(curr_lsn, max_lsn);
-    // 模拟LogEntry的datachecsum以及后续的数据被置为全0
+    // Simulate LogEntry's data checksum and subsequent data being set to all 0
     // LogEntryHeader 16bit(maigc) 16bit(version) 32bit(size) 64bit(scn) datachecsum
     char *output_buf = NULL;
     int64_t pos = sizeof(LogGroupEntryHeader) + 16;
@@ -236,7 +240,7 @@ TEST_F(TestObSimpleLogDataIntergrity, accumlate_checksum)
     EXPECT_EQ(OB_SUCCESS, get_leader(id, leader, leader_idx));
     EXPECT_EQ(expected_log_tail, leader.palf_handle_impl_->get_max_lsn());
   }
-  // 模拟最后一条的LogEntryHeadr bit位反转, 报错OB_INVALID_DATA, 重启成功，预期log_tail是该日志头
+  // Simulate the bit inversion of the last LogEntryHeadr, error OB_INVALID_DATA, restart successful, expected log_tail is this log header
   {
     PalfHandleImplGuard leader;
     EXPECT_EQ(OB_SUCCESS, get_leader(id, leader, leader_idx));
@@ -252,7 +256,7 @@ TEST_F(TestObSimpleLogDataIntergrity, accumlate_checksum)
     EXPECT_EQ(OB_SUCCESS, iterator.next());
     EXPECT_EQ(OB_SUCCESS, iterator.get_entry(entry, curr_lsn));
     EXPECT_EQ(curr_lsn, max_lsn);
-    // 模拟LogEntry的datachecsum以及后续的数据被置为全0
+    // Simulate LogEntry's data checksum and subsequent data being set to all 0
     // LogEntryHeader 16bit(maigc) 16bit(version) 32bit(size) 64bit(scn) datachecsum
     char *output_buf = NULL;
     int64_t pos = sizeof(LogGroupEntryHeader) + 14;
@@ -276,7 +280,7 @@ TEST_F(TestObSimpleLogDataIntergrity, accumlate_checksum)
   PALF_LOG(INFO, "runlin trace fourth restart_paxos_groups begin");
   EXPECT_EQ(OB_SUCCESS, restart_paxos_groups());
   PALF_LOG(INFO, "runlin trace fourth restart_paxos_groups end");
-  // 模拟最后一条的LogGroupEntryHeadr bit位反转, 报错OB_INVALID_DATA, 重启成功，预期log_tail是该日志头
+  // Simulate the bit inversion of the last LogGroupEntryHeadr, error OB_INVALID_DATA, restart successfully, expected log_tail is this log header
   {
     PalfHandleImplGuard leader;
     EXPECT_EQ(OB_SUCCESS, get_leader(id, leader, leader_idx));
@@ -292,7 +296,7 @@ TEST_F(TestObSimpleLogDataIntergrity, accumlate_checksum)
     EXPECT_EQ(OB_SUCCESS, iterator.next());
     EXPECT_EQ(OB_SUCCESS, iterator.get_entry(entry, curr_lsn));
     EXPECT_EQ(curr_lsn, max_lsn);
-    // 模拟LogGroupEntryHeader bit位反转
+    // Simulate LogGroupEntryHeader bit reversal
     char *output_buf = NULL;
     int64_t pos = 14;
     DataFaultInject inject = [&pos](char *buf) {

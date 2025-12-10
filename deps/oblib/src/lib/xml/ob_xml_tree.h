@@ -1,14 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
- * This file contains interface support for the xml tree abstraction.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SQL_OB_XML_TREE
@@ -346,7 +349,7 @@ private:
     uint16 flags_; 
     struct { 
       uint16_t standalone_ : 4;    // : default 0, yes 1, no 2, other 3;
-      uint16_t has_xml_decl_: 1;   // no 0， yes 1
+      uint16_t has_xml_decl_: 1;   // no 0, yes 1
       uint16_t is_empty_: 1;       // empty
       uint16_t is_unparse_: 1;     // well format element
       uint16_t encoding_val_empty_: 1;    //  has encoding clause but encoding value is null
@@ -511,7 +514,7 @@ public:
   const ObString get_text() { return text_; }  // get TEXT
   size_t get_length() { return length_; }  // get length
   void set_text(const ObString text) {text_.assign_ptr(text.ptr(), text.length()); length_ = text.length();} // set text and length
-  void set_length(int length) { length_ = length; } // update length。
+  void set_length(int length) { length_ = length; } // update length.
   bool is_space() { return is_space_; }
   void set_is_space(bool is_space) { is_space_ = is_space; }
   int64_t get_serialize_size();

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2025 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 
@@ -1615,7 +1619,7 @@ int ObHBaseModel::generate_new_value(ObTableExecCtx &ctx,
   } else {
     ObString orig_str;
     int64_t new_ts = htable_cell.get_timestamp(); // default insert timestamp
-    if (OB_NOT_NULL(old_entity)) { // 旧行存在，构造新值（base + delta）
+    if (OB_NOT_NULL(old_entity)) { // The old row exists, construct the new value (base + delta)
       ObObj base_obj_v;
       if (OB_FAIL(old_entity->get_property(ObHTableConstants::VALUE_CNAME_STR, base_obj_v))) {
         LOG_WARN("failed to get value", K(ret), K(old_entity));
@@ -1885,4 +1889,4 @@ int ObHBaseModel::add_dict_and_bm_to_result_entity(const ObTableLSOp &ls_op,
     }
   }
   return ret;
-} 
+}

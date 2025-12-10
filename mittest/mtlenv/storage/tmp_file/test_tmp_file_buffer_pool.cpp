@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 #include "mittest/mtlenv/storage/tmp_file/ob_tmp_file_test_helper.h"
 #include "mittest/mtlenv/storage/tmp_file/mock_ob_tmp_file.h"
@@ -584,26 +588,21 @@ TEST_F(TestBufferPool, test_alloc_page_limit)
   int64_t fd = 0;
   const int64_t ALLOC_PAGE_NUM = wbp.get_max_page_num() / 2;
   WBPTestHelper wbp_test(fd, wbp);
-
-  // 分配 50% 的 data page
+  // Allocate 50% of the data page
   ret = wbp_test.alloc_data_pages(ALLOC_PAGE_NUM);
   ASSERT_EQ(OB_SUCCESS, ret);
-
-  // 再分配 50% 的 data page，超过 MAX_DATA_PAGE_USAGE_RATIO(default 0.9) 后
-  // 会触发 OB_ALLOCATE_TMP_FILE_PAGE_FAILED，分配页面失败
+  // Reallocate 50% of the data page, after exceeding MAX_DATA_PAGE_USAGE_RATIO (default 0.9)
+  // Will trigger OB_ALLOCATE_TMP_FILE_PAGE_FAILED, allocation page failed
   ret = wbp_test.alloc_data_pages(ALLOC_PAGE_NUM);
   ASSERT_EQ(ret, OB_ALLOCATE_TMP_FILE_PAGE_FAILED);
-
-  // 此时仍可分配少量 meta page
+  // At this point, a small number of meta pages can still be allocated
   const int ALLOC_META_NUM = 20;
   ret = wbp_test.alloc_meta_pages(ALLOC_META_NUM);
   ASSERT_EQ(OB_SUCCESS, ret);
-
-  // 分配 meta page 到buffer pool上限
+  // Allocate meta page to buffer pool upper limit
   ret = wbp_test.alloc_meta_pages(wbp.get_max_page_num());
   ASSERT_EQ(OB_ALLOCATE_TMP_FILE_PAGE_FAILED, ret);
-
-  // data page释放后，可以继续分配meta page
+  // data page released, can continue to allocate meta page
   ret = wbp_test.free_all_pages();
   ASSERT_EQ(OB_SUCCESS, ret);
 
@@ -865,8 +864,7 @@ TEST_F(TestBufferPool, test_buffer_pool_auto_shrinking)
   }
   EXPECT_EQ(wbp.fat_.size(), ObTmpWriteBufferPool::BLOCK_PAGE_NUMS * 1);
   LOG_INFO("auto shrinking case 2", K(wbp.capacity_), K(wbp.used_page_num_), K(wbp.fat_.size()));
-
-  // 3. 4MB的wbp自动缩容
+  // 3. 4MB of wbp auto shrink
   ret = wbp_test.alloc_data_pages(ObTmpWriteBufferPool::BLOCK_PAGE_NUMS * 2);
   ASSERT_EQ(OB_SUCCESS, ret);
   ASSERT_EQ(ObTmpWriteBufferPool::BLOCK_PAGE_NUMS * 2, wbp.used_page_num_);
@@ -1011,8 +1009,7 @@ TEST_F(TestBufferPool, test_buffer_pool_shrink_range_boundary)
   ASSERT_EQ(false, wbp.shrink_ctx_.is_valid());
   MockIO.check_wbp_free_list(wbp);
 }
-
-// 检查缩容期间，free page水位线变化时，预留free meta page数量是否符合预期
+// Check the number of reserved free meta pages is as expected when the free page watermark changes during shrinkage
 TEST_F(TestBufferPool, test_buffer_pool_free_page_when_shrinking)
 {
   int ret = OB_SUCCESS;
@@ -1059,7 +1056,7 @@ TEST_F(TestBufferPool, test_buffer_pool_free_page_when_shrinking)
 
   ret = wbp_test.free_all_pages();
   ASSERT_EQ(OB_SUCCESS, ret);
-  // 验证先分配data到上限后，仍能分配10%的meta page
+  // Verify that after allocating data up to the limit, 10% of meta pages can still be allocated
   ret = wbp_test.alloc_data_pages(WBP_MAX_PAGE_NUM, notify_dirty);    // data: -> 85%
   EXPECT_EQ(OB_ALLOCATE_TMP_FILE_PAGE_FAILED, ret);
   ret = wbp_test.alloc_meta_pages(ALLOC_META_PAGE_NUM, notify_dirty); // meta: -> 10%
@@ -1114,7 +1111,7 @@ TEST_F(TestBufferPool, test_buffer_pool_free_page_when_shrinking)
 
   ret = wbp_test.free_all_pages();
   ASSERT_EQ(OB_SUCCESS, ret);
-  // 脏页减少到5%时，not_alloc_range能覆盖整个shrink_range
+  // Dirty pages reduced to 5%, not_alloc_range can cover the entire shrink_range
   ret = wbp_test.alloc_data_pages(WBP_MAX_PAGE_NUM, notify_dirty); // data: -> 20%
   EXPECT_EQ(OB_ALLOCATE_TMP_FILE_PAGE_FAILED, ret);
   ret = wbp_test.alloc_meta_pages(WBP_MAX_PAGE_NUM, notify_dirty); // meta: -> 10%
@@ -1134,7 +1131,7 @@ TEST_F(TestBufferPool, test_buffer_pool_free_page_when_shrinking)
 
   ret = wbp_test.free_all_pages();
   ASSERT_EQ(OB_SUCCESS, ret);
-  // shrink_range内页面无法再被分配，并且可以推动缩容完成
+  // Pages within shrink_range cannot be allocated anymore, and can push the resizing to complete
   ret = wbp_test.alloc_meta_pages(WBP_MAX_PAGE_NUM, notify_dirty); // meta: -> 7.5% (wbp shrinking target size)
   EXPECT_EQ(OB_ALLOCATE_TMP_FILE_PAGE_FAILED, ret);
   EXPECT_EQ(WBP_MAX_PAGE_NUM * 0.075, wbp.meta_page_cnt_);

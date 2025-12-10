@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_EXE
@@ -53,9 +57,9 @@ int ObRemoteIdentityTaskSpliter::get_next_task(ObTaskInfo *&task)
     LOG_WARN("root op is NULL", K(ret));
   } else {
     ObDASTableLoc *first_table_loc = DAS_CTX(*exec_ctx_).get_table_loc_list().get_first();
-    // t1 union t1这种情况， t1(p0) union t2(p0)这种情况，等等，
-    // 都是remote模式，但table_loc_list的count可能大于1
-    // 优化器必须保证：remote模式下，所有表的location都是一致的，并且都是单分区。
+    // t1 union t1 this situation, t1(p0) union t2(p0) this situation, etc.,
+    // All are in remote mode, but the count of table_loc_list may be greater than 1
+    // The optimizer must ensure: in remote mode, the location of all tables is consistent and each is a single partition.
     ObDASTabletLoc *first_tablet_loc = first_table_loc->get_first_tablet_loc();
     if (OB_ISNULL(ptr = allocator_->alloc(sizeof(ObTaskInfo)))) {
       ret = OB_ALLOCATE_MEMORY_FAILED;
@@ -79,7 +83,7 @@ int ObRemoteIdentityTaskSpliter::get_next_task(ObTaskInfo *&task)
       } else if (OB_FAIL(task_->add_location_idx(0))) {
         LOG_WARN("add location index to task failed", K(ret));
       } else {
-        // 将task_作为类成员的目的是为了保证第二次调用get_next_task能返回OB_ITER_END
+        // The purpose of making task_ a class member is to ensure that the second call to get_next_task returns OB_ITER_END
         task = task_;
       }
     }

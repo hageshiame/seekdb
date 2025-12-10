@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_ROOTSERVER_OB_BOOTSTRAP_H_
@@ -144,15 +148,13 @@ private:
 
   virtual ~ObBootstrap() {}
   virtual int execute_bootstrap(rootserver::ObServerZoneOpService &server_zone_op_service);
-  static int create_all_schema(
-      ObDDLService &ddl_service,
-      common::ObIArray<share::schema::ObTableSchema> &table_schemas);
   int load_all_schema(
       ObDDLService &ddl_service,
       common::ObIArray<share::schema::ObTableSchema> &table_schemas);
   int construct_all_schema(
       common::ObSArray<share::schema::ObTableSchema> &table_schemas,
       ObIAllocator &allocator);
+  virtual int create_sys_table_partitions(const common::ObIArray<share::schema::ObTableSchema> &table_schemas);
 private:
   static const int64_t HEAT_BEAT_INTERVAL_US = 2 * 1000 * 1000; //2s
   static const int64_t BATCH_INSERT_SCHEMA_CNT = 128;
@@ -162,12 +164,16 @@ private:
   virtual int prepare_create_partition(
       ObTableCreator &creator,
       const share::schema_create_func func);
-  virtual int create_all_partitions();
-  virtual int create_all_core_table_partition();
+  virtual int prepare_create_partitions(
+      ObTableCreator &creator,
+      const share::schema::ObTableSchema &tschema,
+      const common::hash::ObHashMap<uint64_t, const share::schema::ObTableSchema*> &table_id_to_schema);
+  virtual int create_core_related_partitions();
+  virtual int get_core_related_table_ids(common::hash::ObHashSet<uint64_t> &table_id_set);
   virtual int construct_schema(
       const share::schema_create_func func,
       share::schema::ObTableSchema &tschema);
-  virtual int broadcast_sys_schema();
+  virtual int broadcast_sys_schema(const ObSArray<ObTableSchema> &table_schemas);
   static int batch_create_schema(
       ObDDLService &ddl_service,
       common::ObIArray<share::schema::ObTableSchema> &table_schemas,

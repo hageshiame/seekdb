@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SERVER
@@ -597,7 +601,7 @@ int ObTableLoadParallelTableCompactor::construct_compactors()
     ret = OB_ERR_UNEXPECTED;
     LOG_WARN("unexpected not multiple sstable", KR(ret), KPC(table_store));
   } else {
-    // 根据table_store构造tablet_ctx
+    // Construct tablet_ctx based on table_store
     FOREACH_X(it, *table_store, OB_SUCC(ret))
     {
       const ObTabletID &tablet_id = it->first;
@@ -621,7 +625,7 @@ int ObTableLoadParallelTableCompactor::construct_compactors()
       }
     }
     if (OB_SUCC(ret)) {
-      // 清空table_store, 以便在compact过程中能释放磁盘空间
+      // Clear table_store, so that disk space can be released during the compact process
       table_store->clear();
     }
   }
@@ -695,12 +699,12 @@ int ObTableLoadParallelTableCompactor::schedule_merge_unlock()
     } else if (OB_FAIL(idle_thread_list_.pop_back(thread_idx))) {
       LOG_WARN("fail to pop back thread idx", KR(ret));
     }
-    // 设置task的callback
+    // Set the callback for task
     else if (OB_FAIL(
                task->set_callback<ParallelMergeTaskCallback>(store_ctx_->ctx_, this, thread_idx))) {
       LOG_WARN("fail to set task callback", KR(ret));
     }
-    // 把task放入调度器
+    // put task into scheduler
     else if (OB_FAIL(store_ctx_->task_scheduler_->add_task(thread_idx, task))) {
       LOG_WARN("fail to add task", KR(ret), K(thread_idx), KPC(task));
     }
@@ -718,16 +722,16 @@ int ObTableLoadParallelTableCompactor::construct_split_range_task(
 {
   int ret = OB_SUCCESS;
   ObTableLoadTask *task = nullptr;
-  // 1. 分配task
+  // 1. assign task
   if (OB_FAIL(store_ctx_->ctx_->alloc_task(task))) {
     LOG_WARN("fail to alloc task", KR(ret));
   }
-  // 2. 设置processor
+  // 2. Set processor
   else if (OB_FAIL(
              task->set_processor<SplitRangeTaskProcessor>(store_ctx_->ctx_, this, tablet_ctx))) {
     LOG_WARN("fail to set split range task processor", KR(ret));
   }
-  // 3. 添加到任务队列
+  // 3. Add to task queue
   else if (OB_FAIL(add_light_task(task))) {
     LOG_WARN("fail to add light task", KR(ret));
   }
@@ -744,16 +748,16 @@ int ObTableLoadParallelTableCompactor::construct_merge_range_task(
 {
   int ret = OB_SUCCESS;
   ObTableLoadTask *task = nullptr;
-  // 1. 分配task
+  // 1. assign task
   if (OB_FAIL(store_ctx_->ctx_->alloc_task(task))) {
     LOG_WARN("fail to alloc task", KR(ret));
   }
-  // 2. 设置processor
+  // 2. Set processor
   else if (OB_FAIL(task->set_processor<MergeRangeTaskProcessor>(store_ctx_->ctx_, this, tablet_ctx,
                                                                 range_idx))) {
     LOG_WARN("fail to set merge range task processor", KR(ret));
   }
-  // 3. 添加到任务队列
+  // 3. Add to task queue
   else if (OB_FAIL(add_heavy_task(task))) {
     LOG_WARN("fail to add heavy task", KR(ret));
   }
@@ -770,16 +774,16 @@ int ObTableLoadParallelTableCompactor::construct_compact_sstable_task(
 {
   int ret = OB_SUCCESS;
   ObTableLoadTask *task = nullptr;
-  // 1. 分配task
+  // 1. assign task
   if (OB_FAIL(store_ctx_->ctx_->alloc_task(task))) {
     LOG_WARN("fail to alloc task", KR(ret));
   }
-  // 2. 设置processor
+  // 2. Set processor
   else if (OB_FAIL(task->set_processor<CompactSSTableTaskProcessor>(store_ctx_->ctx_, this,
                                                                     tablet_ctx))) {
     LOG_WARN("fail to set compact sstable task processor", KR(ret));
   }
-  // 3. 添加到任务队列
+  // 3. Add to task queue
   else if (OB_FAIL(add_light_task(task))) {
     LOG_WARN("fail to add light task", KR(ret));
   }

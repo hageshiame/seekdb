@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef __OCEANBASE_SQL_ENGINE_PX_DFO_MGR_H__
@@ -39,14 +43,14 @@ public:
            ObPxCoordInfo &px_coord_info);
   ObDfo *get_root_dfo() { return root_dfo_; }
   
-  virtual int get_ready_dfo(ObDfo *&dfo) const; // 仅用于单层dfo调度
-  // 可以入选即将调度队列的 DFO
+  virtual int get_ready_dfo(ObDfo *&dfo) const; // Only used for single-layer dfo scheduling
+  // Can be selected for the upcoming scheduling queue DFO
   virtual int get_ready_dfos(common::ObIArray<ObDfo *> &dfos) const;
-  // 已经入选即将调度队列的 DFO
+  // Already selected DFO to be scheduled in the queue
   virtual int get_active_dfos(common::ObIArray<ObDfo *> &dfos) const;
-  // 已经调度的 DFO
+  // Already scheduled DFO
   virtual int get_scheduled_dfos(ObIArray<ObDfo*> &dfos) const;
-  // 已经调度，且没有执行完成的 DFO
+  // Already scheduled, but not yet completed DFO
   virtual int get_running_dfos(ObIArray<ObDfo*> &dfos) const;
 
   int add_dfo_edge(ObDfo *edge);

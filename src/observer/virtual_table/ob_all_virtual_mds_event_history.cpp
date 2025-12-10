@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2023 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
  
 #include "ob_all_virtual_mds_event_history.h"
@@ -85,8 +89,8 @@ int ObAllVirtualMdsEventHistory::range_scan_(char *temp_buffer, int64_t buf_len)
     int ret = OB_SUCCESS;
     int tmp_ret = OB_SUCCESS;
     if (judge_key_in_ranges_(key)) {
-      if (MTL_ID() == OB_SYS_TENANT_ID ||// SYS租户可以看到所有租户的信息
-          key.tenant_id_ == MTL_ID()) {// 非SYS租户只能看到本租户的信息
+      if (MTL_ID() == OB_SYS_TENANT_ID ||// SYS tenant can see information of all tenants
+          key.tenant_id_ == MTL_ID()) {// Non-SYS tenant can only see information of its own tenant
         MAKE_TENANT_SWITCH_SCOPE_GUARD(guard);
         if (MTL_ID() != key.tenant_id_) {
           tmp_ret = guard.switch_to(key.tenant_id_);
@@ -121,8 +125,8 @@ int ObAllVirtualMdsEventHistory::point_read_(char *temp_buffer, int64_t buf_len)
       if (OB_FAIL(ObMdsEventBuffer::for_each(key, [&key, this, temp_buffer, buf_len](const MdsEvent &event) -> int {
         int ret = OB_SUCCESS;
         int tmp_ret = OB_SUCCESS;
-        if (MTL_ID() == OB_SYS_TENANT_ID ||// SYS租户可以看到所有租户的信息
-            key.tenant_id_ == MTL_ID()) {// 非SYS租户只能看到本租户的信息
+        if (MTL_ID() == OB_SYS_TENANT_ID ||// SYS tenant can see information of all tenants
+            key.tenant_id_ == MTL_ID()) {// Non-SYS tenant can only see information of its own tenant
           MAKE_TENANT_SWITCH_SCOPE_GUARD(guard);
           if (MTL_ID() != key.tenant_id_) {
             tmp_ret = guard.switch_to(key.tenant_id_);

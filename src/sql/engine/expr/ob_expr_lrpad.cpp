@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -36,8 +40,7 @@ ObExprBaseLRpad::ObExprBaseLRpad(ObIAllocator &alloc,
 ObExprBaseLRpad::~ObExprBaseLRpad()
 {
 }
-
-//参考ObExprBaseLRpad::calc_mysql
+// Reference ObExprBaseLRpad::calc_mysql
 int ObExprBaseLRpad::calc_type_length_mysql(const ObExprResType result_type,
                                             const ObObj &text,
                                             const ObObj &pad_text,
@@ -98,8 +101,7 @@ int ObExprBaseLRpad::calc_type_length_mysql(const ObExprResType result_type,
   }
   return ret;
 }
-
-//参考ObExprBaseLRpad::calc_oracle
+// Reference ObExprBaseLRpad::calc_oracle
 
 int ObExprBaseLRpad::get_origin_len_obj(ObObj &len_obj) const
 {
@@ -155,7 +157,7 @@ int ObExprBaseLRpad::calc_type(ObExprResType &type,
     ObObj length_obj = len.get_param();
     ObObj text_obj = text.get_param();
     ObObj pad_obj;
-    ObString default_pad_str = ObString(" "); //默认为' '
+    ObString default_pad_str = ObString(" "); // default is ' '
     type.set_length(static_cast<ObLength>(max_len));
     len.set_calc_type(len_type);
     if (is_mysql_mode()) {
@@ -583,13 +585,13 @@ int ObExprBaseLRpad::get_padding_info_oracle(const ObCollationType cs,
               K(max_result_size), K(text_size), K(pad_size), K(ret), K(remain_size));
 
     if (remain_width > 0 && remain_size > 0) {
-      // 有 pad prefix 或者 pad space
+      // has pad prefix or pad space
       if (OB_FAIL(ObCharset::max_display_width_charpos(
                   cs, str_padtext.ptr(), std::min(remain_size, pad_size),
                   remain_width, prefix_size, &total_width))) {
         LOG_WARN("Failed to get max display width", K(ret), K(str_text), K(remain_width));
       } else if (remain_width != total_width && remain_size != prefix_size) {
-        // 没到达指定宽度, 补一个空格
+        // Not reached the specified width, add a space
         pad_space = true;
       }
     }
@@ -639,8 +641,8 @@ int ObExprBaseLRpad::calc_oracle(LRpadType pad_type, const ObExpr &expr,
     if (len_num.is_negative()) {
       width = -1;
     } else if (!len_num.is_int_parts_valid_int64(width, decimal_parts)) {
-      // LOB 最大也就 4G, 这里用 UINT32_MAX.
-      // 负数已经被过滤掉了.
+      // LOB max is 4G, here use UINT32_MAX.
+      // Negative numbers have already been filtered out.
       width = UINT32_MAX;
     }
     if (width <= 0) {
@@ -651,7 +653,7 @@ int ObExprBaseLRpad::calc_oracle(LRpadType pad_type, const ObExpr &expr,
                && expr.args_[0]->datum_meta_.is_clob()
                && (0 == str_pad.length())
                && (text_width <= width)) {
-      // pad_text 是 empty_clob，text 是 clob，如果不走截断逻辑的话，结果直接置为原 clob
+      // pad_text is empty_clob, text is clob, if not going through truncation logic, the result is directly set to the original clob
       res.set_datum(text);
       is_unchanged_clob = ob_is_text_tc(res_type);
     } else if (text_width == width) {

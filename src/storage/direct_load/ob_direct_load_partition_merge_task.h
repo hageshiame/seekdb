@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 #pragma once
 
@@ -39,6 +43,7 @@ class ObDirectLoadMgrAgent;
 class ObDirectLoadPartitionMergeTask : public ObDirectLoadIMergeTask
 {
 public:
+  friend class ObDirectLoadDagTabletSliceRowIterator;
   ObDirectLoadPartitionMergeTask();
   virtual ~ObDirectLoadPartitionMergeTask();
   int process() override;
@@ -68,12 +73,10 @@ protected:
   ObDirectLoadInsertTabletContext *insert_tablet_ctx_;
   int64_t parallel_idx_;
   int64_t affected_rows_;
-  // 无主键表的hidden pk是在最后插入的时候才组装到datum_row的, 在这之前都无法调用handle_insert_row
-  // 需要在最后插入的时候收集
+  // The hidden pk for tables without a primary key is assembled into datum_row only when inserted at the end, and handle_insert_row cannot be called before that
+  // Need to collect when inserting at the end
   bool need_handle_dml_row_;
   bool is_stop_;
-  ObArray<ObDirectLoadIStoreRowIterator *> row_iters_;
-  ObArenaAllocator allocator_;
   bool is_inited_;
 };
 
@@ -111,8 +114,7 @@ private:
   ObDirectLoadOriginTable *origin_table_;
   const blocksstable::ObDatumRange *range_;
 };
-
-// 堆表列存表unrescan场景, 对于已有数据也要重新分配主键值
+// Heap table columnar store table unrescan scenario, for existing data primary key values need to be reallocated as well
 class ObDirectLoadPartitionOriginDataUnrescanMergeTask : public ObDirectLoadIMergeTask
 {
 public:
@@ -162,8 +164,7 @@ private:
   ObDirectLoadTableHandleArray sstable_array_;
   const blocksstable::ObDatumRange *range_;
 };
-
-// 堆表按分区分开写extern_table, unused
+// Heap table is written separately by partition extern_table, unused
 class ObDirectLoadPartitionHeapTableMergeTask : public ObDirectLoadPartitionMergeTask
 {
 public:

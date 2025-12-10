@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OB_OP_METRIC_H
@@ -19,9 +23,8 @@
 
 namespace oceanbase {
 namespace sql {
-
-// 使用模型：记录第一次/最后一次（row、buffer）输入和输出的时间，如receive收到第一行数据，如dtl收到第一个buffer等
-//         同时提供间隔时间的计算，通过开关控制打开是否计算这些统计项，如dtl写buffer时间等
+// Use model: record the time of the first/last (row, buffer) input and output, such as receive receiving the first row of data, such as dtl receiving the first buffer etc
+//         At the same time provide the calculation of interval time, through the switch to control whether to calculate these statistics, such as dtl write buffer time etc
 class ObOpMetric
 {
   OB_UNIS_VERSION(1);
@@ -96,8 +99,7 @@ private:
   bool enable_audit_;
   int64_t id_;
   MetricType type_;
-
-  // 每间隔 INTERVAL 次累计算一下
+  // Every INTERVAL times calculate once
   static const int64_t INTERVAL = 1;
   int64_t interval_cnt_;
   int64_t interval_start_time_;
@@ -157,7 +159,7 @@ OB_INLINE void ObOpMetric::mark_interval_end(int64_t *out_exec_time, int64_t int
       } else {
         exec_time_ += (interval_end_time_ - interval_start_time_);
       }
-      // 重复利用上一个start time
+      // Reuse the previous start time
       interval_start_time_ = interval_end_time_;
     } else if (INTERVAL - 1 == interval_cnt_ % interval) {
       interval_end_time_ = common::ObTimeUtility::current_time();
@@ -166,7 +168,7 @@ OB_INLINE void ObOpMetric::mark_interval_end(int64_t *out_exec_time, int64_t int
       } else {
         exec_time_ += (interval_end_time_ - interval_start_time_);
       }
-      // 重复利用上一个start time
+      // Reuse the previous start time
       interval_start_time_ = interval_end_time_;
     }
   }

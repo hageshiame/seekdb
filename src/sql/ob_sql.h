@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SQL_OB_SQL_
@@ -103,7 +107,7 @@ public:
   virtual int stmt_prepare(const common::ObString &stmt,
                            ObSqlCtx &context,
                            ObResultSet &result,
-                           bool is_inner_sql = true); //判断该次调用是外部请求prepare, 还是内部sql或者pl内sql
+                           bool is_inner_sql = true); // Determine if this call is an external request prepare, or internal SQL or PL internal SQL
 
   /** Interface of SQL Engine for COM_
    * @param stmt_id [in]
@@ -141,9 +145,8 @@ public:
   int64_t get_execution_id() { return ATOMIC_AAF(&execution_id_, 1); }
   int64_t get_px_sequence_id() { return ATOMIC_AAF(&px_sequence_id_, 1); }
   //calculate calculable expr
-  // stmt 全量 const folding.
-
-  // 为了改写层 const folding 抽出来的函数
+  // stmt full const folding.
+  // To rewrite the layer const folding extracted function
   static int calc_pre_calculable_exprs(common::ObIArray<ObHiddenColumnItem> &calculable_exprs,
                                        ObExecContext &exec_ctx,
                                        ObDMLStmt &stmt,
@@ -445,7 +448,7 @@ private:
                   ObOutlineState &outline_state,
                   ObPlanCache *plan_cache,
                   bool& plan_added);
-  //检查经过参数化的模板SQL能否被prepare
+  // Check if the parameterized template SQL can be prepared
   void check_template_sql_can_be_prepare(ObPlanCacheCtx &pc_ctx, ObPhysicalPlan &plan);
   int execute_get_plan(ObPlanCache &plan_cache,
                        ObPlanCacheCtx &pc_ctx,
@@ -490,11 +493,11 @@ public:
                                    const ObIArray<int64_t> &fixed_param_idx);
 private:
   bool inited_;
-  // BEGIN 全局单例依赖接口
+  // BEGIN global singleton dependency interface
   common::ObOptStatManager *opt_stat_mgr_;
   rpc::frame::ObReqTransport *transport_;
   common::ObITabletScan *vt_partition_service_;
-  // END 全局单例依赖接口
+  // END global singleton dependency interface
 
   common::ObAddr self_addr_;
   share::ObRsMgr *rs_mgr_;

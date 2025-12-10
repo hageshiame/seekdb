@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 /**
@@ -333,18 +337,18 @@ public:
     return pos;
   }
 public:
-  ObFuture<bool> future_;// 用于判断上一次提交的异步任务是否已经执行结束
+  ObFuture<bool> future_;// Used to determine if the previous asynchronous task has already completed execution
   ObTimeWheel *time_wheel_;
-  occam::ObOccamThreadPool *thread_pool_;// 用于提交异步任务，被设置为nullptr时，定时任务将停止调度，将由task_handle清理本定时任务
-  bool *timer_running_flag_;// 用于判断timer是否被整体停止
-  int64_t *total_running_count_;// timer判断是否还有任务没有析构
-  ObSharedGuard<ObFunction<bool()>> func_shared_ptr_;// 用于保存执行的定时任务执行体
-  occam::TASK_PRIORITY task_priority_;// 该定时任务提交到异步线程池的执行等级的优先级
-  bool is_running_;// 用于从time wheel安全摘掉task指针不得不添加的状态
-  bool with_handle_protected_;// 表明该对象是否有句柄保护，没有的话需要在time wheel里销毁
-  const int64_t time_interval_us_;// 下一次被timewheel调度的间隔
-  int64_t expected_run_ts_us_;// 下一次被timewheel调度的时间点
-  const int64_t timer_precision_;// timer的精度，用于确定定时任务调度和执行的延迟范围，超过精度+阈值时打印报警日志
+  occam::ObOccamThreadPool *thread_pool_;// Used to submit asynchronous tasks, when set to nullptr, the scheduled timer tasks will stop, and will be cleaned up by task_handle
+  bool *timer_running_flag_;// Used to determine if the timer has been globally stopped
+  int64_t *total_running_count_;// timer determines whether there are still tasks that have not been destructed
+  ObSharedGuard<ObFunction<bool()>> func_shared_ptr_;// Used to save the execution body of the scheduled task
+  occam::TASK_PRIORITY task_priority_;// The execution level priority of this scheduled task when submitted to the asynchronous thread pool
+  bool is_running_;// Used to add a state for safely removing task pointers from the time wheel
+  bool with_handle_protected_;// Indicates whether the object has handle protection, if not, it needs to be destroyed in the time wheel
+  const int64_t time_interval_us_; // the interval for the next scheduling by timewheel
+  int64_t expected_run_ts_us_;// The time point when it is next scheduled by the timewheel
+  const int64_t timer_precision_;// timer precision, used to determine the delay range for scheduling and executing timed tasks, print alarm log when exceeding precision + threshold
   /***********for debug************/
   const char *function_class_;
   const char *function_name_;

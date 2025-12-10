@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -271,7 +275,7 @@ int ObCallProcedureExecutor::execute(ObExecContext &ctx, ObCallProcedureStmt &st
                   } else {
                     /* do nothing */
                   }
-                } else if (T_OP_GET_USER_VAR == expr_type) { //这里只有可能出现用户变量
+                } else if (T_OP_GET_USER_VAR == expr_type) { // Here only user variables may appear
                   ObExprCtx expr_ctx;
                   if (expr->get_expr_items().count() < 2 || T_VARCHAR != expr->get_expr_items().at(1).get_item_type()) {
                     ret = OB_ERR_UNEXPECTED;
@@ -454,8 +458,7 @@ int ObAnonymousBlockExecutor::execute(ObExecContext &ctx, ObAnonymousBlockStmt &
     OZ (ctx.get_pl_engine()->execute(
       ctx, *stmt.get_params(), stmt.get_stmt_id(), stmt.get_sql(), out_args),
       K(stmt), KPC(stmt.get_params()));
-
-    // 处理匿名块出参的场景, 如果是通过execute immediate执行的匿名块, 需要将匿名块中参数的修改覆盖到父调用的param_store中
+    // Handle the scenario of anonymous block out parameters, if the anonymous block is executed via execute immediate, need to overwrite the modifications of parameters in the anonymous block to param_store of the parent call
     if (OB_SUCC(ret)
         && stmt.get_params()->count() > 0
         && OB_NOT_NULL(ctx.get_my_session()->get_pl_context())) {
@@ -465,7 +468,7 @@ int ObAnonymousBlockExecutor::execute(ObExecContext &ctx, ObAnonymousBlockStmt &
         ctx.get_physical_plan_ctx()->get_param_store_for_update().at(i) = stmt.get_params()->at(i);
       }
     }
-    // 处理顶层匿名块的出参, 顶层匿名块的出参需要返回给客户端
+    // Process the output parameters of the top-level anonymous block, the output parameters of the top-level anonymous block need to be returned to the client
     if (OB_SUCC(ret)
         && stmt.get_params()->count() > 0
         && OB_ISNULL(ctx.get_my_session()->get_pl_context())
@@ -498,7 +501,7 @@ int ObAnonymousBlockExecutor::execute(ObExecContext &ctx, ObAnonymousBlockStmt &
           field.charsetnr_ = CS_TYPE_UTF8MB4_GENERAL_CI;
           field.type_.set_type(value.get_type());
           field.accuracy_ = value.get_accuracy();
-          if (value.get_type() != ObExtendType) { // 基础数据类型
+          if (value.get_type() != ObExtendType) { // basic data type
             if (ObVarcharType == value.get_type()
                 || ObCharType == value.get_type()) {
               if (-1 == field.accuracy_.get_length()) {
@@ -514,7 +517,7 @@ int ObAnonymousBlockExecutor::execute(ObExecContext &ctx, ObAnonymousBlockStmt &
             ObCollationType collation = CS_TYPE_INVALID;
             OZ (ObCharset::get_default_collation(value.get_collation_type(), collation));
             OX (field.charsetnr_ = collation);
-          } else { // 复杂数据类型
+          } else { // complex data type
             field.length_ = field.accuracy_.get_length();
             if (value.is_ref_cursor_type()) {
               OZ (ob_write_string(ctx.get_allocator(), ObString("SYS_REFCURSOR"), field.type_name_));

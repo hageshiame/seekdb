@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -331,9 +335,9 @@ int check_sys_var_options(ObExecContext &ctx,
                 || set_var.var_name_ == OB_SV_CHARACTER_SET_SERVER
                 || set_var.var_name_ == OB_SV_CHARACTER_SET_DATABASE
                 || set_var.var_name_ == OB_SV_CHARACTER_SET_CONNECTION) {
-              //TODO(yaoying.yyy):千拂将会重构字符集系统变量一块儿，为避免无用的重复逻辑，暂时不支持 set
-              //字符集相关的系统变量
-              //等千拂重构后，这段就可以打开了，
+              //TODO(yaoying.yyy):Qianfu will refactor the character set system variable section, to avoid unnecessary duplicate logic, set is temporarily not supported
+              // Character set related system variables
+              // Wait until Qianfu refactoring is done, this section can then be opened,
               ret = OB_NOT_SUPPORTED;
               LOG_WARN("collation or charset can not be modify temporarily", K(set_var), K(ret));
             } else {
@@ -881,8 +885,8 @@ int ObPurgeRecycleBinExecutor::execute(ObExecContext &ctx, ObPurgeRecycleBinStmt
     int64_t total_purge_count = 0;
     uint64_t tenant_id = purge_recyclebin_arg.tenant_id_;
     while (OB_SUCC(ret) && !is_tenant_finish) {
-      //一个租户只purge 10个回收站的对象，防止卡住RS的ddl线程
-      //每次返回purge的行数，只有purge数目少于affected_rows
+      // A tenant only purges 10 objects from the recycle station to prevent blocking the RS's ddl thread
+      // Each time return the number of purged rows, only when the purge count is less than affected_rows
       int64_t cal_timeout = 0;
       int64_t start_time = ObTimeUtility::current_time();
       if (OB_FAIL(GSCHEMASERVICE.cal_purge_need_timeout(purge_recyclebin_arg, cal_timeout))) {
@@ -891,7 +895,7 @@ int ObPurgeRecycleBinExecutor::execute(ObExecContext &ctx, ObPurgeRecycleBinStmt
         is_tenant_finish = true;
       } else if (OB_FAIL(common_rpc_proxy->timeout(cal_timeout).purge_expire_recycle_objects(purge_recyclebin_arg, affected_rows))) {
         LOG_WARN("purge reyclebin objects failed", K(ret), K(affected_rows), K(purge_recyclebin_arg));
-        //如果失败情况下，不需要继续
+        // If failure occurs, there is no need to continue
         is_tenant_finish = false;
       } else {
         is_tenant_finish = obrpc::ObPurgeRecycleBinArg::DEFAULT_PURGE_EACH_TIME == affected_rows ? false : true;

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "lib/charset/ob_ctype.h"
@@ -31,14 +35,14 @@ static uint mbcharlen_sjis(const ObCharsetInfo *cs [[maybe_unused]], uint c) {
 static ObUnicaseInfo ob_caseinfo_sjis = {0xFFFF, ob_caseinfo_pages_sjis};
 
 /**
- * @brief 对两个SJIS编码的字符串进行比较
+ * @brief Compare two SJIS encoded strings
  *
- * @param cs SJIS编码的字符集信息
- * @param a_res 指向第一个字符串的指针的指针
- * @param a_length 第一个字符串的长度
- * @param b_res 指向第二个字符串的指针的指针
- * @param b_length 第二个字符串的长度
- * @return int 返回值为0表示两个字符串相等，小于0表示第一个字符串小于第二个字符串，大于0表示第一个字符串大于第二个字符串
+ * @param cs SJIS encoded character set information
+ * @param a_res Pointer to a pointer of the first string
+ * @param a_length Length of the first string
+ * @param b_res Pointer to a pointer of the second string
+ * @param b_length Length of the second string
+ * @return int Return value of 0 indicates the two strings are equal, less than 0 indicates the first string is less than the second string, greater than 0 indicates the first string is greater than the second string
  */
 static int ob_strnncoll_sjis_internal(const ObCharsetInfo *cs,
                                       const uchar **a_res, size_t a_length,
@@ -276,7 +280,7 @@ static ObCharsetHandler ob_sjis_charset_handler =
   ismbchar_sjis,   /* ismbchar */
   mbcharlen_sjis,  /* mbcharlen */
   ob_numchars_mb,  /* numchars */
-  ob_charpos_mb,   /* charpos 这里charpos =  */
+  ob_charpos_mb,   /* charpos here charpos =  */
   ob_max_bytes_charpos_mb, /* max_byptes charpos  */
   ob_well_formed_len_sjis, /* well_formed_len */
   ob_lengthsp_8bit, /* lengthsp */

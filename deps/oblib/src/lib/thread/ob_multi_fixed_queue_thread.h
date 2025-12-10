@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_MULTI_FIXED_QUEUE_THREAD_H__
@@ -25,8 +29,7 @@ namespace oceanbase
 {
 namespace common
 {
-
-// ModuleClass: 标识使用该线程池的目标模块
+// ModuleClass: Identify the target module using this thread pool
 template <int MAX_THREAD_NUM = 32, typename ModuleClass = void>
 class ObMQThread
 {
@@ -58,11 +61,9 @@ public:
   int push(void *data, const uint64_t hash_value, const int64_t timeout);
 
   int64_t get_thread_num() const { return thread_num_; }
-
-  // 获取所有队列总任务个数
+  // Get the total number of tasks in all queues
   int get_total_task_num(int64_t &task_count);
-
-  // 获取第thread_idx个线程对应queue待处理任务个数
+  // Get the number of pending tasks in queue for thread thread_idx
   int get_task_num(const int64_t thread_idx, int64_t &task_count);
 
 private:
@@ -228,11 +229,9 @@ void ObMQThread<MAX_THREAD_NUM, ModuleClass>::run()
       }
     }
   }
-
-  // 退出都调用thread_end()
+  // Exit all calls thread_end()
   thread_end();
-
-  // NOTE: 一个线程退出，其他线程同时退出
+  // NOTE: One thread exits, other threads exit simultaneously
   stop_flag_ = true;
 }
 

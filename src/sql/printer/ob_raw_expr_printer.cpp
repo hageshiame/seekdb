@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL
@@ -144,7 +148,7 @@ int ObRawExprPrinter::print(ObRawExpr *expr)
       && !expr->is_column_ref_expr()
       && !expr->is_aggr_expr()
       && !expr->is_pseudo_column_expr()
-     // quertionmark 是一个const expr，如果是prepare，需要打印成:0这样的东西，不能用alias来代替
+     // questionmark is a const expr, if it is prepare, it needs to be printed as :0 this kind of thing, cannot use alias to replace
       && T_QUESTIONMARK != expr->get_expr_type()
       && scope_ != T_DBLINK_SCOPE
       && scope_ != T_FIELD_LIST_SCOPE
@@ -525,7 +529,7 @@ int ObRawExprPrinter::print(ObOpRawExpr *expr)
       }
     case T_OP_OR: {
       SET_SYMBOL_IF_EMPTY("or");
-      // 这里孩子不一定为2, 比如a or (b or c) 会被改写为一个or含三个孩子
+      // Here the child is not necessarily 2, for example a or (b or c) would be rewritten as an or with three children
       if (expr->get_param_count() < 2) {
         ret = OB_ERR_UNEXPECTED;
         LOG_WARN("expr param count should be greater than or equal 2", K(ret), K(expr->get_param_count()));
@@ -3299,9 +3303,9 @@ int ObRawExprPrinter::print(ObSysFunRawExpr *expr)
         break;
       }
       case T_FUN_SYS_ORA_DECODE: {
-        //同一个函数 在Oracle下名为decode， 在MySQL下名为ora_decode
+        // The same function named decode in Oracle, named ora_decode in MySQL
         // for 
-        // 保证SQL反拼不会出错
+        // Ensure that SQL reverse parsing does not result in an error
         DATA_PRINTF("ora_decode");
         OZ(inner_print_fun_params(*expr));
         break;
@@ -3999,7 +4003,39 @@ int ObRawExprPrinter::print(ObMatchFunRawExpr *expr)
   if (OB_ISNULL(buf_) || OB_ISNULL(pos_) || OB_ISNULL(expr)) {
     ret = OB_ERR_UNEXPECTED;
     LOG_WARN("unexpected null", K(ret), K(buf_), K(pos_), K(expr));
-  } else if (is_mysql_mode()) {
+  } else if (is_mysql_mode() && expr->is_es_match()) {
+    DATA_PRINTF("MATCH('");
+    int64_t i = 0;
+    for (; OB_SUCC(ret) && i < expr->get_match_columns().count() - 1; ++i) {
+      if (OB_ISNULL(expr->get_match_columns().at(i)) || OB_ISNULL(expr->get_columns_boosts().at(i))) {
+        ret = OB_ERR_UNEXPECTED;
+        LOG_WARN("unexpected null", K(ret));
+      } else {
+        PRINT_EXPR(expr->get_match_columns().at(i));
+        DATA_PRINTF("^");
+        PRINT_EXPR(expr->get_columns_boosts().at(i));
+        DATA_PRINTF(",");
+      }
+    }
+    if (OB_SUCC(ret)) {
+      if (OB_ISNULL(expr->get_match_columns().at(i))) {
+        ret = OB_ERR_UNEXPECTED;
+        LOG_WARN("unexpected null", K(ret));
+      } else if (OB_ISNULL(expr->get_search_key())) {
+        ret = OB_ERR_UNEXPECTED;
+        LOG_WARN("unexpected null", K(ret));
+      } else {
+        PRINT_EXPR(expr->get_match_columns().at(i));
+        DATA_PRINTF("^");
+        PRINT_EXPR(expr->get_columns_boosts().at(i));
+        DATA_PRINTF("', '");
+        PRINT_EXPR(expr->get_search_key());
+        DATA_PRINTF("', '");
+        DATA_PRINTF(expr->get_param_text_expr());
+        DATA_PRINTF("')");
+      }
+    }
+  } else if (is_mysql_mode() && !expr->is_es_match()) {
     DATA_PRINTF("MATCH(");
     int64_t i = 0;
     for (; OB_SUCC(ret) && i < expr->get_match_columns().count() - 1; ++i) {
@@ -4037,6 +4073,10 @@ int ObRawExprPrinter::print(ObMatchFunRawExpr *expr)
           }
           case WITH_QUERY_EXPANSION: {
             DATA_PRINTF(" WITH QUERY EXPANSION)");
+            break;
+          }
+          case MATCH_PHRASE_MODE: {
+            DATA_PRINTF(" IN MATCH PHRASE MODE)");
             break;
           }
           default: {

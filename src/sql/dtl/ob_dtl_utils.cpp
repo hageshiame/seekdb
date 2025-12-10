@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_DTL
@@ -100,12 +104,12 @@ int ObDtlAsynSender::asyn_send()
     LOG_WARN("unexpected status: ch info is null", K(ret));
   } else if (0 == channels_.count() || OB_FAIL(calc_batch_buffer_cnt(max_batch_size, max_loop_times))) {
     // px coord rescan, channels is cleared and it's empty
-    // max_loop_times表示需要进行多少轮才能把所有channels发送完，该值等于接收端每个sqc最大的线程个数
-    // max_batch_size表示每次批量发送的channel个数
-    // 如 假设接收端2个server，sqc0: 10个task sqc1: 12个task,即channel有22(10+12)
-    //    则max_loop_times = 22, 如果max_batch_size=5,则表示需要发送3轮(12/5+1)
-    //    如果max_batch_size等于(不会大于max_loop_times)max_loop_times，表示一次性发送完所有channel的数据
-    // 回退到同步发送
+    // max_loop_times indicates how many rounds are needed to send all channels, this value equals the maximum number of threads per sqc on the receiving end
+    // max_batch_size indicates the number of channels sent in each batch
+    // For example assume the receiver has 2 servers, sqc0: 10 tasks sqc1: 12 tasks, i.e., channel has 22 (10+12)
+    //    then max_loop_times = 22, if max_batch_size=5, then it indicates that 3 rounds are needed (12/5+1)
+    //    If max_batch_size equals (will not be greater than max_loop_times) max_loop_times, it indicates that all channel data will be sent in one go
+    // Fallback to synchronous send
     if (OB_FAIL(syn_send())) {
       LOG_WARN("failed to syn send message", K(ret));
     }

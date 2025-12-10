@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2024 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX STORAGE
@@ -158,7 +162,7 @@ int ObDirectLoadLobMetaRowIter::get_next_row(const ObDirectLoadDatumRow *&result
 int ObDirectLoadLobMetaRowIter::switch_next_lob_id()
 {
   int ret = OB_SUCCESS;
-  // lob_id都是outrow的, 必须能扫到行
+  // lob_id are all outrow, must be able to scan the row
   if (OB_UNLIKELY(nullptr != lob_id_row_ && lob_id_row_cnt_ == 0)) {
     ret = OB_ERR_UNEXPECTED;
     LOG_WARN("unexpected lob id row cnt", KR(ret), KPC(lob_id_row_));

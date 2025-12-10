@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SRC_SQL_RESOLVER_DML_OB_VIEW_TABLE_RESOLVER_H_
@@ -89,10 +93,10 @@ protected:
   virtual const ObString get_view_name() const override { return view_name_; }
 
 protected:
-  //在视图的namespace解析当中，所有子查询都必须由ObViewTableResolver来解析
-  //current_view_item用来记录当前namespace是由哪个视图(用户创建的视图,不包含generated table)展开的
+  // In the namespace resolution of the view, all subqueries must be resolved by ObViewTableResolver
+  // current_view_item is used to record which view (user-created view, excluding generated table) the current namespace is expanded from
   TableItem current_view_item;
-  //parent_view_resolver用来记录当前namespace所处的视图是由哪个视图展开的
+  // parent_view_resolver is used to record which view expanded the current namespace's view
   ObViewTableResolver *parent_view_resolver_;
   //ObViewTableResolver was called by create view stmt
   bool is_create_view_;

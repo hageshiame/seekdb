@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "storage/ddl/ob_ddl_independent_dag.h"
@@ -182,7 +186,6 @@ int ObDDLIndependentDag::schedule_tablet_merge_task()
         LOG_WARN("get ddl tablet context failed", K(ret), K(tablet_id));
       }
       /* create merge task for data tablet*/
-
       ObDDLTabletMergeDagParamV2 merge_param;
       ObDDLMergePrepareTask *ddl_merge_task = nullptr;
       if (OB_FAIL(ret)) {
@@ -192,7 +195,6 @@ int ObDDLIndependentDag::schedule_tablet_merge_task()
                                           mock_start_scn,
                                           direct_load_type_,
                                           ddl_task_param_,
-                                          arena_,
                                           tablet_context))) {
         LOG_WARN("failed to init  ddl merge task param", K(ret));
       } else if (OB_FAIL(create_task(nullptr /* parent task*/, ddl_merge_task, merge_param))) {
@@ -213,7 +215,6 @@ int ObDDLIndependentDag::schedule_tablet_merge_task()
                                           mock_start_scn,
                                           direct_load_type_,
                                           ddl_task_param_,
-                                          arena_,
                                           tablet_context))) {
         LOG_WARN("failed to init  ddl merge task param", K(ret));
       } else if (OB_FAIL(create_task(nullptr /* parent task*/, lob_merge_task, lob_merge_param))) {
@@ -294,7 +295,7 @@ int ObDDLIndependentDag::push_chunk(ObDDLSlice *ddl_slice, ObChunk *&chunk_data)
     while (OB_SUCC(ret)) {
       if (OB_UNLIKELY(is_final_status())) {
         ret = get_dag_ret();
-        COVER_SUCC(OB_CANCELED);
+        ret = COVER_SUCC(OB_CANCELED);
         LOG_WARN("dag is stoped", K(ret));
       } else if (OB_FAIL(ddl_slice->push_chunk(chunk_data))) {
         if (OB_UNLIKELY(OB_EAGAIN != ret)) {
@@ -349,6 +350,11 @@ int ObDDLIndependentDag::add_vector_index_append_pipeline(const ObIndexType &ind
     }
   } else if (schema::is_vec_ivfpq_pq_centroid_index(index_type)) {
     ObIVFPqAppendPipeline *pipeline = nullptr;
+    if (OB_FAIL(add_pipeline(tablet_context, ddl_slice, pipeline))) {
+      LOG_WARN("init hnsw index failed", K(ret));
+    }
+  } else if (schema::is_hybrid_vec_index_embedded_type(index_type)) {
+    ObHNSWEmbeddingAppendAndWritePipeline *pipeline = nullptr;
     if (OB_FAIL(add_pipeline(tablet_context, ddl_slice, pipeline))) {
       LOG_WARN("init hnsw index failed", K(ret));
     }
@@ -922,24 +928,28 @@ int ObDDLIndependentDag::init_tablet_merge_task(
     LOG_WARN("failed to convert for tx", K(ret));
   } else if (OB_FAIL(get_tablet_context(tablet_id, tablet_context))) {
     LOG_WARN("get ddl tablet context failed", K(ret), K(tablet_id));
-  } else if (OB_FAIL(merge_param.init(for_major  /*for major*/,
-                                      false /* for lob*/,
-                                      false /* for replay*/,
-                                      mock_start_scn,
-                                      direct_load_type_,
-                                      ddl_task_param_,
-                                      arena_,
-                                      tablet_context,
-                                      tx_info_.trans_id_,
-                                      transaction::ObTxSEQ::cast_from_int(tx_info_.seq_no_)))) {
-    LOG_WARN("failed to init  ddl merge task param", K(ret));
-  } else if (!for_major && FALSE_IT(merge_param.set_merge_all_slice())) {
-  } else if (OB_FAIL(alloc_task(ddl_merge_task))) {
-    LOG_WARN("failed to alloc ddl merge task", K(ret));
-  } else if (OB_FAIL(ddl_merge_task->init(merge_param))) {
-    LOG_WARN("failed to init ddl merge task", K(ret));
+  }
+
+  if (OB_FAIL(ret)) {
   } else {
-    data_task = ddl_merge_task;
+    if (OB_FAIL(merge_param.init(for_major  /*for major*/,
+      false /* for lob*/,
+      false /* for replay*/,
+      mock_start_scn,
+      direct_load_type_,
+      ddl_task_param_,
+      tablet_context,
+      tx_info_.trans_id_,
+      transaction::ObTxSEQ::cast_from_int(tx_info_.seq_no_)))) {
+      LOG_WARN("failed to init  ddl merge task param", K(ret));
+    } else if (!for_major && FALSE_IT(merge_param.set_merge_all_slice())) {
+    } else if (OB_FAIL(alloc_task(ddl_merge_task))) {
+    LOG_WARN("failed to alloc ddl merge task", K(ret));
+    } else if (OB_FAIL(ddl_merge_task->init(merge_param))) {
+    LOG_WARN("failed to init ddl merge task", K(ret));
+    } else {
+      data_task = ddl_merge_task;
+    }
   }
 
   /* create merge task for lob tablet*/
@@ -953,7 +963,6 @@ int ObDDLIndependentDag::init_tablet_merge_task(
                                       mock_start_scn,
                                       direct_load_type_,
                                       ddl_task_param_,
-                                      arena_,
                                       tablet_context,
                                       tx_info_.trans_id_,
                                       transaction::ObTxSEQ::cast_from_int(tx_info_.seq_no_)))) {

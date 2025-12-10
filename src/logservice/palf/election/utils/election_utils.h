@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef LOGSERVICE_PALF_ELECTION_UTILS_OB_ELECTION_UTILS_H
@@ -128,7 +132,7 @@ inline int get_sorted_majority_one_desc(const common::ObArray<T> &array, T &majo
   }
   if (OB_SUCC(ret)) {
     (void) bubble_sort_desc(temp_array);
-    majority_element = temp_array[temp_array.count() / 2];// 从高到低排序取第n/2 + 1个值
+    majority_element = temp_array[temp_array.count() / 2]; // From high to low sort and take the n/2 + 1th value
   }
   return ret;
 }
@@ -229,9 +233,9 @@ public:
   TO_STRING_KV(K_(owner), LEASE_END, K_(ballot_number));
   #undef LEASE_END
 private:
-  common::ObAddr owner_; // 发出Lease的Proposer
-  int64_t lease_end_ts_; // 即Lease End
-  int64_t ballot_number_; // 即paxos中的proposal id
+  common::ObAddr owner_; // Proposer that issues the Lease
+  int64_t lease_end_ts_; // i.e. Lease End
+  int64_t ballot_number_; // proposal id in paxos
   RWLock lock_;
 };
 
@@ -335,28 +339,27 @@ void MemberListWithStates::print_array_in_pretty_way_(char *buf, const int64_t b
     }
   }
 };
-
-// 从排查问题的经验来看，选举模块已经稳定，没有发生因为自身问题导致的无主
-// 但测试环境中还是经常会出现无主报错，这通常是其他原因引起的，例如：
-// 1. palf工作线程卡住，无法处理消息
-// 2. observer内存耗尽，可以发出但是无法接收消息
-// 3. server处于stop状态，但是没有完全退出，可以发出但是无法接收消息
-// 4. 多数派core，无法选主
-// 5. 其他由于observer内部其他模块异常导致的消息收发问题。
+// From the experience of troubleshooting, the election module has been stable, and there have been no cases of leaderless state caused by its own issues
+// But errors without a leader still frequently occur in the test environment, this is usually caused by other reasons, for example:
+// 1. palf worker thread is stuck and unable to process messages
+// 2. observer memory exhausted, can send but cannot receive messages
+// 3. server is in stop state, but has not completely exited, can send but cannot receive messages
+// 4. Majority core, unable to elect leader
+// 5. Other message reception and transmission issues caused by exceptions in other modules within the observer.
 //
-// 尽管真实的网络环境正常，但由于observer内部的问题，以上情况对于选举模块来说等同于网络分区/单向网络连通
-// 设计以下数据结构用来记录消息收发的情况，用于快速提供信息排查问题：
-// 1. 发过多少消息，什么类型，分别发给了哪些server，最后一次给他们发出消息的时间戳是多少
-// 2. 收到多少消息，什么类型，分别来自哪些server，最后一次收到他们发来消息的时间戳是多少
+// Although the real network environment is normal, due to internal issues in the observer, the above situation is equivalent to a network partition/unidirectional network connectivity for the election module
+// Design the following data structure to record message sending and receiving situations, used for quick information retrieval to troubleshoot issues:
+// 1. How many messages have been sent, what types they are, to which servers they were sent, and the timestamp of the last message sent to them
+// 2. How many messages received, what type, from which servers, and the timestamp of the last message received from them
 class ElectionMsgCounter
 {
-  // 按IP地址分类
+  // Classify by IP address
   class AddrMsgCounter
   {
-    // 按消息类型分类
+    // Classify by message type
     struct MsgCounter
     {
-      // 统计消息收发数量以及最后一次收发的时间戳
+      // Statistics of message send/receive counts and the timestamp of the last send/receive
       struct Counter
       {
         Counter() : send_count_(0), receive_count_(0), last_send_ts_(0), last_received_ts_(0) {}
@@ -404,7 +407,7 @@ class ElectionMsgCounter
     MsgCounter *find(const common::ObAddr &addr);
     MsgCounter *find_or_reuse_item_(const common::ObAddr &addr);
     int idx_;
-    // 按副本IP分类, 维护最近通信的MAP_SIZE个消息收发记录
+    // Classify by replica IP, maintain the most recent MAP_SIZE message send/receive records
     ObTuple<common::ObAddr, MsgCounter> addr_mapper_[MAP_SIZE];
   };
 public:

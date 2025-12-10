@@ -1,16 +1,20 @@
 // owner:  msy164651
 // owner group: rs
 
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SHARE
@@ -70,7 +74,7 @@ TEST_F(TestStandbyBalance, BalanceLSGroup)
   ObSqlString sql;
   ASSERT_EQ(OB_SUCCESS, get_curr_simple_server().init_sql_proxy2("sys", "oceanbase"));
   common::ObMySQLProxy &sql_proxy = get_curr_simple_server().get_sql_proxy2();
-  //2个unit group，四个日志流组
+  //2 unit groups, four log stream groups
   uint64_t u1 = 1001;
   uint64_t u2 = 1002;
   ASSERT_EQ(OB_SUCCESS, sql.assign_fmt("insert into __all_unit(unit_id, unit_group_id, resource_pool_id, zone, svr_ip, svr_port, migrate_from_svr_ip, migrate_from_svr_port, status) values(%lu, %lu, 1, 'z1', '127.0.0.1', 2882, ' ', 0, 'ACTIVE')", u1, u1));
@@ -79,7 +83,7 @@ TEST_F(TestStandbyBalance, BalanceLSGroup)
 
   uint64_t lg1 = 1001, lg2 = 1002, lg3 = 1003, lg4 = 1004;
   int64_t ls1 = 1001, ls2 = 1002, ls3 = 1003, ls4 = 1004;
-  //4个日志流组都在一个ug上面
+  //4 log stream groups are on one ug
   ASSERT_EQ(OB_SUCCESS, sql.assign_fmt("insert into __all_ls_status(tenant_id, ls_id, status, ls_group_id , unit_group_id, primary_zone) values(%ld, %lu, 'NORMAL', %lu, %lu, '%s')", tenant_id_, ls1, lg1, u1, z1.ptr()));
   ASSERT_EQ(OB_SUCCESS, sql_proxy.write(OB_SYS_TENANT_ID, sql.ptr(), affected_row));
   ASSERT_EQ(1, affected_row);

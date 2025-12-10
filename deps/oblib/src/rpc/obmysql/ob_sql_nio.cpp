@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX RPC_OBMYSQL
@@ -859,7 +863,7 @@ public:
         strncpy(unix_socket_path_, unix_socket_path, sizeof(unix_socket_path_) - 1);
         if ((unix_lfd_ = listen_create_unix(unix_socket_path_, need_monopolize)) < 0) {
           LOG_WARN("unix socket listen create fail", K(unix_socket_path_), K(errno));
-          // Unix socket失败不影响TCP socket，所以不返回错误
+          // Unix socket failure does not affect TCP socket, so no error is returned
         } else if (0 != epoll_regist(epfd_, unix_lfd_, epflag, NULL)) {
           LOG_WARN("regist unix listen fd fail", K(unix_lfd_));
           close(unix_lfd_);

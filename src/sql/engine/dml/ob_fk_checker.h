@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OBDEV_SRC_SQL_ENGINE_DML_OB_FOREIGN_KEY_CHECKER_H_
@@ -103,14 +107,14 @@ private:
                            const ObPrecision dst_precision,
                            bool &need_extra_cast);
 public:
-  ObEvalCtx &eval_ctx_; // 用于表达式的计算
+  ObEvalCtx &eval_ctx_; // used for expression evaluation
   ObDASScanRtDef das_scan_rtdef_;
-  // 存储计算table loc以及构造das-task需要的分区键，主键expr等
+  // Store calculation table loc and the partition key, primary key expr, etc., needed for constructing das-task
   const ObForeignKeyCheckerCtdef  &checker_ctdef_;
-  // 外键检查回表构造das-task用
+  // Foreign key check back-table construction for das-task use
   ObDASRef das_ref_;
   ObDASTableLoc *table_loc_;
-  ObDASTabletLoc *local_tablet_loc_; //用于外键检查的表是非分区表的时候用
+  ObDASTabletLoc *local_tablet_loc_; // The table used for foreign key check is a non-partitioned table when used
   SeRowkeyDistCtx *se_rowkey_dist_ctx_;
   ObRowkey table_rowkey_;
   int64_t batch_distinct_fk_cnt_;

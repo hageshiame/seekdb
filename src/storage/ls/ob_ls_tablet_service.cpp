@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX STORAGE
@@ -30,6 +34,7 @@
 #include "storage/column_store/ob_column_oriented_sstable.h"
 #include "storage/blocksstable/ob_sstable.h"
 #include "storage/ddl/ob_direct_insert_sstable_ctx_new.h"
+#include "storage/retrieval/ob_block_stat_iter.h"
 #include "storage/tablet/ob_mds_schema_helper.h"
 #include "storage/tablet/ob_tablet_iterator.h"
 #include "storage/tablet/ob_tablet_service_clog_replay_executor.h"
@@ -46,6 +51,7 @@
 #include "storage/tablet/ob_tablet_mds_table_mini_merger.h"
 #include "storage/ddl/ob_tablet_ddl_kv.h"
 #include "share/vector_index/ob_plugin_vector_index_service.h"
+#include "share/vector_index/ob_vector_index_util.h"
 #include "storage/meta_mem/ob_tablet_pointer.h"
 #include "storage/truncate_info/ob_truncate_partition_filter.h"
 #include "storage/meta_store/ob_tenant_storage_meta_service.h"
@@ -1893,9 +1899,8 @@ int ObLSTabletService::upload_major_compaction_tablet_meta(
   }
   return ret;
 }
-
-// TODO 这里的实现不完善，需要进一步完善
-// 2. 对比sn的replay_create_tablet 其中check_and_set_initial_state和start_direct_load_task_if_need是否可以直接去掉，如果去掉，再真正加载的时候还是要补上相应的动作。
+// TODO The implementation here is incomplete and needs further improvement
+// 2. Compare sn's replay_create_tablet where check_and_set_initial_state and start_direct_load_task_if_need can be directly removed, if removed, the corresponding actions need to be added again when loading for real.
 int ObLSTabletService::ss_replay_create_tablet(const ObMetaDiskAddr &disk_addr, const ObTabletID &tablet_id)
 {
   int ret = OB_SUCCESS;
@@ -4470,7 +4475,7 @@ int ObLSTabletService::check_old_row_legitimacy(
     }
 
     if (OB_ERR_DEFENSIVE_CHECK == ret && dml_param.is_batch_stmt_) {
-      // 批量删除的时候可能索引表的删除在主表前边，所以所有的表在batch删除的时候出现4377，都可能是重复删导致的
+      // When performing batch deletion, the index table deletion may occur before the main table deletion, so all tables may encounter error 4377 during batch deletion, which could be due to duplicate deletions.
       ret = OB_BATCHED_MULTI_STMT_ROLLBACK;
       LOG_TRACE("batch stmt execution has a correctness error, needs rollback", K(ret),
                 "column_id", column_ids,
@@ -4956,6 +4961,106 @@ int ObLSTabletService::insert_vector_index_rows(
           rows[k].storage_datums_[vector_idx].set_null();
         }
         adaptor_guard.get_adatper()->update_can_skip(NOT_SKIP);
+      }
+    }
+  } else if (table_param.is_hybrid_vector_index_log()) {
+    const blocksstable::ObDmlFlag dml_flag = run_ctx.dml_flag_;
+    ObString vec_idx_param = run_ctx.dml_param_.table_param_->get_data_table().get_vec_index_param();
+    int64_t vec_dim = run_ctx.dml_param_.table_param_->get_data_table().get_vec_dim();
+    ObPluginVectorIndexAdapterGuard adaptor_guard;
+    ObPluginVectorIndexService *vec_index_service = MTL(ObPluginVectorIndexService *);
+    if (OB_FAIL(vec_index_service->acquire_adapter_guard(run_ctx.store_ctx_.ls_id_,
+                                                        run_ctx.relative_table_.get_tablet_id(),
+                                                        ObIndexType::INDEX_TYPE_HYBRID_INDEX_LOG_LOCAL,
+                                                        adaptor_guard,
+                                                        &vec_idx_param,
+                                                        vec_dim))) {
+      LOG_WARN("fail to get ObPluginVectorIndexAdapter", K(ret), K(run_ctx.store_ctx_), K(run_ctx.relative_table_));
+    } else {
+      if (dml_flag == ObDmlFlag::DF_DELETE) {
+        const uint64_t vec_id_col_id = run_ctx.dml_param_.table_param_->get_data_table().get_vec_id_col_id();
+        const uint64_t vec_vector_col_id = run_ctx.dml_param_.table_param_->get_data_table().get_vec_vector_col_id();
+        // get vector col idx
+        int64_t vec_id_idx = OB_INVALID_INDEX;
+        int64_t vector_idx = OB_INVALID_INDEX;
+        for (int64_t i = 0; OB_SUCC(ret) && i < run_ctx.dml_param_.table_param_->get_col_descs().count(); i++) {
+          uint64_t col_id = run_ctx.dml_param_.table_param_->get_col_descs().at(i).col_id_;
+          if (col_id == vec_id_col_id) {
+            vec_id_idx = i;
+          } else if (col_id == vec_vector_col_id) {
+            vector_idx = i;
+          }
+        }
+        if (vec_id_idx == OB_INVALID_INDEX || vector_idx == OB_INVALID_INDEX) {
+          ret = OB_ERR_UNEXPECTED;
+          LOG_WARN("fail to get vec index column idxs", K(ret), K(vec_id_col_id), K(vec_vector_col_id),
+              K(vec_id_idx), K(vector_idx));
+        } else if (OB_FAIL(adaptor_guard.get_adatper()->handle_insert_incr_table_rows(rows, vec_id_idx, vector_idx, row_count))) {
+            LOG_WARN("fail to handle delete hybrid vec index log table rows", K(ret), KP(rows), K(row_count));
+        }
+      }
+      if (OB_SUCC(ret)) {
+        adaptor_guard.get_adatper()->update_can_skip(NOT_SKIP);
+      }
+    }
+  } else if (table_param.is_hybrid_vector_index_embedded()) {
+    ObString vec_idx_param = run_ctx.dml_param_.table_param_->get_data_table().get_vec_index_param();
+    int64_t vec_dim = run_ctx.dml_param_.table_param_->get_data_table().get_vec_dim();
+    const uint64_t vec_id_col_id = run_ctx.dml_param_.table_param_->get_data_table().get_vec_id_col_id();
+    const uint64_t vec_vector_col_id = run_ctx.dml_param_.table_param_->get_data_table().get_embedded_vec_col_id();
+    // get vector col idx
+    int64_t vec_id_idx = OB_INVALID_INDEX;
+    int64_t embedded_vec_idx = OB_INVALID_INDEX;
+    int64_t extra_info_actual_size = 0;
+    for (int64_t i = 0; OB_SUCC(ret) && i < run_ctx.dml_param_.table_param_->get_col_descs().count(); i++) {
+      uint64_t col_id = run_ctx.dml_param_.table_param_->get_col_descs().at(i).col_id_;
+      if (col_id == vec_id_col_id) {
+        vec_id_idx = i;
+      } else if (col_id == vec_vector_col_id) {
+        embedded_vec_idx = i;
+      }
+    }
+    if (vec_id_idx == OB_INVALID_INDEX || embedded_vec_idx == OB_INVALID_INDEX) {
+      ret = OB_ERR_UNEXPECTED;
+      LOG_WARN("fail to get vec index column idxs", K(ret), K(vec_id_col_id), K(vec_vector_col_id),
+          K(vec_id_idx), K(embedded_vec_idx));
+    } else {
+      // get extra info col idx
+      // hybrid vec embedded table columns def is: <vid, embedded_vector>
+      ObPluginVectorIndexService *vec_index_service = MTL(ObPluginVectorIndexService *);
+      ObPluginVectorIndexAdapterGuard adaptor_guard;
+      if (OB_FAIL(vec_index_service->acquire_adapter_guard(run_ctx.store_ctx_.ls_id_,
+                                                          run_ctx.relative_table_.get_tablet_id(),
+                                                          ObIndexType::INDEX_TYPE_HYBRID_INDEX_EMBEDDED_LOCAL,
+                                                          adaptor_guard,
+                                                          &vec_idx_param,
+                                                          vec_dim))) {
+        LOG_WARN("fail to get ObPluginVectorIndexAdapter", K(ret), K(run_ctx.store_ctx_), K(run_ctx.relative_table_));
+      } else {
+        if (OB_FAIL(adaptor_guard.get_adatper()->get_extra_info_actual_size(extra_info_actual_size))) {
+          LOG_WARN("fail to get extra info actual size", K(ret), K(extra_info_actual_size));
+        } else {
+          ObArray<share::ObExtraIdxType> extra_info_id_types;
+          if (extra_info_actual_size > 0) {
+            for (int64_t i = 0; OB_SUCC(ret) && i < run_ctx.dml_param_.table_param_->get_col_descs().count(); i++) {
+              uint64_t col_id = run_ctx.dml_param_.table_param_->get_col_descs().at(i).col_id_;
+              if (col_id != vec_id_col_id && col_id != vec_vector_col_id) {
+                // has extra_info
+                ObExtraIdxType extra_idx_type;
+                extra_idx_type.idx_ = i;
+                extra_idx_type.type_= run_ctx.dml_param_.table_param_->get_col_descs().at(i).col_type_;
+                if (OB_FAIL(extra_info_id_types.push_back(extra_idx_type))) {
+                  LOG_WARN("fail to push back extra info idx", K(ret), K(extra_info_id_types), K(col_id));
+                }
+              }
+            }
+          }
+          if (OB_SUCC(ret)) {
+            if (OB_FAIL(adaptor_guard.get_adatper()->handle_insert_embedded_table_rows(rows, vec_id_idx, embedded_vec_idx, extra_info_id_types, row_count))) {
+              LOG_WARN("fail to handle insert embedded table rows", K(ret), KP(rows), K(row_count));
+            }
+          }
+        }
       }
     }
   } else if (table_param.is_ivf_vector_index()) { // check outrow
@@ -5885,14 +5990,14 @@ int ObLSTabletService::check_datum_row_shadow_pk(
       LOG_WARN("index column count is invalid", K(ret),
                K(index_col_cnt), K(rowkey_cnt), K(spk_cnt), K(column_ids.count()));
     } else if (lib::is_mysql_mode()) {
-      // mysql兼容：只要unique index key中有null列，则需要填充shadow列
+      // mysql compatibility: as long as there is a null column in the unique index key, the shadow column needs to be filled
       bool rowkey_has_null = false;
       for (int64_t i = 0; !rowkey_has_null && i < index_col_cnt; i++) {
         rowkey_has_null = datum_row.storage_datums_[i].is_null();
       }
       need_spk = rowkey_has_null;
     } else {
-      // oracle兼容：只有unique index key全为null列时，才需要填充shadow列
+      // oracle compatibility: only when all columns of unique index key are null, do we need to fill the shadow column
       bool is_rowkey_all_null = true;
       for (int64_t i = 0; is_rowkey_all_null && i < index_col_cnt; i++) {
         is_rowkey_all_null = datum_row.storage_datums_[i].is_null();
@@ -8753,6 +8858,95 @@ int ObLSTabletService::estimate_skip_index_sortedness(
   return ret;
 }
 
+int ObLSTabletService::scan_block_stat(
+    const ObTabletHandle &tablet_handle,
+    ObBlockStatScanParam &scan_param,
+    ObBlockStatIterator &iter)
+{
+  int ret = OB_SUCCESS;
+  bool allow_to_read = false;
+  if (IS_NOT_INIT) {
+    ret = OB_NOT_INIT;
+    LOG_WARN("not inited", K(ret), K_(is_inited));
+  } else if (OB_UNLIKELY(!tablet_handle.is_valid() || !scan_param.is_valid())) {
+    ret = OB_INVALID_ARGUMENT;
+    LOG_WARN("invalid arguments", K(ret), K(tablet_handle), K(scan_param));
+  } else if (FALSE_IT(allow_to_read_mgr_.load_allow_to_read_info(allow_to_read))) {
+  } else if (OB_UNLIKELY(!allow_to_read)) {
+    ret = OB_REPLICA_NOT_READABLE;
+    LOG_WARN("ls not allow to read", K(ret), KPC_(ls));
+  } else if (OB_FAIL(prepare_scan_table_param(*scan_param.get_scan_param(), *(MTL(ObTenantSchemaService *)->get_schema_service())))) {
+    LOG_WARN("fail to prepare scan table param", K(ret), K(scan_param), K(tablet_handle));
+  } else if (OB_UNLIKELY(scan_param.get_scan_param()->fb_snapshot_.is_min())) {
+    ret = OB_SNAPSHOT_DISCARDED;
+  } else if (OB_FAIL(iter.init(tablet_handle, scan_param))) {
+    LOG_WARN("fail to init block stat iterator", K(ret), K(scan_param), K(tablet_handle));
+  }
+  return ret;
+}
+
+#ifdef OB_BUILD_SHARED_STORAGE
+int ObLSTabletService::update_tablet_ss_change_version(
+    const share::SCN &reorg_scn,
+    const common::ObTabletID &tablet_id,
+    const share::SCN &ss_change_version,
+    const bool &fully_applied)
+{
+  int ret = OB_SUCCESS;
+  const ObTabletMapKey key(ls_->get_ls_id(), tablet_id);
+  ObTabletHandle old_handle;
+  ObTimeGuard time_guard("ObLSTabletService::update_tablet_ss_change_version", 1_s);
+  ObBucketHashWLockGuard lock_guard(bucket_lock_, tablet_id.hash());
+  time_guard.click("Lock");
+  if (IS_NOT_INIT) {
+    ret = OB_NOT_INIT;
+    LOG_WARN("not inited", K(ret), K_(is_inited));
+  } else if (OB_UNLIKELY(!reorg_scn.is_valid() || !tablet_id.is_valid() || !ss_change_version.is_valid_and_not_min())) {
+    ret = OB_INVALID_ARGUMENT;
+    LOG_WARN("invalid arguments", K(ret), K(reorg_scn), K(tablet_id), K(ss_change_version));
+  } else if (OB_FAIL(ObTabletCreateDeleteHelper::get_tablet(key, old_handle))) {
+    LOG_WARN("fail to direct get tablet", K(ret), K(key));
+  } else {
+    time_guard.click("get_tablet");
+    struct UpdateSSChangeVersion : public ObITabletMetaModifier {
+      UpdateSSChangeVersion(const share::SCN &ss_change_version)
+        : ss_change_version_(ss_change_version) {}
+      int modify_tablet_meta(ObTabletMeta &meta) override {
+        int ret = OB_SUCCESS;
+        if (meta.min_ss_tablet_version_ > ss_change_version_) {
+          ret = OB_ERR_UNEXPECTED;
+          LOG_ERROR("ss tablet version monotonicity violated", K(ret),
+                    K(meta.min_ss_tablet_version_), K(ss_change_version_), K(meta));
+        } else {
+          meta.min_ss_tablet_version_ = ss_change_version_;
+        }
+        return ret;
+      }
+      const share::SCN &ss_change_version_;
+    } modifier (ss_change_version);
+    ObMetaDiskAddr disk_addr;
+    ObTabletHandle new_handle;
+    const ObTablet &old_tablet = *old_handle.get_obj();
+    const share::SCN &old_ss_change_version = old_tablet.get_min_ss_tablet_version();
+    const share::SCN &tablet_pointer_ss_change_version = fully_applied ? ss_change_version : share::SCN::invalid_scn();
+    const ObTabletPersisterParam persist_param(ls_->get_ls_id(),
+                                               ls_->get_ls_epoch(),
+                                               tablet_id,
+                                               old_tablet.get_transfer_seq());
+    if (FAILEDx(ObTabletPersister::persist_and_transform_only_tablet_meta(persist_param, old_tablet, modifier, new_handle))) {
+      LOG_WARN("fail to persist and transform only tablet meta", K(ret), K(old_tablet), K(ss_change_version));
+    } else if (FALSE_IT(time_guard.click("Persist"))) {
+    } else if (FALSE_IT(disk_addr = new_handle.get_obj()->tablet_addr_)) {
+    } else if (OB_FAIL(safe_update_cas_tablet(key, disk_addr, old_handle, new_handle, time_guard))) {
+      LOG_WARN("fail to safe compare and swap tablet", K(ret), K(disk_addr), K(old_handle), K(new_handle));
+    } else {
+      LOG_INFO("succ to update tablet ss_change_version", K(ret),
+               K(key), K(old_ss_change_version), K(ss_change_version), K(fully_applied), K(time_guard));
+    }
+  }
+  return ret;
+}
+#endif
 
 } // namespace storage
 } // namespace oceanbase

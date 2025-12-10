@@ -1,16 +1,20 @@
 // owner: lana.lgx
 // owner group: data
 
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include <gtest/gtest.h>
@@ -59,7 +63,7 @@ TestRunCtx R;
 class ObCollectMV : public ObSimpleClusterTestBase
 {
 public:
-  // 指定case运行目录前缀 test_ob_simple_cluster_
+  // Specify the case run directory prefix test_ob_simple_cluster_
   ObCollectMV() : ObSimpleClusterTestBase("test_collect_mv_", "20G", "20G") {}
 
   int wait_major_mv_refresh_finish(uint64_t scn);
@@ -197,17 +201,16 @@ TEST_F(ObCollectMV, prepare)
   concurrency_control::ObMultiVersionGarbageCollector::GARBAGE_COLLECT_RECLAIM_DURATION = 3_s;
 
   LOGI("create tenant begin");
-  // 创建普通租户tt1
+  // Create normal tenant tt1
   EQ(OB_SUCCESS, create_tenant("tt1", "12G", "16G", false, 10));
-  // 获取租户tt1的tenant_id
+  // Get the tenant_id of tenant tt1
   EQ(OB_SUCCESS, get_tenant_id(R.tenant_id_));
   NE(0, R.tenant_id_);
-  // 初始化普通租户tt1的sql proxy
+  // Initialize the sql proxy for normal tenant tt1
   EQ(OB_SUCCESS, get_curr_simple_server().init_sql_proxy2());
   int tenant_id = R.tenant_id_;
   LOGI("create tenant finish");
-
-  // 在单节点ObServer下创建新的日志流, 注意避免被RS任务GC掉
+  // Create a new log stream under a single-node ObServer, note to avoid being GCed by RS task
   EQ(0, SSH::create_ls(R.tenant_id_, get_curr_observer().self_addr_));
   int64_t ls_count = 0;
   EQ(0, SSH::g_select_int64(R.tenant_id_, "select count(ls_id) as val from oceanbase.__all_ls where ls_id!=1", ls_count));
@@ -567,7 +570,7 @@ TEST_F(ObCollectMV, snapshot_gc)
       "select snapshot_scn val from oceanbase.__all_acquired_snapshot where tablet_id = %ld",
       base_tablet_id);
   EQ(0, SSH::select_int64(sql_proxy, sql_string.ptr(), snapshot_val));
-  // 清除冗余的快照后，留下的应该是最小的快照
+  // Clear the redundant snapshots, leaving only the smallest snapshot
   EQ(snapshot_scn_of_base_by_mv1, snapshot_val);
 
   LOGI("remove mview1");
@@ -587,7 +590,7 @@ TEST_F(ObCollectMV, snapshot_gc)
       "select count(*) val from oceanbase.__all_acquired_snapshot where tablet_id = %ld",
       base_tablet_id);
   EQ(0, SSH::select_int64(sql_proxy, sql_string.ptr(), cnt));
-  // 基表的快照还不应该被回收掉
+  // The snapshot of the base table should not be recycled yet
   EQ(1, cnt);
 
   LOGI("remove mview2 and mview3");
@@ -608,7 +611,7 @@ TEST_F(ObCollectMV, snapshot_gc)
       "select count(*) val from oceanbase.__all_acquired_snapshot where tablet_id = %ld",
       base_tablet_id);
   EQ(0, SSH::select_int64(sql_proxy, sql_string.ptr(), cnt));
-  // 基表的快照应该被回收掉了
+  // The snapshot of the base table should have been recycled
   EQ(0, cnt);
 
   LOGI("clean up");

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SQL_EXECUTOR_OB_EXECUTION_ID_
@@ -58,7 +62,7 @@ public:
   }
   inline int64_t hash() const
   {
-    //server地址一般都相同，这里计算server的hash值意义不大，在并发较大的情况下还白白浪费CPU
+    // server address is generally the same, here calculating the hash value of server makes little sense, and it wastes CPU unnecessarily in high concurrency situations
     return common::murmurhash(&execution_id_, sizeof(execution_id_), 0);
   }
   inline bool operator==(const ObExecutionID &id) const
@@ -75,7 +79,7 @@ public:
     server_.reset();
     execution_id_ = common::OB_INVALID_ID;
   }
-  //日志中输出hash value，便于排查问题的时候在日志中关联各个阶段的执行逻辑
+  // Log the hash value for easy association of execution logic at various stages when troubleshooting
   TO_STRING_KV(N_SERVER, server_,
                N_EXECUTION_ID, execution_id_,
                N_TASK_TYPE, task_type_,

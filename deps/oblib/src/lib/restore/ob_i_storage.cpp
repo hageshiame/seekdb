@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "ob_i_storage.h"
@@ -144,11 +148,7 @@ int handle_listed_directory(ObBaseDirEntryOperator &op,
 int get_storage_prefix_from_path(const common::ObString &uri, const char *&prefix)
 {
   int ret = OB_SUCCESS;
-  if (uri.prefix_match(OB_OSS_PREFIX)) {
-    prefix = OB_OSS_PREFIX;
-  } else if (uri.prefix_match(OB_COS_PREFIX)) {
-    prefix = OB_COS_PREFIX;
-  } else if (uri.prefix_match(OB_S3_PREFIX)) {
+  if (uri.prefix_match(OB_S3_PREFIX)) {
     prefix = OB_S3_PREFIX;
   } else if (uri.prefix_match(OB_FILE_PREFIX)) {
     prefix = OB_FILE_PREFIX;
@@ -359,13 +359,6 @@ int ob_set_field(const char *value, char *field, const uint32_t field_length)
       field[value_len] = '\0';
     }
   }
-  return ret;
-}
-
-int ob_apr_abort_fn(int retcode)
-{
-  int ret = OB_ALLOCATE_MEMORY_FAILED;
-  OB_LOG(ERROR, "fail to alloc mem for OSS/COS", K(ret), K(retcode));
   return ret;
 }
 
@@ -801,7 +794,7 @@ int ObStoragePartInfoHandler::add_part_info(
     ret = OB_NOT_INIT;
     OB_LOG(WARN, "ObStoragePartInfoHandler not inited", K(ret));
   // checksum is allowed to be null
-  // e.g. S3 use md5 | OSS | COS | OBS 
+  // e.g. S3 use md5 | OBS
   } else if (OB_UNLIKELY(part_id < 1) || OB_ISNULL(etag)) {
     ret = OB_INVALID_ARGUMENT;
     OB_LOG(WARN, "invalid args", K(ret), K(part_id), KP(etag));
@@ -822,14 +815,10 @@ int ObStoragePartInfoHandler::add_part_info(
 
 static lib::ObMemAttr get_mem_attr_from_storage_info(const ObObjectStorageInfo *storage_info)
 {
-  static lib::ObMemAttr oss_attr;
-  static lib::ObMemAttr cos_attr;
   static lib::ObMemAttr s3_attr;
   static lib::ObMemAttr nfs_attr;
   static lib::ObMemAttr hdfs_attr;
   static lib::ObMemAttr default_attr;
-  oss_attr.label_ = "OSS_SDK";
-  cos_attr.label_ = "COS_SDK";
   s3_attr.label_ = "S3_SDK";
   nfs_attr.label_ = "NFS_SDK";
   hdfs_attr.label_ = "HDFS_SDK";
@@ -838,11 +827,7 @@ static lib::ObMemAttr get_mem_attr_from_storage_info(const ObObjectStorageInfo *
   lib::ObMemAttr ret_attr = default_attr;
   if (OB_NOT_NULL(storage_info) && storage_info->is_valid()) {
     const ObStorageType type = storage_info->get_type();
-    if (OB_STORAGE_OSS == type) {
-      ret_attr = oss_attr;
-    } else if (OB_STORAGE_COS == type) {
-      ret_attr = cos_attr;
-    } else if (OB_STORAGE_S3 == type) {
+    if (OB_STORAGE_S3 == type) {
       ret_attr = s3_attr;
     } else if (OB_STORAGE_FILE == type) {
       ret_attr = nfs_attr;

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SERVER
@@ -174,7 +178,7 @@ TEST_F(TestUniqTaskQueue, test_concurrency_execute)
   ObPartitionKey sys_key(sys_table_id, partition_id, partition_cnt);
   ObPartitionKey user_key(user_table_id, partition_id, partition_cnt);
   ObPTUpdateTask task;
-  //同一个partition不同的key，作为不同的batch进行处理
+  // Same partition different keys, processed as different batches
   for (int64_t i = 1; i <= 3000; i++) {
     EXPECT_EQ(OB_SUCCESS, task.set_update_task(core_key, i));
     EXPECT_EQ(OB_SUCCESS, queue.add(task));
@@ -183,7 +187,7 @@ TEST_F(TestUniqTaskQueue, test_concurrency_execute)
     sleep(3);
   }
   EXPECT_EQ(updater.batch_count(), 3000);
-  //不同的partition， 可以作为一个batch 处理
+  // Different partitions can be processed as one batch
   int64_t data_version = 4;
   for (int64_t i = 0; i < 3000; i++) {
     ObPartitionKey sys_key(sys_table_id, i, 3000);

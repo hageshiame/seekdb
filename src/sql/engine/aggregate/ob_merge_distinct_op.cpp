@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -279,8 +283,8 @@ int ObMergeDistinctOp::Compare::init(ObEvalCtx *eval_ctx, const ObIArray<ObCmpFu
 }
 
 /**
- * 这里需要注意一种特殊场景，就是distinct 1如何处理
- * 现在处理逻辑是：last_row为nullptr，即r为null，然后不比较，同时认为l的列为0
+ * Here we need to pay attention to a special case, which is how distinct 1 is handled
+ * The current processing logic is: last_row is nullptr, i.e., r is null, then no comparison is made, and it is considered that the column of l is 0
  **/
 int ObMergeDistinctOp::Compare::equal(
   const ObIArray<ObExpr*> *l,
@@ -296,7 +300,7 @@ int ObMergeDistinctOp::Compare::equal(
       ret = OB_ERR_UNEXPECTED;
       LOG_WARN("unexpected status: it must be distinct const", K(ret));
     } else {
-      // 表示是distinct 常量，所以没有distinct列，则永远相等
+      // indicates it is a distinct constant, so if there is no distinct column, it will always be equal
       // case: select distinct 1 from t1;
       equal = true;
     }
@@ -324,7 +328,7 @@ int ObMergeDistinctOp::Compare::equal_in_batch(const common::ObIArray<ObExpr*> *
   int ret = OB_SUCCESS;
   equal = false;
   if (0 == set_exprs->count()) {
-    // 表示是distinct 常量，所以没有distinct列，则永远相等
+    // indicates it is a distinct constant, so if there is no distinct column, it will always be equal
     // case: select distinct 1 from t1;
     equal = true;
   } else {
@@ -351,7 +355,7 @@ int ObMergeDistinctOp::Compare::equal_in_batch(const common::ObIArray<ObExpr*> *
   int ret = OB_SUCCESS;
   equal = false;
   if (0 == set_exprs->count()) {
-    // 表示是distinct 常量，所以没有distinct列，则永远相等
+    // Indicates it is a distinct constant, so if there is no distinct column, it will always be equal
     // case: select distinct 1 from t1;
     equal = true;
   } else {

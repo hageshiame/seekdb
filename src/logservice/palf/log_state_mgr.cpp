@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX PALF
@@ -163,7 +167,7 @@ void LogStateMgr::update_role_and_state_(const common::ObRole &new_role, const O
   if (ATOMIC_BCAS(&role_state_val_, old_val, new_val)) {
     // update success
   } else {
-    // 更新role/state时会加palf_handle的写锁，因此预期不应该失败
+    // When updating role/state, a write lock on palf_handle is acquired, so the expectation is that it should not fail
     PALF_LOG_RET(ERROR, OB_ERR_UNEXPECTED, "update_role_and_state_ failed", K_(palf_id), K(old_val), K(new_val));
   }
 }
@@ -296,6 +300,9 @@ int LogStateMgr::switch_state()
         int64_t new_leader_epoch = OB_INVALID_TIMESTAMP;
         if (follower_need_update_role_(new_leader, new_leader_epoch)) {
           ret = follower_active_to_reconfirm_(new_leader_epoch);
+          if (OB_SUCC(ret)) {
+            ret = reconfirm_to_leader_active_();
+          }
         } else {
           set_leader_and_epoch_(new_leader, new_leader_epoch);
         }
@@ -572,8 +579,8 @@ int LogStateMgr::pending_to_follower_active_()
 {
   int ret = OB_SUCCESS;
   update_role_and_state_(FOLLOWER, ACTIVE);
-  // 需先更新role/state，再提交role_change_event
-  // 否则handle role_change event执行可能先执行导致角色切换失败
+  // Need to update role/state first, then submit role_change_event
+  // Otherwise handle role_change event execution may occur first leading to role switch failure
   if (OB_FAIL(to_follower_active_())) {
     PALF_LOG(ERROR, "to_follower_active_ failed", K(ret), K_(palf_id));
   }
@@ -654,17 +661,20 @@ int LogStateMgr::reconfirm_to_leader_active_()
   LogConfigVersion config_version;
   if (OB_FAIL(mm_->get_config_version(config_version))) {
     PALF_LOG(WARN, "get_config_version failed", K(ret), K_(palf_id));
-  } else if (OB_FAIL(mm_->get_alive_member_list_with_arb(member_list, replica_num))) {
-    PALF_LOG(WARN, "get_alive_member_list_with_arb failed", K(ret), K_(palf_id));
-  } else if (!member_list.contains(self_)) {
-    PALF_LOG(ERROR, "curr_member_list doesn't contain self, revoke", K_(palf_id),
-             K(member_list), K_(self));
-  } else if (OB_FAIL(sw_->to_leader_active())) {
+  }
+  // set_initial_member_list hasn't been called, so self_ may not be in member_list
+  // else if (OB_FAIL(mm_->get_alive_member_list_with_arb(member_list, replica_num))) {
+  //   PALF_LOG(WARN, "get_alive_member_list_with_arb failed", K(ret), K_(palf_id));
+  // } else if (!member_list.contains(self_)) {
+  //   PALF_LOG(ERROR, "curr_member_list doesn't contain self, revoke", K_(palf_id),
+  //            K(member_list), K_(self));
+  // }
+  else if (OB_FAIL(sw_->to_leader_active())) {
     PALF_LOG(WARN, "sw leader_active failed", K(ret), K_(palf_id));
   } else {
     update_role_and_state_(LEADER, ACTIVE);
-    // 需先更新role/state和committed_end_lsn，再提交role_change_event
-    // 否则handle role_change event执行可能先执行导致角色切换失败
+    // Need to update role/state and committed_end_lsn first, then submit role_change_event
+    // Otherwise handle role_change event execution may occur first leading to role switch failure
     if (OB_FAIL(to_leader_active_())) {
       PALF_LOG(ERROR, "to_leader_active_ failed", K(ret), K_(palf_id));
     } else if (OB_FAIL(mm_->submit_broadcast_leader_info(get_proposal_id()))) {

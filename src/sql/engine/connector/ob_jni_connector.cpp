@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 #define USING_LOG_PREFIX SQL_ENG
 #include "sql/engine/connector/ob_java_env.h"
@@ -39,7 +43,7 @@ int ObJniConnector::check_jni_exception_(JNIEnv *env) {
       if (getMessageMethod != nullptr) {
           jstring jmsg = (jstring)env->CallObjectMethod(thr, getMessageMethod);
           if (env->ExceptionCheck()) {
-              env->ExceptionClear(); // 防止调用过程中产生新异常
+              env->ExceptionClear(); // Prevent new exceptions from being generated during the call process
           }
           
           if (jmsg != nullptr) {
@@ -49,8 +53,7 @@ int ObJniConnector::check_jni_exception_(JNIEnv *env) {
               env->DeleteLocalRef(jmsg);
           }
       }
-
-      // 创建StringWriter和PrintWriter
+      // Create StringWriter and PrintWriter
       jclass stringWriterClass = env->FindClass("java/io/StringWriter");
       jmethodID stringWriterCtor = env->GetMethodID(stringWriterClass, "<init>", "()V");
       jobject stringWriter = env->NewObject(stringWriterClass, stringWriterCtor);
@@ -58,28 +61,24 @@ int ObJniConnector::check_jni_exception_(JNIEnv *env) {
       jclass printWriterClass = env->FindClass("java/io/PrintWriter");
       jmethodID printWriterCtor = env->GetMethodID(printWriterClass, "<init>", "(Ljava/io/Writer;)V");
       jobject printWriter = env->NewObject(printWriterClass, printWriterCtor, stringWriter);
-
-      // 调用printStackTrace
+      // Call printStackTrace
       jmethodID printStackTraceMethod = env->GetMethodID(
           throwableClass, 
           "printStackTrace", 
           "(Ljava/io/PrintWriter;)V"
       );
       env->CallVoidMethod(thr, printStackTraceMethod, printWriter);
-
-      // 获取堆栈字符串
+      // Get stack string
       jmethodID toStringMethod = env->GetMethodID(
           stringWriterClass, 
           "toString", 
           "()Ljava/lang/String;"
       );
       jstring stackTrace = (jstring)env->CallObjectMethod(stringWriter, toStringMethod);
-
-      // 转换为C字符串
+      // Convert to C string
       const char* cStackTrace = env->GetStringUTFChars(stackTrace, nullptr);
       LOG_WARN("Exception Stack Trace: ", K(cStackTrace));
-
-      // 释放资源
+      // Release resources
       env->ReleaseStringUTFChars(stackTrace, cStackTrace);
       env->DeleteLocalRef(stackTrace);
       env->DeleteLocalRef(printWriter);
@@ -89,7 +88,7 @@ int ObJniConnector::check_jni_exception_(JNIEnv *env) {
       env->DeleteLocalRef(stringWriterClass);
       
       env->ExceptionDescribe();
-      env->ExceptionClear(); // 清除异常状态
+      env->ExceptionClear(); // clear exception state
       env->DeleteLocalRef(thr);
     }
   }

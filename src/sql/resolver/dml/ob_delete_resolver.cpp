@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_RESV
@@ -122,7 +126,7 @@ int ObDeleteResolver::resolve(const ParseNode &parse_tree)
 
     if (OB_SUCC(ret)) {
       if (!delete_stmt->has_instead_of_trigger() && OB_FAIL(view_pullup_part_exprs())) {
-        // instead of trigger的delete语句不需要 pull up
+        // instead of trigger's delete statement does not need pull up
         LOG_WARN("view pull up part exprs failed", K(ret));
       } else if (OB_FAIL(check_view_deletable())) {
         LOG_WARN("failed to check view deletable", K(ret));
@@ -148,17 +152,17 @@ int ObDeleteResolver::check_safe_update_mode(ObDeleteStmt *delete_stmt, bool is_
   } else if (OB_FAIL(params_.session_info_->get_sql_safe_updates(is_sql_safe_updates))) {
     LOG_WARN("failed to get is safe update mode", K(ret));
   } else if (is_sql_safe_updates) {
-    /*mysql安全模式下更新表值，需要满足：
-    * 前提条件：单表删除，不能是多表删除，必须含有where条件；
-    * 下面条件二者至少满足其中一个：
-    * 1.含有limit，where条件中有相关列存在；
-    * 2.有where条件中能够抽取query range ==> 由于抽取query range只能在optimizer阶段才能够抽取，因此该条件在
-    *   optimizer阶段去检查
+    /*Update table values in mysql safe mode, needs to meet:
+    * Precondition: single table delete, cannot be multi-table delete, must contain where condition;
+    * The following conditions must meet at least one:
+    * 1.contains limit, there are relevant columns in the where condition;
+    * 2.where condition can extract query range ==> Since extracting query range can only be done in the optimizer phase, this condition will be checked in
+    *   the optimizer phase
     */
-    if (is_multi_table_delete || delete_stmt->get_condition_exprs().empty()) {//前提条件
+    if (is_multi_table_delete || delete_stmt->get_condition_exprs().empty()) {//precondition}
       ret = OB_ERR_SAFE_UPDATE_MODE_NEED_WHERE_OR_LIMIT;
       LOG_WARN("using safe update mode need WHERE or LIMIT", K(ret));
-    } else if (delete_stmt->has_limit()) {//条件1
+    } else if (delete_stmt->has_limit()) {//condition 1
       bool is_const_expr = true;
       for (int64_t i = 0;
             OB_SUCC(ret) && is_const_expr && i < delete_stmt->get_condition_exprs().count();
@@ -239,7 +243,7 @@ int ObDeleteResolver::resolve_table_list(const ParseNode &table_list, bool &is_m
     if (OB_SUCC(ret)) {
       if (OB_FAIL(ObDMLResolver::resolve_table(*table_node, table_item))) {
         LOG_WARN("failed to resolve table", K(ret));
-      } else if (table_item->is_function_table() || table_item->is_json_table()) {//兼容oracle行为
+      } else if (table_item->is_function_table() || table_item->is_json_table()) {//compatible with oracle behavior
         ret = OB_WRONG_TABLE_NAME;
         LOG_WARN("invalid table name", K(ret));
       } else if (OB_FAIL(column_namespace_checker_.add_reference_table(table_item))) {
@@ -346,9 +350,9 @@ int ObDeleteResolver::find_delete_table_with_mysql_rule(const ObString &db_name,
        table_item = NULL;
       }
     } else if (db_name.empty()) {
-      //如果table_items中有多个table_item，说明delete子句没有指定table的database_name
-      //而from子句中所有表都是基表，例如delete t1.* from db1.t1, db2.t1;
-      //这种情况下，我们认为delete子句中的database_name和session上的保持一致
+      // If table_items contains multiple table_item, it means the delete clause did not specify the database_name of the table
+      // and all tables in the from clause are base tables, for example delete t1.* from db1.t1, db2.t1;
+      // In this case, we consider the database_name in the delete clause to be consistent with that on the session
       ObString final_db_name = session_info_->get_database_name();
       if (final_db_name.empty()) {
         ret = OB_ERR_NO_DB_SELECTED;

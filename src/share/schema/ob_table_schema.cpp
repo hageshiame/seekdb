@@ -1,15 +1,20 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
+#include "share/ob_fts_index_builder_util.h"
 #define USING_LOG_PREFIX SHARE_SCHEMA
 #include "ob_table_schema.h"
 #include "share/schema/ob_part_mgr_util.h"
@@ -710,8 +715,8 @@ int ObSimpleTableSchemaV2::compare_partition_option(const schema::ObSimpleTableS
       } else if (PARTITION_LEVEL_TWO != t1.get_part_level()) {
         //don't have sub part, just skip
       } else {
-        const schema::ObPartitionOption &t1_subpart = t1.get_sub_part_option();
-        const schema::ObPartitionOption &t2_subpart = t2.get_sub_part_option();
+        const schema::ObSubPartitionOption &t1_subpart = t1.get_sub_part_option();
+        const schema::ObSubPartitionOption &t2_subpart = t2.get_sub_part_option();
         schema::ObPartitionFuncType t1_subpart_func_type = t1_subpart.get_part_func_type();
         schema::ObPartitionFuncType t2_subpart_func_type = t2_subpart.get_part_func_type();
         if (t1_subpart_func_type != t2_subpart_func_type
@@ -4907,9 +4912,43 @@ int ObTableSchema::check_alter_column_in_index(const ObColumnSchemaV2 &src_colum
   const uint64_t column_id = src_column.get_column_id();
   const uint64_t tenant_id = get_tenant_id();
   ObSEArray<ObAuxTableMetaInfo, 16> simple_index_infos;
-  if (OB_FAIL(get_simple_index_infos(simple_index_infos))) {
+
+  // Vector index dependency validation: （start）
+  // The logical rule is that if a vector index exists on a column, no modifications to the column are allowed.
+  // To accommodate potential user operations where the data type remains consistent before and after the change,
+  // an additional conditional check has been implemented.
+  bool is_column_has_vector_index = false;
+  ObIndexType index_type = INDEX_TYPE_IS_NOT;
+  if (OB_FAIL(ObVectorIndexUtil::check_column_has_vector_index(
+        *this, schema_guard, column_id, is_column_has_vector_index, index_type))) {
+    LOG_WARN("check_column_has_vector_index failed", K(ret));
+  } else if (is_column_has_vector_index) {
+    // For vector-indexed columns, enforce strict data type consistency checks.
+    bool is_same_type = false;
+    if (src_column.is_collection() && dst_column.is_collection()) {
+      // Collection types (including vector types) require specialized comparison logic.
+      if (OB_FAIL(src_column.is_same_collection_column(dst_column, is_same_type))) {
+        LOG_WARN("failed to check collection column type", K(ret));
+      }
+    } else {
+      // For non-collection types, compare basic types and meta types.
+      is_same_type = (src_column.get_data_type() == dst_column.get_data_type() &&
+                     src_column.get_meta_type().get_type() == dst_column.get_meta_type().get_type());
+    }
+    if (OB_SUCC(ret) && !is_same_type) {
+      ret = OB_NOT_SUPPORTED;
+      LOG_USER_ERROR(OB_NOT_SUPPORTED, "For columns with vector indexes, altering the column type is");
+      LOG_WARN("column type modification is not supported because it is depended by vector index",
+               K(column_id), K(ret), K(src_column.get_data_type()), K(dst_column.get_data_type()));
+    }
+  }
+  // Vector index dependency validation (end)
+
+  if(OB_FAIL(ret)){
+  } else if (OB_FAIL(get_simple_index_infos(simple_index_infos))) {
     LOG_WARN("get simple_index_infos failed", K(ret));
   }
+
   for (int64_t i = 0; OB_SUCC(ret) && i < simple_index_infos.count(); ++i) {
     const ObTableSchema *index_table_schema = NULL;
     if (OB_FAIL(schema_guard.get_table_schema(tenant_id,
@@ -6862,26 +6901,26 @@ OB_DEF_SERIALIZE(ObTableSchema)
   OB_UNIS_ENCODE(tmp_mlog_tid_);
   // !!! end static check
   /*
-   * 在此end static check注释前新增反序列化的成员
-   * 遵循以下规则：
-   * 1. 使用OB_UNIS_ENCODE等标准序列化宏进行序列化，目前已有序列化宏如下：
+   * Add deserialized members before this end static check comment
+   * Follow these rules:
+   * 1. Use standard serialization macros such as OB_UNIS_ENCODE for serialization, the currently available serialization macros are as follows:
    *  a. OB_UNIS_ENCODE
    *  b. OB_UNIS_ENCODE_IF
    *  c. OB_UNIS_ENCODE_ARRAY_POINTER_IF
    *  d. OB_UNIS_ENCODE_ARRAY_POINTER
    *  e. OB_UNIS_ENCODE_ARRAY
-   * 2. 不用添加if (OB_SUCC(ret))
-   * 3. 序列化宏与反序列化宏需要一一对应
-   * 4. 如果有无法使用标准序列化宏处理的成员，需要使用
+   * 2. Do not add if (OB_SUCC(ret))
+   * 3. Serialization macros need to correspond one-to-one with deserialization macros
+   * 4. If there are members that cannot be handled using standard serialization macros, use
    * ```cpp
    * // !!! FOR STATIC CHECKER BEGIN
    * // THE FOLLOWING CODE CANNOT BE DESCRIBED USING SERIALIZE MACROS. THEY ARE EQUIVALENT TO THESE CODES:
-   * // 这里写对应的标准序列化宏
-   * 这里写代码
+   * // Write the corresponding standard serialization macros here
+   * Write the code here
    * // !!! FOR STATIC CHECKER END
    * ```
-   * 格式的注释和代码提醒序列化检测脚本忽略该段代码
-   * 详细文档: 
+   * formatted comments and code to remind the serialization check script to ignore this section of code
+   * Detailed documentation:
    */
   return ret;
 }
@@ -7105,27 +7144,27 @@ OB_DEF_DESERIALIZE(ObTableSchema)
   OB_UNIS_DECODE(tmp_mlog_tid_);
   // !!! end static check
   /*
-   * 在此end static check注释前新增反序列化的成员
-   * 遵循以下规则：
-   * 1. 使用OB_UNIS_DECODE等标准序列化宏进行序列化，目前已有序列化宏如下，其中提供FUNC的宏可用于拷贝数据，例如将复制ObString：
+   * Add deserialized members before this end static check comment
+   * Follow these rules:
+   * 1. Use standard serialization macros such as OB_UNIS_DECODE for serialization. The currently available serialization macros are as follows, where macros that provide FUNC can be used to copy data, for example, copying ObString:
    *  a. OB_UNIS_DECODE_ARRAY
    *  b. OB_UNIS_DECODE_ARRAY_AND_FUNC
    *  c. OB_UNIS_DECODE_ARRAY_POINTER_IF
    *  d. OB_UNIS_DECODE_AND_FUNC
    *  e. OB_UNIS_DECODE_IF
    *  f. OB_UNIS_DECODE
-   * 2. 不用添加if (OB_SUCC(ret))
-   * 3. 序列化宏与反序列化宏需要一一对应
-   * 4. 如果有无法使用标准序列化宏处理的成员，需要使用
+   * 2. Do not add if (OB_SUCC(ret))
+   * 3. Serialization macros must correspond one-to-one with deserialization macros
+   * 4. If there are members that cannot be handled using standard serialization macros, use
    * ```cpp
    * // !!! FOR STATIC CHECKER BEGIN
    * // THE FOLLOWING CODE CANNOT BE DESCRIBED USING SERIALIZE MACROS. THEY ARE EQUIVALENT TO THESE CODES:
-   * // 这里写对应的标准序列化宏
-   * 这里写代码
+   * // Write the corresponding standard serialization macro here
+   * Write the code here
    * // !!! FOR STATIC CHECKER END
    * ```
-   * 格式的注释和代码提醒序列化检测脚本忽略该段代码
-   * 详细文档: 
+   * formatted comments and code to remind the serialization check script to ignore this segment of code
+   * Detailed documentation:
    */
   return ret;
 }
@@ -7248,25 +7287,25 @@ OB_DEF_SERIALIZE_SIZE(ObTableSchema)
   OB_UNIS_ADD_LEN(tmp_mlog_tid_);
   // !!! end static check
   /*
-   * 在此end static check注释前新增反序列化的成员
-   * 遵循以下规则：
-   * 1. 使用OB_UNIS_DECODE等标准序列化宏进行序列化，目前已有序列化宏如下：
+   * Add deserialized members before this end static check comment
+   * Follow these rules:
+   * 1. Use standard serialization macros such as OB_UNIS_DECODE for serialization, the current serialization macros are as follows:
    *  a. OB_UNIS_ADD_LEN_ARRAY
    *  b. OB_UNIS_ADD_LEN_ARRAY_POINTER_IF
    *  c. OB_UNIS_ADD_LEN_IF
    *  d. OB_UNIS_ADD_LEN
-   * 2. 不用添加if (OB_SUCC(ret))
-   * 3. 序列化宏与反序列化宏需要一一对应
-   * 4. 如果有无法使用标准序列化宏处理的成员，需要使用
+   * 2. Do not add if (OB_SUCC(ret))
+   * 3. Serialization macros need to correspond one-to-one with deserialization macros
+   * 4. If there are members that cannot be handled using standard serialization macros, use
    * ```cpp
    * // !!! FOR STATIC CHECKER BEGIN
    * // THE FOLLOWING CODE CANNOT BE DESCRIBED USING SERIALIZE MACROS. THEY ARE EQUIVALENT TO THESE CODES:
-   * // 这里写对应的标准序列化宏
-   * 这里写代码
+   * // Write the corresponding standard serialization macros here
+   * Write the code here
    * // !!! FOR STATIC CHECKER END
    * ```
-   * 格式的注释和代码提醒序列化检测脚本忽略该段代码
-   * 详细文档: 
+   * formatted comments and code to remind the serialization check script to ignore this section of code
+   * Detailed documentation:
    */
   return len;
 }
@@ -8938,6 +8977,28 @@ int ObTableSchema::get_fulltext_column_ids(uint64_t &doc_id_col_id, uint64_t &ft
   return ret;
 }
 
+int ObTableSchema::get_fulltext_typed_col_ids(uint64_t &doc_id_col_id, ObDocIDType &type, uint64_t &ft_col_id) const
+{
+  int ret = OB_SUCCESS;
+  for (int64_t i = 0; OB_SUCC(ret) && i < get_column_count(); ++i) {
+    const ObColumnSchemaV2 *column_schema = get_column_schema_by_idx(i);
+    uint64_t col_id = column_schema->get_column_id();
+    if (OB_ISNULL(column_schema)) {
+      ret = OB_ERR_UNEXPECTED;
+      LOG_WARN("unexpected error, column schema is nullptr", K(ret), K(i), KPC(this));
+    } else if (column_schema->is_doc_id_column()) {
+      type = ObDocIDType::TABLET_SEQUENCE;
+      doc_id_col_id = col_id;
+    } else if (column_schema->is_hidden_pk_column_id(col_id)) {
+      type = ObDocIDType::HIDDEN_INC_PK;
+      doc_id_col_id = col_id;
+    } else if (column_schema->is_word_segment_column()) {
+      ft_col_id = column_schema->get_column_id();
+    }
+  }
+  return ret;
+}
+
 int ObTableSchema::get_vec_index_column_id(uint64_t &with_cascaded_info_column_id) const
 {
   int ret = OB_SUCCESS;
@@ -8988,6 +9049,44 @@ int ObTableSchema::get_vec_index_vid_col_id(uint64_t &vec_id_col_id, bool is_cid
     } else if (!is_cid && column_schema->is_vec_hnsw_vid_column()) {
       vec_id_col_id = column_schema->get_column_id();
     } else if (is_cid && column_schema->is_vec_ivf_center_id_column()) { // table schema must be index table here
+      vec_id_col_id = column_schema->get_column_id();
+    }
+  }
+  if (OB_FAIL(ret) || OB_INVALID_ID == vec_id_col_id) {
+    ret = ret != OB_SUCCESS ? ret : OB_ERR_INDEX_KEY_NOT_FOUND;
+  }
+  return ret;
+}
+
+int ObTableSchema::get_hybrid_vec_chunk_column_id(uint64_t &hybrid_vec_chunk_col_id) const
+{
+  int ret = OB_SUCCESS;
+  hybrid_vec_chunk_col_id = OB_INVALID_ID;
+  for (int64_t i = 0; OB_SUCC(ret) && OB_INVALID_ID == hybrid_vec_chunk_col_id && i < get_column_count(); ++i) {
+    const ObColumnSchemaV2 *column_schema = get_column_schema_by_idx(i);
+    if (OB_ISNULL(column_schema)) {
+      ret = OB_ERR_UNEXPECTED;
+      LOG_WARN("unexpected error, column schema is nullptr", K(ret), K(i), KPC(this));
+    } else if (column_schema->is_string_type()) {
+      hybrid_vec_chunk_col_id = column_schema->get_column_id();
+    }
+  }
+  if (OB_FAIL(ret) || OB_INVALID_ID == hybrid_vec_chunk_col_id) {
+    ret = ret != OB_SUCCESS ? ret : OB_ERR_INDEX_KEY_NOT_FOUND;
+  }
+  return ret;
+}
+
+int ObTableSchema::get_hybrid_vec_embedded_column_id(uint64_t &vec_id_col_id) const
+{
+  int ret = OB_SUCCESS;
+  vec_id_col_id = OB_INVALID_ID;
+  for (int64_t i = 0; OB_SUCC(ret) && OB_INVALID_ID == vec_id_col_id && i < get_column_count(); ++i) {
+    const ObColumnSchemaV2 *column_schema = get_column_schema_by_idx(i);
+    if (OB_ISNULL(column_schema)) {
+      ret = OB_ERR_UNEXPECTED;
+      LOG_WARN("unexpected error, column schema is nullptr", K(ret), K(i), KPC(this));
+    } else if (column_schema->is_hybrid_embedded_vec_column()) {
       vec_id_col_id = column_schema->get_column_id();
     }
   }
@@ -9058,6 +9157,26 @@ int ObTableSchema::get_rowkey_vid_tid(uint64_t &index_table_id) const
   return ret;
 }
 
+int ObTableSchema::get_embedded_vec_tid(uint64_t &index_table_id) const
+{
+  int ret = OB_SUCCESS;
+  ObSEArray<ObAuxTableMetaInfo, 16> simple_index_infos;
+  index_table_id = OB_INVALID_ID;
+  if (OB_FAIL(get_simple_index_infos(simple_index_infos))) {
+    LOG_WARN("get simple_index_infos failed", K(ret));
+  }
+  for (int64_t i = 0; OB_SUCC(ret) && i < simple_index_infos.count(); ++i) {
+    if (share::schema::is_hybrid_vec_index_embedded_type(simple_index_infos.at(i).index_type_)) {
+      index_table_id = simple_index_infos.at(i).table_id_;
+      break;
+    }
+  }
+  if (OB_SUCC(ret) && OB_UNLIKELY(OB_INVALID_ID == index_table_id)) {
+    ret = OB_ERR_INDEX_KEY_NOT_FOUND;
+    LOG_DEBUG("not found rowkey vid index", K(ret), K(simple_index_infos));
+  }
+  return ret;
+}
 
 #define DEFINE_CHECK_HAS_INDEX_FUNC(index_type)                                                                        \
 int ObTableSchema::check_has_##index_type(ObSchemaGetterGuard &schema_guard, bool &found) const                       \
@@ -9898,8 +10017,8 @@ int ObTableSchema::get_vec_id_rowkey_tid(uint64_t &vec_id_rowkey_tid) const
       break;
     }
   }
-  if (OB_INVALID_ID == vec_id_rowkey_tid) {
-    ret = OB_ERR_FT_COLUMN_NOT_INDEXED;
+  if (OB_SUCC(ret) && OB_INVALID_ID == vec_id_rowkey_tid) {
+    ret = OB_ERR_INDEX_KEY_NOT_FOUND;
   }
   return ret;
 }

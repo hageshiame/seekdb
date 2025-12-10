@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2023 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 #define USING_LOG_PREFIX SHARE
 #include "ob_ivf_async_task_executor.h"
@@ -102,7 +106,7 @@ int ObIvfAsyncTaskExector::LoadTaskCallback::operator()(IvfCacheMgrEntry &entry)
       }
     }
     // release memory when fail
-    if (OB_FAIL(ret)) {
+    if (OB_FAIL(ret) || !inc_new_task) {
       if (OB_NOT_NULL(task_ctx)) {
         task_ctx->~ObVecIndexAsyncTaskCtx();
         allocator->free(task_ctx);  // arena need free
@@ -479,6 +483,29 @@ int ObIvfAsyncTaskExector::generate_aux_table_info_map(ObSchemaGetterGuard &sche
   return ret;
 }
 
+int ObIvfAsyncTaskExector::check_schema_version_changed(bool &schema_changed)
+{
+  int ret = OB_SUCCESS;
+  schema_changed = false;
+  int64_t schema_version = 0;
+  ObSchemaGetterGuard schema_guard;
+
+  if (OB_FAIL(ObMultiVersionSchemaService::get_instance().get_tenant_schema_guard(
+          tenant_id_, schema_guard))) {
+    LOG_WARN("fail to get schema guard", KR(ret), K(tenant_id_));
+  } else if (OB_FAIL(schema_guard.get_schema_version(tenant_id_, schema_version))) {
+    LOG_WARN("fail to get tenant schema version", K(ret), K_(tenant_id));
+  } else if (!ObSchemaService::is_formal_version(schema_version)) {
+    ret = OB_EAGAIN;
+    LOG_INFO("is not a formal_schema_version", KR(ret), K(schema_version));
+  } else if (local_schema_version_ == OB_INVALID_VERSION || local_schema_version_ < schema_version) {
+    LOG_INFO("schema changed", KR(ret), K_(local_schema_version), K(schema_version));
+    local_schema_version_ = schema_version;
+    schema_changed = true;
+  }
+  return ret;
+}
+
 int ObIvfAsyncTaskExector::generate_aux_table_info_map(ObIvfAuxTableInfoMap &aux_table_info_map)
 {
   int ret = OB_SUCCESS;
@@ -486,11 +513,10 @@ int ObIvfAsyncTaskExector::generate_aux_table_info_map(ObIvfAuxTableInfoMap &aux
   ObMemAttr memattr(tenant_id_, "IvfTaskExec");
   if (OB_FAIL(ObTTLUtil::get_tenant_table_ids(tenant_id_, table_id_array))) {
     LOG_WARN("fail to get tenant table ids", KR(ret), K_(tenant_id));
-  } else if (!table_id_array.empty()
-             && OB_FAIL(aux_table_info_map.create(DEFAULT_TABLE_ID_ARRAY_SIZE, memattr, memattr))) {
+  } else if (!table_id_array.empty() &&
+             OB_FAIL(aux_table_info_map.create(DEFAULT_TABLE_ID_ARRAY_SIZE, memattr, memattr))) {
     LOG_WARN("fail to create param map", KR(ret));
   }
-
   int64_t start_idx = 0;
   int64_t end_idx = 0;
   while (OB_SUCC(ret) && start_idx < table_id_array.count()) {

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SHARE
@@ -610,9 +614,9 @@ int ObAllTenantInfoProxy::update_tenant_max_ls_id(
     if (for_upgrade) {
       //upgrade maybe reentry, so max_ls_id maybe already setted
     } else {
-      //在日志流个数2->3的时候，1001分裂出1003，1002分裂出1004，在实际创建的时候
-      //这两个任务是并发的，实际上是没有办法保证1003一定先于1004创建出来
-      //所以在更新max_ls_id可能会有回退的问题，不报错处理
+      //When the number of log streams changes from 2 to 3, 1001 splits into 1003, and 1002 splits into 1004, during actual creation
+      // These two tasks are concurrent, it is actually impossible to guarantee that 1003 is created before 1004
+      //So there might be a rollback issue when updating max_ls_id, no error handling
       LOG_WARN("max ls id is used, no need to set", KR(ret), K(all_tenant_info), K(max_ls_id));
     }
   } else if (OB_FAIL(sql.assign_fmt(

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SQL_OB_EXPR_UDF_H_
@@ -218,8 +222,8 @@ private:
   common::ObSEArray<ObUDFParamDesc, 5> params_desc_;
   common::ObSEArray<int64_t, 8> nocopy_params_;
   bool is_udt_udf_;
-  bool call_in_sql_; // 已经被弃用了，有兼容性问题不能删，现在改用基类里的 is_called_in_sql()。
-  uint64_t loc_; // 这个是col 和line number的组合，
+  bool call_in_sql_; // has been deprecated, there are compatibility issues and it cannot be deleted, now use is_called_in_sql() in the base class.
+  uint64_t loc_; // this is col and line number combination,
   bool is_udt_cons_;
 
 private:

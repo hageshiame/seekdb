@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "storage/tx_storage/ob_ls_service.h"
@@ -57,7 +61,7 @@ int ObSimpleArchive::prepare_dest()
   int ret = OB_SUCCESS;
   EXPECT_EQ(OB_SUCCESS, get_curr_simple_server().init_sql_proxy2("tt1", "oceanbase"));
   common::ObMySQLProxy &sql_proxy = get_curr_simple_server().get_sql_proxy2();
-  // 设置backup dest
+  // set backup dest
   {
     ObSqlString sql;
     sql.assign_fmt("alter system set log_archive_dest = 'location=%s'", "file://./");
@@ -199,8 +203,7 @@ int ObSimpleArchive::check_rs_archive_progress(const uint64_t tenant_id)
   OB_LOG(INFO, "check archive progress succ", K(ts), K(attr));
   return ret;
 }
-
-// 测试日志流归档进度, 需要保证日志流归档进度已经持久化成功
+// Test the log stream archiving progress, need to ensure that the log stream archiving progress has been successfully persisted
 int ObSimpleArchive::check_archive_progress(const uint64_t tenant_id, const bool check_piece_advance)
 {
   int ret = OB_SUCCESS;
@@ -264,7 +267,7 @@ int ObSimpleArchive::create_table_()
 {
   int ret = OB_SUCCESS;
   common::ObMySQLProxy &sql_proxy = get_curr_simple_server().get_sql_proxy2();
-  // 创建表
+  // Create table
   OB_LOG(INFO, "create_table start");
   ObSqlString sql;
   sql.assign_fmt(
@@ -324,7 +327,7 @@ int ObSimpleArchive::fake_piece_info_after_fake_stop(const uint64_t tenant_id, c
   ret = MTL(archive::ObArchiveService*)->persist_mgr_.load_archive_round_attr(attr);
   EXPECT_EQ(OB_SUCCESS, ret);
   share::SCN genesis_scn;
-  genesis_scn.convert_from_ts(attr.start_scn_.convert_to_ts() - 2 * piece_interval);     // 由于piece_interval粒度小, 需要调高
+  genesis_scn.convert_from_ts(attr.start_scn_.convert_to_ts() - 2 * piece_interval);     // Due to the small granularity of piece_interval, it needs to be increased
   MTL(archive::ObArchiveService*)->fetcher_.piece_interval_ = piece_interval;
   MTL(archive::ObArchiveService*)->fetcher_.genesis_scn_ = genesis_scn;
   MTL(archive::ObArchiveService*)->ls_mgr_.piece_interval_ = piece_interval;

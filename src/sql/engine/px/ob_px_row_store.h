@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef _OB_SQL_ENGINE_PX_NEW_ROW_H_
@@ -226,11 +230,11 @@ public:
   TO_STRING_KV(K_(row_cell_count), K_(des_row_buf_size));
 private:
   static const int64_t EOF_ROW_FLAG = -1;
-  char *des_row_buf_; // 反序列化时用于指向 row_ 的序列化内容
-  int64_t des_row_buf_size_; // 反序列化时用于记录 row_ 的序列化内容的 buffer 长度，get_row 时需要参考
-  const common::ObNewRow *row_; // 序列化之前传入 row_，用于序列化
+  char *des_row_buf_; // Used to point to the serialized content of row_ during deserialization
+  int64_t des_row_buf_size_; // Used to record the length of the serialized content of row_ during deserialization, reference needed when get_row
+  const common::ObNewRow *row_; // Serialize row_ before serialization, used for serialization
   const common::ObIArray<ObExpr*> *exprs_;
-  int64_t row_cell_count_; // row_cell_count_ 取特殊值 -1 时表示 EOFRow，get_row 返回 OB_ITER_END
+  int64_t row_cell_count_; // row_cell_count_ takes a special value -1 to indicate EOFRow, get_row returns OB_ITER_END
   dtl::ObDtlMsgType type_;
   int64_t vector_row_idx_;
   DISALLOW_COPY_AND_ASSIGN(ObPxNewRow);

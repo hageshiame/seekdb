@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "lib/restore/ob_object_device.h"
@@ -132,10 +136,6 @@ int ObDeviceManager::init_devices_env()
       OB_LOG(WARN, "Fail to init allocator ", K(ret));
     } else if (OB_FAIL(lock_.init(mem_attr))) {
       OB_LOG(WARN, "fail to init lock", KR(ret));
-    } else if (OB_FAIL(init_oss_env())) {
-      OB_LOG(WARN, "fail to init oss storage", K(ret));
-    } else if (OB_FAIL(init_cos_env())) {
-      OB_LOG(WARN, "fail to init cos storage", K(ret));
     } else if (OB_FAIL(init_s3_env())) {
       OB_LOG(WARN, "fail to init s3 storage", K(ret));
     } else if (OB_FAIL(ObObjectStorageInfo::register_cluster_version_mgr(
@@ -200,8 +200,6 @@ void ObDeviceManager::destroy()
       del_device_key = NULL;
     }
     allocator_.reset();
-    fin_oss_env();
-    fin_cos_env();
     fin_s3_env();
     lock_.destroy();
     ObDeviceCredentialMgr::get_instance().destroy();
@@ -237,14 +235,6 @@ int parse_storage_info(common::ObString storage_type_prefix, ObIODevice*& device
 #endif
   } else if (storage_type_prefix.prefix_match(OB_FILE_PREFIX)) {
     device_type = OB_STORAGE_FILE;
-    mem = allocator.alloc(sizeof(ObObjectDevice));
-    if (NULL != mem) {new(mem)ObObjectDevice;}
-  } else if (storage_type_prefix.prefix_match(OB_OSS_PREFIX)) {
-    device_type = OB_STORAGE_OSS;
-    mem = allocator.alloc(sizeof(ObObjectDevice));
-    if (NULL != mem) {new(mem)ObObjectDevice;}
-  } else if (storage_type_prefix.prefix_match(OB_COS_PREFIX)) {
-    device_type = OB_STORAGE_COS;
     mem = allocator.alloc(sizeof(ObObjectDevice));
     if (NULL != mem) {new(mem)ObObjectDevice;}
   } else if (storage_type_prefix.prefix_match(OB_S3_PREFIX)) {
@@ -626,8 +616,7 @@ int ObDeviceManager::get_device_key_(
                                        storage_id_mod.storage_id_))) {
       OB_LOG(WARN, "fail to construct device map key", K(ret), K(storage_id_mod));
     }
-  } else if (storage_type_prefix.prefix_match(OB_OSS_PREFIX)
-             || storage_type_prefix.prefix_match(OB_COS_PREFIX)
+  } else if (storage_type_prefix.prefix_match(OB_COS_PREFIX)
              || storage_type_prefix.prefix_match(OB_S3_PREFIX)
              || storage_type_prefix.prefix_match(OB_HDFS_PREFIX)
              || storage_type_prefix.prefix_match(OB_AZBLOB_PREFIX)) {

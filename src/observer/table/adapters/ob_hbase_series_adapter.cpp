@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2025 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SERVER
@@ -57,7 +61,7 @@ int ObHSeriesAdapter::multi_put(ObTableExecCtx &ctx, const ObIArray<ObITableEnti
     real_tablet_ids.set_attr(ObMemAttr(tenant_id, "MulPutSertblt"));
     SMART_VAR(ObTableCtx, tb_ctx, allocator_)
     {
-      // tablet_ids需要调整
+      // tablet_ids need to be adjusted
       if (OB_ISNULL(cells.at(0))) {
         ret = OB_ERR_UNDEFINED;
         LOG_WARN("first cell is null", K(ret), K(cells));
@@ -167,7 +171,7 @@ int ObHSeriesAdapter::del_and_insert(ObIAllocator &alloc,
     LOG_WARN("fail to del in hbase series adapter", K(ret), K(json_cell));
   } else if (json_node.element_count() != 0) {
     // 2. construct new entity
-    // 注意，如果删除这个q，没有其他node的话，就不需要insert了
+    // Note, if this q is deleted and there are no other nodes, then insert is not needed
     ObObj value_obj;
     result.reset();
     ObTableEntity series_cell;

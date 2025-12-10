@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SET_DATA_GENERATOR_OP_H_
@@ -58,7 +62,7 @@ public:
       str_buf_[i] = 's';
     }
   }
-  //void set_column_num(const int num) { columns_num_ = num; } 暂定3列
+  //void set_column_num(const int num) { columns_num_ = num; } temporarily set to 3 columns
 
   int test_init()
   {
@@ -200,7 +204,7 @@ public:
     gen_row(row_cnt_);
     if (row_cnt_ <= 0) {
       return iter_end_ret_;
-    } else if (OB_FAIL(convert_row(cells_, MY_SPEC.output_))) { //将cur_expr写入到output中
+    } else if (OB_FAIL(convert_row(cells_, MY_SPEC.output_))) { // copy current row to output
       OB_LOG(WARN, "copy current row failed", K(ret));
     } else {
       row_cnt_--;
@@ -217,7 +221,7 @@ public:
     gen_row(row_id_);
     if (row_id_ < 0 || row_id_ >= row_cnt_) {
       return iter_end_ret_;
-    } else if (OB_FAIL(convert_row(cells_, MY_SPEC.output_))) { //将cur_expr写入到output中
+    } else if (OB_FAIL(convert_row(cells_, MY_SPEC.output_))) { // write cur_expr to output
       OB_LOG(WARN, "copy current row failed", K(ret));
     } else {
       ++add;

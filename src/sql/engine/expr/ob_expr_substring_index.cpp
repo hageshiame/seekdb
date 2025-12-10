@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -125,7 +129,7 @@ int ObExprSubstringIndex::eval_substring_index(
     expr_datum.set_null();
   } else if (0 == str.len_ || 0 == delim.len_) {
     // return empty string if %str or %delim is empty.
-    //重置null flag 防止丢失空串信息 
+    // Reset null flag to prevent loss of empty string information
     expr_datum.null_ = 0;
     expr_datum.len_ = 0;
   } else {
@@ -184,7 +188,7 @@ int ObExprSubstringIndex::eval_substring_index_batch(const ObExpr &expr,
       } else if (0 == text.len_ || 0 == delim.len_ ||
                  0 == (count_val = count.get_int())) {
         // return empty string if %str or %delim is empty.
-        //重置null flag 防止丢失空串信息 
+        // Reset null flag to prevent loss of empty string information
         res[i].null_ = 0;
         res[i].len_ = 0;
       } else if (OB_FAIL(kmp_ctx->init(delim.get_string(),

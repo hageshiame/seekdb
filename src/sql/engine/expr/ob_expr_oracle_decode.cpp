@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX  SQL_ENG
@@ -52,7 +56,7 @@ int ObExprOracleDecode::calc_result_typeN(ObExprResType &type,
     LOG_WARN("invalid params", K(param_num), K(RESULT_TYPE_INDEX), K(LEAST_PARAM_NUMS), K(CALC_TYPE_INDEX));
     ret = OB_INVALID_ARGUMENT;
   } else {
-    //除了返回值， 其他参数不能为lob或roaringbitmap类型
+    // Except for the return value, other parameters cannot be of lob or roaringbitmap type
     if (types_stack[0].is_lob() || types_stack[0].is_roaringbitmap()) {
       ret = OB_ERR_INVALID_TYPE_FOR_OP;
       LOG_USER_ERROR(OB_ERR_INVALID_TYPE_FOR_OP, "-",
@@ -82,8 +86,7 @@ int ObExprOracleDecode::calc_result_typeN(ObExprResType &type,
       const common::ObLengthSemantics default_length_semantics = (OB_NOT_NULL(type_ctx.get_session())
               ? type_ctx.get_session()->get_actual_nls_length_semantics()
               : common::LS_BYTE);
-      
-      // 保留原mysql下的行为
+      // retain the original behavior under mysql
       type.set_type(types_stack[RESULT_TYPE_INDEX].get_type());
       type.set_collation_level(types_stack[RESULT_TYPE_INDEX].get_collation_level());
       type.set_collation_type(types_stack[RESULT_TYPE_INDEX].get_collation_type());
@@ -130,13 +133,13 @@ int ObExprOracleDecode::calc_result_typeN(ObExprResType &type,
       if (ob_is_decimal_int_tc(calc_type.get_type())) {
         type.set_calc_type(ObNumberType);
       } else {
-        // 保留原mysql下的行为
+        // retain the original behavior under mysql
         type.set_calc_type(calc_type.get_type());
       }
       type.set_calc_collation_level(calc_type.get_collation_level());
       type.set_calc_collation_type(calc_type.get_collation_type());
       if (ob_is_integer_type(type.get_calc_type())) {
-        //除非expr和search都是整型, 否则类型设置为numberic
+        // Unless expr and search are both integers, set type to numeric
         if (!ob_is_integer_type(types_stack[0].get_type())) {
           type.set_calc_type(ObNumberType);
         } else {
@@ -183,7 +186,7 @@ int ObExprOracleDecode::calc_result_typeN(ObExprResType &type,
       result_type = ObExtendType;
     }
     else {
-      // 这里针对calc的转换是不是可以直接用在result上？？
+      // Here for the conversion of calc can it be directly used on result??
       result_type = get_enumset_calc_type(type.get_type(), OB_INVALID_INDEX);
     }
     if (OB_UNLIKELY(ObMaxType == result_type)) {
@@ -220,9 +223,9 @@ int ObExprOracleDecode::calc_result_typeN(ObExprResType &type,
       }
     } else {/*do nothing*/}
   }
-  // 兼容Oracle行为, 预判断隐式转换, 如果不能转, 提前报错
-  // decode的隐式转换除了enumset类型可能会通过框架转为string外，其他类型的隐式转换均发生在calc_resultN
-  // oracle下没有enumset类型, 因此这里不特别处理enumset
+  // Compatible with Oracle behavior, pre-judge implicit conversion, if cannot convert, report error in advance
+  // decode's implicit conversion except for enumset type, which may be converted to string by the framework, all other types of implicit conversion occur in calc_resultN
+  // oracle does not have enumset type, therefore here we do not specially handle enumset
   if (OB_SUCC(ret)) {
     if (ob_is_otimestamp_type(types_stack[RESULT_TYPE_INDEX].get_type())) {
       type.set_accuracy(types_stack[RESULT_TYPE_INDEX].get_accuracy());
@@ -250,8 +253,8 @@ int ObExprOracleDecode::calc_result_typeN(ObExprResType &type,
     types_stack[0].set_calc_accuracy(types_stack[0].get_accuracy());
     for (int64_t i = 1; i < param_num; i += 2) {
       types_stack[i].set_calc_meta(type.get_calc_meta());
-      // 参数的calc_acc不能使用type.get_calc_accuracy(),类型推导没有推导calc accuracy信息
-      // 参数的calc_acc保持原来的accuracy
+      // The calc_acc parameter cannot use type.get_calc_accuracy(), type inference did not infer calc accuracy information
+      // The parameter calc_acc keeps the original accuracy
       types_stack[i].set_calc_accuracy(types_stack[i].get_accuracy());
     }
     for (int64_t i = 2; i < param_num; i += 2) {

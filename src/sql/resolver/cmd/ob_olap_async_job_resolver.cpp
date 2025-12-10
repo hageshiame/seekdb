@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_RESV
@@ -57,7 +61,7 @@ int ObOLAPAsyncJobResolver::resolve_submit_job_stmt(const ParseNode &parse_tree,
   int64_t session_query_time_out_ts = 0;
 
   const ParseNode* sql_stmt_node =  parse_tree.children_[0];
-  /* 解析的结构
+  /* The parsed structure
   parse_tree->T_OLAP_ASYNC_JOB_SUBMIT
   |--[0] T_SQL_STMT
     |--[0] [T_SELECT/T_INSERT/T_CREATE_TABLE] user_sql
@@ -220,10 +224,10 @@ int ObOLAPAsyncJobResolver::execute_submit_job(ObOLAPAsyncSubmitJobStmt &stmt)
       job_info.func_type_ = dbms_scheduler::ObDBMSSchedFuncType::OLAP_ASYNC_JOB;
 
       #ifdef ERRSIM
-      if (OB_SUCCESS != ERRSIM_SUBMIT_ERR_JOB_NAME) { //注入一个错误的JOB NAME
+      if (OB_SUCCESS != ERRSIM_SUBMIT_ERR_JOB_NAME) { // inject an error JOB NAME
         job_info.job_name_ = "ERRSIM_JOB";
       }
-      if (OB_SUCCESS != ERRSIM_SUBMIT_ERR_JOB_START_TIME) { //注入一个错误的开始时间
+      if (OB_SUCCESS != ERRSIM_SUBMIT_ERR_JOB_START_TIME) { // inject an error start time
         job_info.start_date_ = 64060560000000000;
       }
       #endif

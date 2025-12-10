@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SQL_OB_TABLE_REPLACE_OP_
@@ -85,12 +89,10 @@ public:
   virtual int inner_rescan() override;
   virtual int inner_close() override;
   virtual int inner_get_next_row() override;
-
-  // 物化所有要被replace into的行到replace_row_store_
+  // Materialize all rows to be replace into to replace_row_store_
   int load_all_replace_row(bool &is_iter_end);
   int get_next_row_from_child();
-
-  // 执行所有尝试插入的 das task， fetch冲突行的主表主键
+  // Execute all attempted insert das tasks, fetch primary key of the main table for conflicting rows
   int fetch_conflict_rowkey(int64_t replace_row_cnt);
   int get_next_conflict_rowkey(DASTaskIter &task_iter);
 
@@ -108,33 +110,26 @@ protected:
   int do_replace_into();
 
   int rollback_savepoint(const transaction::ObTxSEQ &savepoint_no);
-
-  // 检查是否有duplicated key 错误发生
+  // Check for duplicated key error occurrence
   bool check_is_duplicated();
-
-  // 遍历replace_row_store_中的所有行，并且更新冲突map，
+  // Traverse all rows in replace_row_store_ and update the conflict map,
   int replace_conflict_row_cache();
-
-  // 遍历主表的hash map，确定最后提交delete + insert对应的das task
-  // 提交顺序上必须先提交delete
+  // Traverse the hash map of the main table, determine the last submitted delete + insert corresponding das task
+  // In submission order, delete must be submitted first
   int prepare_final_replace_task();
 
   int do_delete(ObConflictRowMap *primary_map);
 
   int do_insert(ObConflictRowMap *primary_map);
-
-  // 提交所有的 try_insert 的 das task;
+  // Submit all the try_insert das tasks;
   int post_all_try_insert_das_task(ObDMLRtCtx &dml_rtctx);
-
-  // 提交所有的 insert 和delete das task;
+  // Submit all insert and delete das tasks;
   int post_all_dml_das_task(ObDMLRtCtx &dml_rtctx);
-
-  // batch的执行插入 process_row and then write to das,
+  // batch execution insert process_row and then write to das,
   int insert_row_to_das(bool &is_skipped);
 
   int final_insert_row_to_das();
-
-  // batch的执行插入 process_row and then write to das,
+  // batch execution insert process_row and then write to das,
   int delete_row_to_das(bool need_do_trigger);
 
   int calc_insert_tablet_loc(const ObInsCtDef &ins_ctdef,
@@ -176,7 +171,7 @@ protected:
   int64_t delete_rows_;
   ObConflictChecker conflict_checker_;
   common::ObArrayWrap<ObReplaceRtDef> replace_rtdefs_;
-  ObChunkDatumStore replace_row_store_; //所有的replace的行的集合
+  ObChunkDatumStore replace_row_store_; // All the rows of replace operations
   ObDMLRtCtx replace_rtctx_;
   ObDmlGTSOptState gts_state_;
 };

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -80,8 +84,8 @@ void ObMergeSetOp::destroy()
 }
 
 /**
- * 拿数据时，由child_op来驱动，如果是left，则拿的就是left的数据，则后续就是需要用left来获取output的ObExprs
- * 相反，如果是right op，则拿的就是right的数据，则后续需要用right来获取output的ObExprs
+ * When fetching data, it is driven by child_op. If it is left, then the data fetched is from left, and subsequently, ObExprs for output should be obtained using left.
+ * Conversely, if it is right op, then the data fetched is from right, and subsequently, ObExprs for output should be obtained using right.
  **/
 int ObMergeSetOp::do_strict_distinct(
   ObOperator &child_op,

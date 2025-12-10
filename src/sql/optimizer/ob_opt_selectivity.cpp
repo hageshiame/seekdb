@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_OPT
@@ -1286,8 +1290,7 @@ int ObOptSelectivity::calculate_join_selectivity(const OptTableMetas &table_meta
    * For complex inner/outer join (which has at least two kinds of quals or one complex join qual), 
    * we assume that each row of the small table matches at least one row of the large table.
   */
-  if (OB_SUCC(ret) && ctx.check_opt_compat_version(COMPAT_VERSION_4_2_5, COMPAT_VERSION_4_3_0,
-                                                   COMPAT_VERSION_4_3_5)) {
+  if (OB_SUCC(ret)) {
     is_complex_join &= sel_estimators.count() > 1 || cnt_complex_qual;
     if (is_complex_join) {
       if (LEFT_SEMI_JOIN == ctx.get_join_type()) {
@@ -1568,10 +1571,7 @@ int ObOptSelectivity::update_table_meta_info(const OptTableMetas &base_table_met
     table_meta->clear_base_table_info();
     if (filtered_rows >= origin_rows) {
       // only update table rows
-    } else if (OB_FAIL(!ctx.check_opt_compat_version(COMPAT_VERSION_4_2_4, COMPAT_VERSION_4_3_0,
-                                                     COMPAT_VERSION_4_3_3) ?
-                       classify_quals_deprecated(ctx, quals, all_predicate_sel, column_sel_infos) :
-                       classify_quals(base_table_metas, ctx, quals, all_predicate_sel, column_sel_infos))) {
+    } else if (OB_FAIL(classify_quals(base_table_metas, ctx, quals, all_predicate_sel, column_sel_infos))) {
       LOG_WARN("failed to classify quals", K(ret));
     } else {
       for (int64_t i = 0; OB_SUCC(ret) && i < table_meta->get_column_metas().count(); ++i) {
@@ -1583,13 +1583,13 @@ int ObOptSelectivity::update_table_meta_info(const OptTableMetas &base_table_met
           }
         }
         /**
-         * ndv的缩放分两步
-         * 第一步：
-         *   1. 如果存在某一列上的非复杂谓词，直接使用非复杂谓词计算该列第一步的ndv和rows
-         *   2. 如果某一列只有复杂谓词，则直接使用缩放公式计算该列第一步的ndv和rows
-         * 第二步：
-         *   使用第一步得到的ndv和rows作为column的原始ndv和rows，再基于所有过滤谓词过滤后的行数，
-         *   使用缩放公式缩放列的ndv。
+         * Scaling of ndv is done in two steps
+         * Step one:
+         *   1. If there is a non-complex predicate on a column, directly use the non-complex predicate to calculate the ndv and rows for that column in the first step
+         *   2. If a column has only complex predicates, directly use the scaling formula to calculate the ndv and rows for that column in the first step
+         * Step two:
+         *   Use the ndv and rows obtained from the first step as the original ndv and rows of the column, and then based on the number of rows filtered by all filter predicates,
+         *   use the scaling formula to scale the ndv of the column.
          */
         double origin_ndv = column_meta.get_ndv();
         double step1_ndv = column_meta.get_ndv();
@@ -1621,42 +1621,29 @@ int ObOptSelectivity::update_table_meta_info(const OptTableMetas &base_table_met
         }
         // step 1
         if (OB_NOT_NULL(sel_info)) {
-          if (!ctx.check_opt_compat_version(COMPAT_VERSION_4_2_4, COMPAT_VERSION_4_3_0,
-                                            COMPAT_VERSION_4_3_3)) {
-            step1_row *= sel_info->selectivity_;
-            hist_scale = sel_info->selectivity_;
-            if (sel_info->equal_count_ > 0) {
-              step1_ndv = sel_info->equal_count_;
-            } else if (sel_info->has_range_exprs_) {
-              step1_ndv *= sel_info->range_selectivity_;
+          double step1_sel = sel_info->selectivity_;
+          double direct_ndv_sel = 1.0;
+          if (origin_rows * step1_sel < filtered_rows &&
+              origin_rows > OB_DOUBLE_EPSINON) {
+            step1_sel = filtered_rows / origin_rows;
+          }
+          if (null_reject) {
+            if (step1_sel <= nns && nns > OB_DOUBLE_EPSINON) {
+              direct_ndv_sel = step1_sel / nns;
             } else {
-              step1_ndv = scale_distinct(step1_row, origin_rows, column_meta.get_ndv());
+              direct_ndv_sel = 1.0;
             }
           } else {
-            double step1_sel = sel_info->selectivity_;
-            double direct_ndv_sel = 1.0;
-            if (origin_rows * step1_sel < filtered_rows &&
-                origin_rows > OB_DOUBLE_EPSINON) {
-              step1_sel = filtered_rows / origin_rows;
-            }
-            if (null_reject) {
-              if (step1_sel <= nns && nns > OB_DOUBLE_EPSINON) {
-                direct_ndv_sel = step1_sel / nns;
-              } else {
-                direct_ndv_sel = 1.0;
-              }
-            } else {
-              // complex quals, the selectivity might be default
-              // do not handle null
-              direct_ndv_sel = step1_sel;
-            }
-            step1_row *= step1_sel;
-            hist_scale = step1_sel;
-            if (sel_info->equal_count_ > 0) {
-              step1_ndv = sel_info->equal_count_;
-            } else {
-              step1_ndv *= direct_ndv_sel;
-            }
+            // complex quals, the selectivity might be default
+            // do not handle null
+            direct_ndv_sel = step1_sel;
+          }
+          step1_row *= step1_sel;
+          hist_scale = step1_sel;
+          if (sel_info->equal_count_ > 0) {
+            step1_ndv = sel_info->equal_count_;
+          } else {
+            step1_ndv *= direct_ndv_sel;
           }
         }
         // step 2
@@ -1709,11 +1696,11 @@ int ObOptSelectivity::update_table_meta_info(const OptTableMetas &base_table_met
 }
 
 /**
- * 计算equal join condition的左右表选择率
+ * Calculate the selectivity of the equal join condition for the left and right tables
  * left_selectivity = right_ndv / left_ndv
  * right_selectivity = left_ndv / right_ndv
- * 如果left_rows > 0表示需要缩放左表的NDV
- * 如果right_rows > 0表示需要缩放右表的NDV
+ * If left_rows > 0 indicates that the NDV of the left table needs to be scaled
+ * If right_rows > 0 indicates that the NDV of the right table needs to be scaled
  */
 
 int ObOptSelectivity::get_column_range_sel(const OptTableMetas &table_metas,
@@ -1799,10 +1786,7 @@ int ObOptSelectivity::get_column_range_sel(const OptTableMetas &table_metas,
     }
     LOG_TRACE("Get column range sel", K(selectivity), K(quals));
   }
-  if (OB_SUCC(ret) && need_out_of_bounds &&
-      ctx.check_opt_compat_version(COMPAT_VERSION_4_2_1_BP7, COMPAT_VERSION_4_2_2,
-                                   COMPAT_VERSION_4_2_4, COMPAT_VERSION_4_3_0,
-                                   COMPAT_VERSION_4_3_2)) {
+  if (OB_SUCC(ret) && need_out_of_bounds) {
     ObObj min_value;
     ObObj max_value;
     if (use_hist) {
@@ -1972,9 +1956,7 @@ int ObOptSelectivity::calc_column_range_selectivity(const OptTableMetas &table_m
     ObObj *new_start_obj = NULL;
     ObObj *new_end_obj = NULL;
     ObArenaAllocator tmp_alloc("ObOptSel");
-    bool convert2sortkey = ctx.check_opt_compat_version(COMPAT_VERSION_4_2_1_BP5, COMPAT_VERSION_4_2_2,
-                                                        COMPAT_VERSION_4_2_4, COMPAT_VERSION_4_3_0,
-                                                        COMPAT_VERSION_4_3_1);
+    bool convert2sortkey = true;
     if (OB_FAIL(ObDbmsStatsUtils::truncate_string_for_opt_stats(&start_obj, tmp_alloc, new_start_obj)) ||
         OB_FAIL(ObDbmsStatsUtils::truncate_string_for_opt_stats(&end_obj, tmp_alloc, new_end_obj))) {
       LOG_WARN("failed to convert valid obj for opt stats", K(ret), K(start_obj), K(end_obj),
@@ -2017,9 +1999,7 @@ int ObOptSelectivity::calc_column_range_selectivity(const OptTableMetas &table_m
       //startobj and endobj cannot be min/max in this branch, no need to defend
       ObObj startscalar;
       ObObj endscalar;
-      bool convert2sortkey = ctx.check_opt_compat_version(COMPAT_VERSION_4_2_1_BP5, COMPAT_VERSION_4_2_2,
-                                                          COMPAT_VERSION_4_2_4, COMPAT_VERSION_4_3_0,
-                                                          COMPAT_VERSION_4_3_1);
+      bool convert2sortkey = true;
       if (OB_FAIL(ObOptEstObjToScalar::convert_objs_to_scalars(NULL, NULL, &start_obj, &end_obj,
                                                                NULL, NULL, &startscalar, &endscalar,
                                                                convert2sortkey))) {
@@ -2266,14 +2246,14 @@ int ObOptSelectivity::column_in_current_level_stmt(const ObDMLStmt *stmt,
     ret = OB_INVALID_ARGUMENT;
     LOG_WARN("Stmt is NULL", K(stmt), K(ret));
   } else if (stmt->is_select_stmt() && static_cast<const ObSelectStmt*>(stmt)->is_set_stmt()) {
-    // TODO:@yibo 这里看起来没什么意义，后面检查一下
+    // TODO:@yibo Here it seems to have no meaning, check it later
     const ObSelectStmt *select_stmt = static_cast<const ObSelectStmt*>(stmt);
     const ObIArray<ObSelectStmt*> &child_query = select_stmt->get_set_query();
     for (int64_t i = 0; OB_SUCC(ret) && !is_in && i < child_query.count(); ++i) {
       ret = SMART_CALL(column_in_current_level_stmt(child_query.at(i), expr, is_in));
     }
   } else if (expr.is_column_ref_expr()) {
-    // TODO:@yibo 正常走到这里的时候，上层stmt的column都被抽成？了
+    // TODO:@yibo When reaching here normally, all columns of the upper-level stmt are abstracted to ?.
     const ObColumnRefRawExpr &b_expr = static_cast<const ObColumnRefRawExpr&>(expr);
     const TableItem *table_item = stmt->get_table_item_by_id(b_expr.get_table_id());
     if (NULL != table_item) {
@@ -2425,9 +2405,7 @@ int ObOptSelectivity::get_column_basic_info(const OptTableMetas &table_metas,
         case DistinctEstType::CURRENT: {
           cur_rowcnt = ctx.get_current_rows();
           if (NULL != ctx.get_ambient_card() &&
-              !ctx.get_ambient_card()->empty() &&
-              ctx.check_opt_compat_version(COMPAT_VERSION_4_2_4, COMPAT_VERSION_4_3_0,
-                                           COMPAT_VERSION_4_3_3)) {
+              !ctx.get_ambient_card()->empty()) {
             ObSEArray<int64_t, 1> table_idx;
             if (OB_FAIL(expr.get_relation_ids().to_array(table_idx))) {
               LOG_WARN("failed to get table idx", K(ret), K(expr));
@@ -2733,9 +2711,7 @@ int ObOptSelectivity::get_less_pred_sel(const OptSelectivityCtx &ctx,
       ObObj minobj(histogram.get(idx).endpoint_value_);
       ObObj maxobj(histogram.get(idx+1).endpoint_value_);
       ObObj startobj(minobj), endobj(maxv);
-      bool convert2sortkey = ctx.check_opt_compat_version(COMPAT_VERSION_4_2_1_BP5, COMPAT_VERSION_4_2_2,
-                                                          COMPAT_VERSION_4_2_4, COMPAT_VERSION_4_3_0,
-                                                          COMPAT_VERSION_4_3_1);
+      bool convert2sortkey = true;
       if (OB_FAIL(ObOptEstObjToScalar::convert_objs_to_scalars(
                     &minobj, &maxobj, &startobj, &endobj,
                     &minscalar, &maxscalar, &startscalar, &endscalar,
@@ -2850,9 +2826,7 @@ int ObOptSelectivity::get_column_query_range(const OptSelectivityCtx &ctx,
   }
   return ret;
 }
-
-
-// 列上最常见的互斥谓词
+// Column-wise most common mutually exclusive predicates
 // c1 = 1 or c1 = 2
 // c1 = 1 or c1 is null
 int ObOptSelectivity::get_simple_mutex_column(const ObRawExpr *qual, const ObRawExpr *&column)
@@ -2944,20 +2918,8 @@ int ObOptSelectivity::calculate_distinct_in_single_table(const OptTableMetas &ta
     LOG_WARN("failed filter column by equal set", K(ret));
   } else if (OB_FAIL(calculate_expr_ndv(filtered_exprs, expr_ndv, table_metas, ctx, ambient_card, est_type))) {
     LOG_WARN("fail to calculate expr ndv", K(ret));
-  } else if (ctx.check_opt_compat_version(COMPAT_VERSION_4_2_5_BP3, COMPAT_VERSION_4_3_0,
-                                          COMPAT_VERSION_4_3_5_BP2)) {
-    rows = ctx.get_correlation_model().combine_ndvs(ambient_card, expr_ndv);
-  } else if (ctx.check_opt_compat_version(COMPAT_VERSION_4_2_4, COMPAT_VERSION_4_3_0,
-                                          COMPAT_VERSION_4_3_3)) {
-    rows = combine_ndvs(ambient_card, expr_ndv);
   } else {
-    for (int64_t i = 0; OB_SUCC(ret) && i < expr_ndv.count(); ++i) {
-      if (0 == i) {
-        rows *= expr_ndv.at(i);
-      } else {
-        rows *= expr_ndv.at(i) / std::sqrt(2);
-      }
-    }
+    rows = ctx.get_correlation_model().combine_ndvs(ambient_card, expr_ndv);
   }
   LOG_TRACE("succeed to calculate distinct in single table", K(rel_id), K(ambient_card), K(rows), K(expr_ndv), K(exprs));
 
@@ -3039,8 +3001,8 @@ int ObOptSelectivity::calculate_distinct(const OptTableMetas &table_metas,
   ObSEArray<OptDistinctHelper, 2> helpers;
   ObSEArray<ObRawExpr *, 2> special_exprs;
   /**
-   * 1. 将 exprs 根据基表分组，sepcial exprs 中保存不在基表计算的表达式，例如 window function 等
-   * 2. 基表内计算 NDV 后（每张表的 NDV 最大值受基表行数限制），再根据当前行数计算联合 NDV
+   * 1. Group exprs by base table, special exprs stores expressions not calculated in the base table, such as window function etc
+   * 2. After calculating NDV within the base table (the maximum NDV of each table is limited by the number of rows in the base table), calculate the combined NDV based on the current row count
   */
   if (OB_FAIL(classify_exprs(ctx, exprs, helpers, special_exprs))) {
     LOG_WARN("failed to classify_exprs", K(ret));
@@ -3061,25 +3023,7 @@ int ObOptSelectivity::calculate_distinct(const OptTableMetas &table_metas,
       LOG_WARN("failed to push back", K(ret));
     }
   }
-  if (ctx.check_opt_compat_version(COMPAT_VERSION_4_2_5_BP3, COMPAT_VERSION_4_3_0,
-                                   COMPAT_VERSION_4_3_5_BP2)) {
-    rows = ctx.get_correlation_model().combine_ndvs(need_refine ? origin_rows : -1, single_ndvs);
-  } else if (ctx.check_opt_compat_version(COMPAT_VERSION_4_2_4, COMPAT_VERSION_4_3_0,
-                                          COMPAT_VERSION_4_3_3)) {
-    rows = combine_ndvs(need_refine ? origin_rows : -1, single_ndvs);
-  } else {
-    for (int64_t i = 0; OB_SUCC(ret) && i < single_ndvs.count(); ++i) {
-      if (0 == i) {
-        rows *= single_ndvs.at(i);
-      } else {
-        rows *= single_ndvs.at(i) / std::sqrt(2);
-      }
-    }
-    //refine
-    if (OB_SUCC(ret) && need_refine && origin_rows >= 0.0) {
-      rows = std::min(rows, origin_rows);
-    }
-  }
+  rows = ctx.get_correlation_model().combine_ndvs(need_refine ? origin_rows : -1, single_ndvs);
   LOG_TRACE("succeed to calculate distinct", K(ctx), K(origin_rows), K(rows), K(single_ndvs), K(exprs));
   return ret;
 }
@@ -3257,9 +3201,6 @@ int ObOptSelectivity::check_is_special_distinct_expr(const OptSelectivityCtx &ct
     LOG_WARN("unexpected null pointer", K(expr), K(ret));
   } else if (expr->is_win_func_expr()) {
     is_special = true;
-  } else if (!ctx.check_opt_compat_version(COMPAT_VERSION_4_2_4, COMPAT_VERSION_4_3_0,
-                                           COMPAT_VERSION_4_3_3)) {
-    is_special = false;
   } else if (expr->is_const_expr()) {
     is_special = false;
   } else if (T_OP_MOD == expr->get_expr_type()) {
@@ -3554,9 +3495,8 @@ int ObOptSelectivity::calculate_winfunc_ndv(const OptTableMetas &table_metas,
   special_ndv = revise_ndv(special_ndv);
   return ret;
 }
-
-// 仅保留一个 ndv 最小的 distinct expr, 加入到 filtered_exprs 中;
-// 再把不在 equal set 中的列加入到 filtered_exprs 中,
+// Only retain one distinct expr with the smallest ndv, add it to filtered_exprs;
+// Add columns not in the equal set to filtered_exprs,
 int ObOptSelectivity::filter_column_by_equal_set(const OptTableMetas &table_metas,
                                                  const OptSelectivityCtx &ctx,
                                                  DistinctEstType est_type,
@@ -3697,7 +3637,7 @@ int ObOptSelectivity::is_columns_contain_pkey(const OptTableMetas &table_metas,
   if (OB_ISNULL(table_meta)) {
     is_pkey = false;
   } else if (table_meta->get_pkey_ids().empty()) {
-    // 没有显式主键, 默认隐式主键不会作为选择条件
+    // No explicit primary key, default implicit primary key will not be used as a selection condition
     is_pkey = false;
   } else {
     const ObIArray<uint64_t> &pkey_ids = table_meta->get_pkey_ids();
@@ -4019,9 +3959,10 @@ int ObOptSelectivity::extract_equal_count(const ObRawExpr &qual, uint64_t &equal
 }
 
 /**
- * 此公式参考自 Join Selectivity by Jonathan Lewis.
- * 可以理解为 ndv 个值平均分布在原始的行(rows)中, 然后从中选取部分行(selected_rows),
- * 公式的结果为选中的行的 non-distinct value (new_ndv).
+ * This formula is referenced from Join Selectivity by Jonathan Lewis.
+ * It can be understood as ndv values evenly distributed across the original rows,
+ * then selecting some of those rows (selected_rows),
+ * the result of the formula is the non-distinct value (new_ndv) of the selected rows.
  */
 double ObOptSelectivity::scale_distinct(double selected_rows,
                                         double rows,
@@ -4032,9 +3973,9 @@ double ObOptSelectivity::scale_distinct(double selected_rows,
     // enlarge, ref:
     // - http://mysql.taobao.org/monthly/2016/05/09/
     // - Haas and Stokes in IBM Research Report RJ 10025
-    // 根据 partition 信息缩放
-    // 使用公式 n * d / (n - f1 + f1 * n/N)
-    // 其中, N(selected_rows) 需要放大到的行数; n(rows) 当前的行数; f1 则是只出现一次的值的数据. 如果假设平均分布, 那么 f1 = d * 2 - n; d 则是 ndv。
+    // Scale according to partition information
+    // Use formula n * d / (n - f1 + f1 * n/N)
+    // Where, N(selected_rows) is the number of rows to be scaled to; n(rows) is the current number of rows; f1 is the data of values that appear only once. If we assume an even distribution, then f1 = d * 2 - n; d is the ndv.
     //
     ndv = (ndv > rows ? rows : ndv); // revise ndv
     double f1 = ndv * 2 - rows;
@@ -4042,7 +3983,7 @@ double ObOptSelectivity::scale_distinct(double selected_rows,
       new_ndv = (rows * ndv) / (rows - f1 + f1 * rows / selected_rows);
     }
   } else if (selected_rows < rows) {
-    // 缩小, 参考 select_without_replacement
+    // Shrink, reference select_without_replacement
     if (ndv > OB_DOUBLE_EPSINON && rows > OB_DOUBLE_EPSINON) {
       new_ndv = ndv * (1 - std::pow(1 - selected_rows / rows, rows / ndv));
     }
@@ -4795,8 +4736,7 @@ double ObOptSelectivity::calc_equal_filter_sel(const OptSelectivityCtx &ctx,
     } else if (T_OP_NE == op_type) {
       selectivity = 0.0;
     }
-  } else if (ctx.check_opt_compat_version(COMPAT_VERSION_4_2_4, COMPAT_VERSION_4_3_0,
-                                          COMPAT_VERSION_4_3_3)) {
+  } else {
     double combine_ndv = combine_two_ndvs(ctx.get_current_rows(), left_ndv, right_ndv);
     combine_ndv = std::max(1.0, combine_ndv);
     selectivity = std::min(left_ndv, right_ndv) / combine_ndv;
@@ -4807,18 +4747,8 @@ double ObOptSelectivity::calc_equal_filter_sel(const OptSelectivityCtx &ctx,
     } else if (T_OP_NE == op_type) {
       selectivity = std::max(1 - selectivity, 1 / combine_ndv / 2.0) * left_nns * right_nns ;
     }
-  } else {
-    // deprecated
-    if (T_OP_NSEQ == op_type) {
-      selectivity = left_nns * right_nns / std::max(left_ndv, right_ndv)
-          + (1 - left_nns) * (1 - right_nns);
-    } else if (T_OP_EQ == op_type) {
-      selectivity = left_nns * right_nns / std::max(left_ndv, right_ndv);
-    } else if (T_OP_NE == op_type) {
-      selectivity = left_nns * right_nns * (1 - 1/std::max(left_ndv, right_ndv));
-    }
   }
-  
+
   return selectivity;
 }
 
@@ -4850,8 +4780,7 @@ double ObOptSelectivity::calc_equal_join_sel(const OptSelectivityCtx &ctx,
     } else {
       selectivity = left_nns * std::max(1 - 1 / left_ndv, 1 / left_ndv);
     }
-  } else if (IS_ANTI_JOIN(ctx.get_join_type()) && ctx.check_opt_compat_version(COMPAT_VERSION_4_2_5, COMPAT_VERSION_4_3_0,
-                                                                               COMPAT_VERSION_4_3_5)) {
+  } else if (IS_ANTI_JOIN(ctx.get_join_type())) {
     // use base containment assumption only for anti join
     selectivity = (std::min(left_base_ndv, right_base_ndv) / left_base_ndv) * (right_ndv / right_base_ndv) * left_nns;
     if (T_OP_NSEQ == op_type && 1 - right_nns > 0) {
@@ -5092,8 +5021,6 @@ int ObHistEqualSelHelper::inner_get_sel(const OptSelectivityCtx &ctx,
     sel = 0.0;
     is_rare_value = true;
     if (!is_neq_ &&
-        ctx.check_opt_compat_version(COMPAT_VERSION_4_2_5_BP3, COMPAT_VERSION_4_3_0,
-                                     COMPAT_VERSION_4_3_5_BP2) &&
         OB_FAIL(refine_out_of_bounds_sel(ctx, *new_value, sel, is_rare_value))) {
       LOG_WARN("failed to refine out of bounds sel", K(ret));
     }

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 #define USING_LOG_PREFIX STORAGE
 
@@ -172,7 +176,7 @@ int ObDirectLoadMemDump::close_table_builder(ObIDirectLoadPartitionTableBuilder 
     LOG_WARN("invalid args", KR(ret), KP(table_builder));
   } else {
     const bool need_close = (mem_ctx_->table_data_desc_.row_flag_.uncontain_hidden_pk_ || is_final);
-    if (need_close && table_builder->get_row_count() > 0) { //暂时因为simple file有问题
+    if (need_close && table_builder->get_row_count() > 0) { // temporarily because simple file has a problem
       ObDirectLoadTableHandleArray table_array;
       if (OB_FAIL(table_builder->close())) {
         LOG_WARN("fail to close sstable builder", KR(ret));
@@ -209,10 +213,10 @@ int ObDirectLoadMemDump::dump_tables()
   typedef ObDirectLoadExternalIterator<RowType> ExternalIterator;
   int ret = OB_SUCCESS;
   ObArray<ExternalIterator *> iters;
-  ObArray<ObDirectLoadMemChunkIter<RowType, CompareType>> chunk_iters; //用于暂存iters
+  ObArray<ObDirectLoadMemChunkIter<RowType, CompareType>> chunk_iters; // used to temporarily store iters
   ObDirectLoadExternalMerger<RowType, CompareType> merger;
   CompareType compare;
-  CompareType compare1;  //不带上seq_no的排序
+  CompareType compare1;  // sorting without seq_no
 
   const RowType *external_row = nullptr;
   ObDirectLoadDatumRow datum_row;

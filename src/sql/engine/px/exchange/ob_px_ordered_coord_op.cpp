@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -142,16 +146,16 @@ int ObPxOrderedCoordOp::inner_get_next_row()
   if (iter_end_) {
     ret = OB_ITER_END;
   } else if (OB_UNLIKELY(!first_row_fetched_)) {
-    // 驱动初始 DFO 的分发
+    // Drive initial DFO distribution
     if (OB_FAIL(msg_proc_.startup_msg_loop(ctx_))) {
       LOG_WARN("initial dfos NOT dispatched successfully", K(ret));
     }
-    first_row_fetched_ = true; // 控制不再主动调用 startup_msg_loop，后继 loop 都消息触发
+    first_row_fetched_ = true; // control no longer actively calling startup_msg_loop, subsequent loops are message triggered
   }
-  bool wait_next_msg = true; // 控制是否退出 while 循环，返回 row 给上层算子
+  bool wait_next_msg = true; // Control whether to exit the while loop, return row to the upper operator
   while (OB_SUCC(ret) && wait_next_msg) {
-    // loop 中注册了 SQC-QC 控制通道，以及 TASKs-QC 数据通道
-    // 为了实现 orderly receive， TASKs-QC 通道需要逐个加入到 loop 中
+    // loop registered the SQC-QC control channel, as well as TASKs-QC data channel
+    // To achieve orderly receive, TASKs-QC channel needs to be added one by one to the loop
     int64_t timeout_us = 0;
     int64_t nth_channel = OB_INVALID_INDEX_INT64;
     // Note:
@@ -242,7 +246,7 @@ int ObPxOrderedCoordOp::inner_get_next_row()
         case ObDtlMsgType::DH_RD_WINFUNC_PX_PIECE_MSG:
         case ObDtlMsgType::DH_SP_WINFUNC_PX_PIECE_MSG:
         case ObDtlMsgType::DH_JOIN_FILTER_COUNT_ROW_PIECE_MSG:
-          // 这几种消息都在 process 回调函数里处理了
+          // These messages are all handled in the process callback function
           break;
         default:
           ret = OB_ERR_UNEXPECTED;
@@ -281,8 +285,8 @@ int ObPxOrderedCoordOp::next_row(ObReceiveRowReader &reader, bool &wait_next_msg
       receive_order_.set_current_ch_idx(channel_idx_);
       ret = OB_SUCCESS;
     } else if (OB_UNLIKELY(finish_ch_cnt_ > task_channels_.count())) {
-      // 本分支是一个防御分支
-      // 所有 channel 上的数据都收取成功
+      // This branch is a defensive branch
+      // All data on all channels has been successfully received
       ret = OB_ERR_UNEXPECTED;
       LOG_WARN("All data received. SHOULD NOT see more rows comming",
                "finish_task_cnt", finish_ch_cnt_,
@@ -308,16 +312,16 @@ int ObPxOrderedCoordOp::inner_get_next_batch(const int64_t max_row_cnt)
   if (iter_end_) {
     ret = OB_ITER_END;
   } else if (OB_UNLIKELY(!first_row_fetched_)) {
-    // 驱动初始 DFO 的分发
+    // Drive the initial DFO distribution
     if (OB_FAIL(msg_proc_.startup_msg_loop(ctx_))) {
       LOG_WARN("initial dfos NOT dispatched successfully", K(ret));
     }
-    first_row_fetched_ = true; // 控制不再主动调用 startup_msg_loop，后继 loop 都消息触发
+    first_row_fetched_ = true; // control no longer actively calling startup_msg_loop, subsequent loops are message triggered
   }
   int64_t read_rows = 0;
   while (OB_SUCC(ret) && 0 == read_rows) {
-    // loop 中注册了 SQC-QC 控制通道，以及 TASKs-QC 数据通道
-    // 为了实现 orderly receive， TASKs-QC 通道需要逐个加入到 loop 中
+    // loop registered the SQC-QC control channel, as well as TASKs-QC data channel
+    // To achieve orderly receive, TASKs-QC channel needs to be added one by one to the loop
     int64_t timeout_us = 0;
     int64_t nth_channel = OB_INVALID_INDEX_INT64;
     if (channel_idx_ < task_ch_set_.count()) {
@@ -400,7 +404,7 @@ int ObPxOrderedCoordOp::inner_get_next_batch(const int64_t max_row_cnt)
         case ObDtlMsgType::DH_RD_WINFUNC_PX_PIECE_MSG:
         case ObDtlMsgType::DH_SP_WINFUNC_PX_PIECE_MSG:
         case ObDtlMsgType::DH_JOIN_FILTER_COUNT_ROW_PIECE_MSG:
-          // 这几种消息都在 process 回调函数里处理了
+          // These messages are all handled in the process callback function
           break;
         default:
           ret = OB_ERR_UNEXPECTED;
@@ -453,8 +457,8 @@ int ObPxOrderedCoordOp::next_rows(ObReceiveRowReader &reader, int64_t max_row_cn
       receive_order_.set_current_ch_idx(channel_idx_);
       ret = OB_SUCCESS;
     } else if (OB_UNLIKELY(finish_ch_cnt_ > task_channels_.count())) {
-      // 本分支是一个防御分支
-      // 所有 channel 上的数据都收取成功
+      // This branch is a defensive branch
+      // All data on all channels has been successfully received
       ret = OB_ERR_UNEXPECTED;
       LOG_WARN("All data received. SHOULD NOT see more rows comming",
                "finish_task_cnt", finish_ch_cnt_,

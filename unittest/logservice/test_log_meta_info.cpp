@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define private public
@@ -366,9 +370,9 @@ TEST(TestLogMetaInfos, test_log_snapshot_meta)
   // return OB_ENTRY_NOT_EXIST when base_lsn is not same as prev_tail_lsn of prev_log_info
   EXPECT_EQ(OB_ENTRY_NOT_EXIST, log_snapshot_meta1.get_prev_log_info(base_lsn, result_log_info, output_prev_tail_lsn));
   EXPECT_TRUE(log_snapshot_meta1.is_valid());
-  // 验证SN版本
+  // Validate SN version
   {
-    // for 新建日志流，prev_tail_lsn一定是有效的，这里验证升级场景，prev_tail_lsn_sn是无效的
+    // for creating a new log stream, prev_tail_lsn must be valid, here we verify the upgrade scenario, prev_tail_lsn_sn is invalid
     LogSnapshotMeta log_snapshot_meta_sn;
     LSN base_lsn_sn(2*PALF_BLOCK_SIZE), prev_tail_lsn_sn;
     EXPECT_EQ(OB_SUCCESS, log_snapshot_meta_sn.generate(base_lsn_sn, prev_log_info, prev_tail_lsn_sn));
@@ -379,7 +383,7 @@ TEST(TestLogMetaInfos, test_log_snapshot_meta)
     LogInfo result_log_info;
     LSN input_curr_lsn = base_lsn_sn;
     LSN output_prev_tail_lsn;
-    // SN升级场景下，推进snapshot meta后，prev_log_info预期不在被依赖，get_prev_log_info返回OB_ENTRY_NOT_EXIST
+    // In the SN upgrade scenario, after advancing the snapshot meta, prev_log_info is expected to no longer be relied upon, get_prev_log_info returns OB_ENTRY_NOT_EXIST
     EXPECT_EQ(OB_ENTRY_NOT_EXIST, log_snapshot_meta_sn.get_prev_log_info(input_curr_lsn, result_log_info, output_prev_tail_lsn));
     EXPECT_EQ(result_log_info.is_valid(), false);
     EXPECT_EQ(output_prev_tail_lsn.is_valid(), false);

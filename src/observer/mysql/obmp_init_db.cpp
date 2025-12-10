@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SERVER
@@ -145,12 +149,12 @@ int ObMPInitDB::process()
                      K(session->get_server_sid()),
                      K(session->get_proxy_sessid()));
           } else if (RETRY_TYPE_LOCAL == retry_type) {
-            // 在本线程重试
+            // Retry in this thread
             force_local_retry = true;
           } else if (RETRY_TYPE_PACKET == retry_type) {
-            // 扔回队列中重试
+            // Put back into the queue for retry
             if (!THIS_WORKER.can_retry()) {
-              // 不允许丢回队列，在本线程重试
+              // Do not requeue, retry in this thread
               // FIXME: when will we be here?
               force_local_retry = true;
               LOG_WARN("fail to set retry flag, force to do local retry");
@@ -181,7 +185,7 @@ int ObMPInitDB::process()
     if (false == is_packet_retry && need_disconnect && is_conn_valid()) {
       force_disconnect();
       LOG_WARN("disconnect connection when process query", K(ret));
-    } else  if (false == is_packet_retry && OB_FAIL(send_error_packet(ret, NULL))) { // 覆盖ret, 无需继续抛出
+    } else  if (false == is_packet_retry && OB_FAIL(send_error_packet(ret, NULL))) { // override ret, no need to throw further
       LOG_WARN("failed to send error packet", K(ret));
     }
   } else if (OB_LIKELY(NULL != session)) {
@@ -226,9 +230,9 @@ int ObMPInitDB::do_process(sql::ObSQLSessionInfo *session)
   } else if (OB_FAIL(schema_guard.check_db_access(session_priv, session->get_enable_role_array(), catalog_id, db_name_))) {
     LOG_WARN("fail to check db access.", K(catalog_id), K_(db_name), K(ret));
     if (OB_ERR_NO_DB_SELECTED == ret) {
-      sret = OB_ERR_BAD_DATABASE; // 将错误码抛出让外层重试
+      sret = OB_ERR_BAD_DATABASE; // Throw the error code to let the upper layer retry
     } else {
-      sret = ret; // 保险起见，也抛出
+      sret = ret; // For safety, throw it as well
     }
   } else {
     // for external catalog, we will assign mocked db_id

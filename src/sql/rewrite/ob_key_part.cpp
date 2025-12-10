@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_REWRITE
@@ -344,7 +348,7 @@ int ObKeyPart::merge_two_in_keys(ObKeyPart *other, const SameValIdxMap &lr_idx)
 }
 
 /*
- * 整个链都可以表示成and，没有多余的东西
+ * The entire chain can be represented as and, with nothing extra
  *  (A or B) and C    general_or_next is null
  *  (A and C) or (B and C)    general_or_next is NULL or (B and C) ?
  *  (A and B) or C    general_or_next is C
@@ -635,8 +639,8 @@ OB_DEF_SERIALIZE(ObKeyPart)
 OB_DEF_DESERIALIZE(ObKeyPart)
 {
   int ret = OB_SUCCESS;
-  //要做到向前兼容，因为null_safe的范围比范围比not null safe的范围更大，对于老版本没有去filter的plan
-  //宁愿range变得更大，不能接受range被缩小，所以这里将null_safe_初始化为true
+  // To ensure forward compatibility, because the range of null_safe is larger than that of not null safe, for old versions without filtering the plan
+  // Prefer range to become larger, cannot accept range being reduced, so here null_safe_ is initialized to true
   null_safe_ = true;
   OB_UNIS_DECODE(id_);
   OB_UNIS_DECODE(pos_);

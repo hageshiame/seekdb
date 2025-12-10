@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_REWRITE
@@ -484,7 +488,7 @@ int ObStmtComparer::compute_stmt_overlap(const ObDMLStmt *first,
 
 /**
  * @brief ObTransformUtils::is_same_from
- *  比较两个 From 项是否相同
+ *  Compare whether two From items are the same
  * @return
  */
 int ObStmtComparer::is_same_from(const ObDMLStmt *first,
@@ -1465,7 +1469,7 @@ int ObStmtComparer::compare_joined_table_item(const ObDMLStmt *first,
               right_relation != QueryRelation::QUERY_EQUAL) {
       if (first_joined_table->joined_type_ != INNER_JOIN && 
           first_joined_table->joined_type_ != FULL_OUTER_JOIN) {
-        //inner join、full outer join需要交换左右表检查          
+        //inner join, full outer join need to switch left and right tables for checking
       } else if (OB_FAIL(SMART_CALL(compare_joined_table_item(first,
                                                               first_joined_table->left_table_,
                                                               second,
@@ -1499,7 +1503,7 @@ int ObStmtComparer::compare_joined_table_item(const ObDMLStmt *first,
                                               is_in_same_stmt))) {
       LOG_WARN("failed to compute conditions map", K(ret));
     } else if (cmp_relation != QueryRelation::QUERY_EQUAL) {
-      //on condition不相同
+      // on condition not different
     } else {
       relation = QueryRelation::QUERY_EQUAL;
     }
@@ -1567,7 +1571,7 @@ int ObStmtComparer::compare_table_item(const ObDMLStmt *first,
         map_info.table_map_.at(first_table_index - 1) = second_table_index - 1;
       }
     }
-  //TODO:jiangxiu.wt 后续打开flashback query针对view和generated table的支持，这里需要处理
+  //TODO:jiangxiu.wt subsequent enable flashback query support for view and generated table, here needs to be handled
   } else if ((first_table->is_generated_table() &&
              second_table->is_generated_table()) ||
              (first_table->is_lateral_table() &&

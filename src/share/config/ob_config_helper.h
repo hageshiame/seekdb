@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SHARE_CONFIG_OB_CONFIG_HELPER_H_
@@ -734,7 +738,7 @@ public:
 
 private:
   char str_[OB_MAX_CONFIG_NAME_LEN];
-  // ObConfigContainer 容器中使用了对象的拷贝构造函数,不能禁止
+  // ObConfigContainer container uses the object's copy constructor, cannot be prohibited
   //DISALLOW_COPY_AND_ASSIGN(ObConfigStringKey);
 };
 inline ObConfigStringKey::ObConfigStringKey(const char *str)
@@ -800,9 +804,9 @@ public:
 private:
   enum INT_UNIT
   {
-    // 通常对于一个数字，可以写成 1k, 1m, 分别表示
+    // Typically for a number, it can be written as 1k, 1m, respectively representing
     // 1000(kilo), 1000000(million)
-    // billion 不支持，避免和 capacity 字节的 1b 混淆
+    // billion not supported, avoid confusion with capacity byte's 1b
     UNIT_K = 1000,
     UNIT_M = 1000000,
   };

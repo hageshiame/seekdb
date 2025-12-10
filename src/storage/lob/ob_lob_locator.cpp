@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX STORAGE
@@ -102,7 +106,7 @@ int ObLobLocatorHelper::init(const uint64_t table_id,
   } else if (OB_FAIL(tx_read_snapshot_.build_snapshot_for_lob(ctx.mvcc_acc_ctx_.snapshot_, ls_id))) {
     STORAGE_LOG(WARN, "build_snapshot_for_lob fail", K(ret), K(ls_id), K(snapshot_version), K(ctx.mvcc_acc_ctx_.snapshot_));
   } else {
-    // table id只用来判断是不是systable, 这个接口创建的locator不会构造真正的rowid
+    // table id is only used to determine if it is a systable, this interface created locator will not construct a real rowid
     table_id_ = table_id;
     tablet_id_ = tablet_id;
     ls_id_ = ls_id.id();

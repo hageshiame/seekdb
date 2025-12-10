@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SERVER
@@ -178,8 +182,8 @@ int ObMPResetConnection::process()
     if (OB_SUCC(ret)) {
       ObObj last_insert_id;
       last_insert_id.set_uint64(0);
-      // FIXME @qianfu 暂时写成update_sys_variable函数，以后再实现一个可以传入ObSysVarClassType并且
-      // 和set系统变量语句走同一套逻辑的函数，在这里调用
+      // FIXME @qianfu temporarily written as update_sys_variable function, to be implemented with the ability to pass in ObSysVarClassType and
+      // and set system variable statement follow the same logic function, call here
       if (OB_FAIL(session->update_sys_variable(SYS_VAR_LAST_INSERT_ID, last_insert_id))) {
         LOG_WARN("fail to update last_insert_id", K(ret));
       } else if (OB_FAIL(session->update_sys_variable(SYS_VAR_IDENTITY, last_insert_id))) {
@@ -202,16 +206,13 @@ int ObMPResetConnection::process()
 
     // 10. OB unique design
     if (OB_SUCC(ret)) {
-      // 10.1 pl debug 功能, pl debug不支持分布式调试，但调用也不会有副作用
-
-      // 10.2 非分布式需要的话，分布式也需要，用于清理package的全局变量值
+      // 10.1 pl debug function, pl debug does not support distributed debugging, but calling it will have no side effects
+      // 10.2 Non-distributed needs it, distributed also needs it, used for cleaning the global variable values of the package
       session->reset_all_package_state();
-
-      // 10.3 currval 清理
+      // 10.3 currval cleanup
       session->reuse_all_sequence_value();
-
-      // reuse_context_map 没有使用 malloc free 内存，会导致内存泄漏，
-      // mem_context_ 清理时会产生 unfree error 日志
+      // reuse_context_map does not use malloc free memory, which will lead to memory leaks,
+      // mem_context_ cleanup will generate unfree error log
       //session->reuse_context_map();
 
       // 10.5 warning buf

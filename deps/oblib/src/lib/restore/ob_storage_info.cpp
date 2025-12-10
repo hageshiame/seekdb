@@ -1,15 +1,17 @@
 /*
- *  Copyright (c) 2022 OceanBase
- *  OceanBase is licensed under Mulan PubL v2.
- *  You can use this software according to the terms and conditions of the Mulan PubL v2.
- *  You may obtain a copy of Mulan PubL v2 at:
- *           http://license.coscl.org.cn/MulanPubL-2.0
- *  THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- *  EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- *  MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- *  See the Mulan PubL v2 for more details.
- *  Authors:
- *      
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 #define USING_LOG_PREFIX STORAGE
 
@@ -306,8 +308,6 @@ const char *ObObjectStorageInfo::get_checksum_type_str() const
   return get_storage_checksum_type_str(checksum_type_);
 }
 
-// oss:host=xxxx&access_id=xxx&access_key=xxx
-// cos:host=xxxx&access_id=xxx&access_key=xxxappid=xxx
 // s3:host=xxxx&access_id=xxx&access_key=xxx&s3_region=xxx
 // hdfs:krb5conf=xxx&principal=xxx&keytab=xxx&ticket_cache_path=xxx
 int ObObjectStorageInfo::set(const common::ObStorageType device_type, const char *storage_info)
@@ -318,31 +318,25 @@ int ObObjectStorageInfo::set(const common::ObStorageType device_type, const char
   if (is_valid()) {
     ret = OB_INIT_TWICE;
     LOG_WARN("storage info init twice", K(ret));
-  } else if (OB_ISNULL(storage_info) || strlen(storage_info) >= OB_MAX_BACKUP_STORAGE_INFO_LENGTH) {
+  } else if (FALSE_IT(device_type_ = device_type)){
+  } else if (OB_ISNULL(storage_info) || strlen(storage_info) == 0) {
+    // when device_type is file or hdfs, storage_info can be empty
+    if (OB_STORAGE_FILE != device_type_ && OB_STORAGE_HDFS != device_type_) {
+      ret = OB_INVALID_BACKUP_DEST;
+      LOG_WARN("storage info is invalid", K(ret), KP(storage_info));
+    }
+  } else if (strlen(storage_info) >= OB_MAX_BACKUP_STORAGE_INFO_LENGTH) {
     ret = OB_INVALID_BACKUP_DEST;
     LOG_WARN("storage info is invalid", K(ret), KP(storage_info));
-  } else if (device_type == OB_STORAGE_AZBLOB) {
+  } else if (device_type_ == OB_STORAGE_AZBLOB) {
     if (OB_ISNULL(cluster_version_mgr_)) {
       ret = OB_INVALID_ARGUMENT;
       LOG_WARN("cluster_version_mgr is null", K(ret), KP(cluster_version_mgr_));
     } else if (OB_FAIL(cluster_version_mgr_->is_supported_azblob_version())) {
       LOG_WARN("azblob version is not supported", K(ret), K(device_type));
     }
-  }
-
-  if (OB_FAIL(ret)) {
-  } else if (FALSE_IT(device_type_ = device_type)) {
-  } else if (0 == strlen(storage_info)) {
-    // Only file/hdfs storage could be with empty storage_info.
-    if (OB_STORAGE_FILE != device_type_ && OB_STORAGE_HDFS != device_type_) {
-      ret = OB_INVALID_BACKUP_DEST;
-      LOG_WARN("storage info is empty", K(ret), K_(device_type));
-    }
   } else if (OB_FAIL(parse_storage_info_(storage_info, has_needed_extension))) {
     LOG_WARN("parse storage info failed", K(ret), KP(storage_info), K_(device_type));
-  } else if (OB_STORAGE_COS == device_type && !has_needed_extension) {
-    ret = OB_INVALID_BACKUP_DEST;
-    LOG_WARN("invalid cos info, appid do not allow to be empty", K(ret), K_(extension));
   } else if (OB_FAIL(validate_arguments())) {
     ret = OB_INVALID_BACKUP_DEST;
     LOG_WARN("invalid arguments after parse storage info", K(ret), KPC(this));
@@ -389,12 +383,7 @@ int ObObjectStorageInfo::validate_arguments() const
     }
   }
   if (OB_SUCC(ret) && enable_worm_) {
-    if (OB_UNLIKELY(!(OB_MD5_ALGO == checksum_type_ && OB_STORAGE_OSS == device_type_))) {
-      ret = OB_NOT_SUPPORTED;
-      LOG_WARN("device or checksum type don't support enable_worm", K(ret), KPC(this));
-      LOG_USER_ERROR(OB_NOT_SUPPORTED,
-          "Only OSS and checksum_type=md5 support setting enable_worm, other devices or checksum types are");
-    } else if (OB_UNLIKELY(is_use_obdal())) {
+    if (OB_UNLIKELY(is_use_obdal())) {
       ret = OB_NOT_SUPPORTED;
       LOG_WARN("using obdal mode don't support enable_worm", K(ret), KPC(this));
       LOG_USER_ERROR(OB_NOT_SUPPORTED, "setting enable_worm=true when using obdal is");
@@ -486,14 +475,6 @@ int ObObjectStorageInfo::parse_storage_info_(const char *storage_info, bool &has
             max_bandwidth_ = value;
             LOG_INFO("parse bandwidth value", K(buf), K(value));
           }
-        }
-      } else if (0 == strncmp(APPID, token, strlen(APPID))) {
-        has_needed_extension = (OB_STORAGE_COS == device_type_);
-        if (OB_UNLIKELY(OB_STORAGE_COS != device_type_)) {
-          ret = OB_INVALID_ARGUMENT;
-          LOG_WARN("only cos protocol can appid", K(ret), K(token), K(device_type_));
-        } else if (OB_FAIL(set_storage_info_field_(token, extension_, sizeof(extension_)))) {
-          LOG_WARN("failed to set appid", K(ret), K(token));
         }
       } else if (0 == strncmp(DELETE_MODE, token, strlen(DELETE_MODE))) {
         if (OB_STORAGE_FILE == device_type_) {
@@ -626,18 +607,6 @@ int ObObjectStorageInfo::set_addressing_model_(const char *addressing_model)
   return ret;
 }
 
-bool is_oss_supported_checksum(const ObStorageChecksumType checksum_type)
-{
-  return checksum_type == ObStorageChecksumType::OB_NO_CHECKSUM_ALGO
-      || checksum_type == ObStorageChecksumType::OB_MD5_ALGO;
-}
-
-bool is_cos_supported_checksum(const ObStorageChecksumType checksum_type)
-{
-  return checksum_type == ObStorageChecksumType::OB_NO_CHECKSUM_ALGO
-      || checksum_type == ObStorageChecksumType::OB_MD5_ALGO;
-}
-
 bool is_s3_supported_checksum(const ObStorageChecksumType checksum_type)
 {
   return checksum_type == ObStorageChecksumType::OB_CRC32_ALGO
@@ -664,14 +633,6 @@ int ObObjectStorageInfo::set_checksum_type_(const char *checksum_type_str)
   }
 
   if (OB_FAIL(ret)) {
-  } else if (OB_UNLIKELY(OB_STORAGE_OSS == device_type_ && !is_oss_supported_checksum(checksum_type_))) {
-    ret = OB_CHECKSUM_TYPE_NOT_SUPPORTED;
-    OB_LOG(WARN, "not supported checksum type for oss",
-        K(ret), K_(device_type), K(checksum_type_str), K_(checksum_type));
-  } else if (OB_UNLIKELY(OB_STORAGE_COS == device_type_ && !is_cos_supported_checksum(checksum_type_))) {
-    ret = OB_CHECKSUM_TYPE_NOT_SUPPORTED;
-    OB_LOG(WARN, "not supported checksum type for cos",
-        K(ret), K_(device_type), K(checksum_type_str), K_(checksum_type));
   } else if (OB_UNLIKELY(OB_STORAGE_S3 == device_type_ && !is_s3_supported_checksum(checksum_type_))) {
     ret = OB_CHECKSUM_TYPE_NOT_SUPPORTED;
     OB_LOG(WARN, "not supported checksum type for s3",
@@ -694,7 +655,6 @@ int ObObjectStorageInfo::set_storage_info_field_(const char *info, char *field, 
       ret = OB_INVALID_ARGUMENT;
       LOG_WARN("info is too long ", K(ret), K(info_len), K(length));
     } else if (pos > 0 && OB_FAIL(databuff_printf(field, length, pos, "&"))) {
-      // cos:host=xxxx&access_id=xxx&access_key=xxx&appid=xxx&delete_mode=xxx
       // extension_ may contain both appid and delete_mode
       // so delimiter '&' should be included
       LOG_WARN("failed to add delimiter to storage info field", K(ret), K(pos), KP(field), K(length));
@@ -1624,8 +1584,8 @@ int64_t ObDeviceCredentialMgr::on_write_data_(
     ret = OB_INVALID_ARGUMENT;
     LOG_WARN("invalid argument", K(ret), KP(ptr), K(size), K(nmemb), KP(user_data));
   } else {
-    // "阿里云STS服务返回的安全令牌（STS
-    // Token）的长度不固定，强烈建议您不要假设安全令牌的最大长度。" there exists sts_token in the
+    // "Alibaba Cloud STS service returns the security token (STS"
+    // Token length is not fixed, it is strongly recommended that you do not assume the maximum length of the security token. " there exists sts_token in the
     // response of curl. therefore, use allocator to alloc mem dynamically
     ResponseAndAllocator *res_and_allocator = static_cast<ResponseAndAllocator *>(user_data);
     char *&response = res_and_allocator->response_;

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2023 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #pragma once
@@ -87,10 +91,10 @@ public:
   //Note that if you use complex structure as variables, the complex structure should also keep compatibility.
 
   //The following variables need to be serialized
-  int16_t attr_;       //低8位0,1,2,3,4,5分别表示空闲,sstable数据,tablet元数据,schema,compressor name,宏块元数据;其余位置0；
+  int16_t attr_;       // Low 8 bits 0, 1, 2, 3, 4, 5 represent idle, sstable data, tablet metadata, schema, compressor name, macro block metadata; other positions are 0;
   union
   {
-    uint64_t data_version_;  //sstable宏块：sstable的主版本号(高48位)及，小版本号(低16位)
+    uint64_t data_version_;  // sstable macro block: major version number (high 48 bits) and minor version number (low 16 bits)
     int64_t previous_block_index_; // nonsstable: previous_block_index_ link.
   };
   int16_t column_number_;            // column count of this table (size of column_checksum_)

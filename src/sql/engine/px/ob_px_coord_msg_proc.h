@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef _OB_SQL_PX_COORD_MSG_PROC_H_
@@ -43,8 +47,7 @@ class RDWinFuncPXPieceMsg;
 class RDWinFuncPXWholeMsg;
 class ObJoinFilterCountRowPieceMsg;
 class ObJoinFilterCountRowWholeMsg;
-
-// 抽象出本接口类的目的是为了 MsgProc 和 ObPxCoord 解耦
+// The purpose of abstracting this interface class is to decouple MsgProc and ObPxCoord
 class ObIPxCoordMsgProc
 {
 public:
@@ -70,10 +73,10 @@ public:
 class ObIPxSubCoordMsgProc
 {
 public:
-  // 收到 TransmitDataChannel 消息，通知 ObPxTransmit 可以发送数据了
+  // Received TransmitDataChannel message, notifying ObPxTransmit that it can send data now
   virtual int on_transmit_data_ch_msg(
       const ObPxTransmitDataChannelMsg &pkt) const = 0;
-  // 收到 ReceiveDataChannel 消息，通知 ObPxReceive 可以接收数据了
+  // Received ReceiveDataChannel message, notify ObPxReceive that it can receive data now
   virtual int on_receive_data_ch_msg(
       const ObPxReceiveDataChannelMsg &pkt) const = 0;
   virtual int on_create_filter_ch_msg(
@@ -100,7 +103,7 @@ public:
       const RDWinFuncPXWholeMsg &pkt) const = 0;
   virtual int on_whole_msg(
       const ObJoinFilterCountRowWholeMsg &pkt) const = 0;
-  // SQC 被中断
+  // SQC is interrupted
   virtual int on_interrupted(const ObInterruptCode &ic) const = 0;
 };
 

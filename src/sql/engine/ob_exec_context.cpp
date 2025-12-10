@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -202,7 +206,9 @@ ObExecContext::ObExecContext(ObIAllocator &allocator)
     lob_access_ctx_(nullptr),
     auto_dop_map_(),
     force_local_plan_(false),
-    diagnosis_manager_()
+    diagnosis_manager_(),
+    deterministic_udf_cache_allocator_("UDFCACHE", OB_MALLOC_NORMAL_BLOCK_SIZE, MTL_ID()),
+    current_granule_type_(OB_GRANULE_UNINITIALIZED)
 {
 }
 
@@ -214,7 +220,7 @@ ObExecContext::~ObExecContext()
   
   if (NULL != phy_plan_ctx_) {
     if (!THIS_WORKER.has_req_flag()) {
-      //对于后台线程, 需要调用析构
+      // For background threads, need to call destructor
       phy_plan_ctx_->~ObPhysicalPlanCtx();
     } else {
       // free subschema map memory
@@ -806,7 +812,7 @@ int ObExecContext::init_physical_plan_ctx(const ObPhysicalPlan &plan)
       }
     }
     if (OB_SUCC(ret)) {
-      if (stmt::T_SELECT == plan.get_stmt_type()) { // select才有weak
+      if (stmt::T_SELECT == plan.get_stmt_type()) { // select has weak
         if (sql_ctx_->is_protocol_weak_read_) {
           consistency = WEAK;
         } else if (OB_UNLIKELY(phy_plan_hint.read_consistency_ != INVALID_CONSISTENCY)) {

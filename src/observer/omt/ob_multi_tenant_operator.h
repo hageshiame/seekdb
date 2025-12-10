@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef _OCEABASE_OBSERVER_OMT_OB_MULTI_TENANT_OPERATOR_H_
@@ -29,14 +33,14 @@ public:
   virtual ~ObMultiTenantOperator();
 
   int init();
-  // 处理当前租户
+  // Process the current tenant
   virtual int process_curr_tenant(common::ObNewRow *&row) = 0;
-  // 释放上一个租户的资源
+  // Release the resources of the previous tenant
   virtual void release_last_tenant() = 0;
-  // 过滤租户
+  // Filter tenant
   virtual bool is_need_process(uint64_t tenant_id) { return true; }
-  // 释放资源, 注意继承ObMultiTenantOperator的子类在销毁时必须首先调用ObMultiTenantOperator::reset()
-  // 由ObMultiTenantOperator维护的租户状态释放子类上的租户对象
+  // Release resources, note that subclasses inheriting from ObMultiTenantOperator must first call ObMultiTenantOperator::reset() when destroyed
+  // Tenant object release on subclasses maintained by ObMultiTenantOperator
   void reset();
 
   int execute(common::ObNewRow *&row);

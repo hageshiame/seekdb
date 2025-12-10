@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include <gtest/gtest.h>
@@ -151,12 +155,12 @@ int ObExecutorTest::create_local_plan_tree(ObExecContext &ctx)
   col.column_name_ = ObString::make_string("a");
   EXPECT_EQ(OB_SUCCESS, single_range_columns.push_back(col));
   ref_col.add_flag(IS_COLUMN);
-  // 构造 (a = 5)
+  // Construct (a = 5)
   ObObj value1;
   value1.set_int(5);
   ObConstRawExpr const_col1(value1, T_INT); //5
   const_col1.add_flag(IS_CONST);
-  ObOpRawExpr condition1(&ref_col, &const_col1, T_OP_EQ); // a = 5构造完毕
+  ObOpRawExpr condition1(&ref_col, &const_col1, T_OP_EQ); // a = 5 construction completed
   ObQueryRange *scan_query_range = OB_NEW(ObQueryRange, ObModIds::TEST);
   EXPECT_EQ(OB_SUCCESS, scan_query_range->preliminary_extract_query_range(single_range_columns, &condition1));
 
@@ -256,12 +260,12 @@ int ObExecutorTest::create_distributed_plan_tree(ObExecContext &ctx)
   col.column_name_ = ObString::make_string("a");
   EXPECT_EQ(OB_SUCCESS, single_range_columns.push_back(col));
   ref_col.add_flag(IS_COLUMN);
-  // 构造 (a = 5)
+  // Construct (a = 5)
   ObObj value1;
   value1.set_int(5);
   ObConstRawExpr const_col1(value1, T_INT); //5
   const_col1.add_flag(IS_CONST);
-  ObOpRawExpr condition1(&ref_col, &const_col1, T_OP_EQ); // a = 5构造完毕
+  ObOpRawExpr condition1(&ref_col, &const_col1, T_OP_EQ); // a = 5 construction completed
   ObQueryRange *scan_query_range = OB_NEW(ObQueryRange, ObModIds::TEST);
   EXPECT_EQ(OB_SUCCESS, scan_query_range->preliminary_extract_query_range(single_range_columns, &condition1));
 
@@ -379,8 +383,7 @@ TEST_F(ObExecutorTest, local_executor_test)
 TEST_F(ObExecutorTest, distributed_executor_test)
 {
   int ret = OB_SUCCESS;
-
-  //启动模拟收包队列
+  // Start simulation packet receiving queue
   ObMockPacketQueueThread::get_instance()->start();
 
   ObPhyTableLocationSEArray table_locs;

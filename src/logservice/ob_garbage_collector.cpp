@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "ob_garbage_collector.h"
@@ -272,8 +276,7 @@ ObGCLSLog::ObGCLSLog()
 {
   reset();
 }
-
-//GC类型日志回放要求同类型内按序, 考虑到回放的性能, 使用前向barrier
+//GC type log replay requires in-order within the same type, considering replay performance, forward barrier is used
 ObGCLSLog::ObGCLSLog(const int16_t log_type)
     : header_(ObLogBaseType::GC_LS_LOG_BASE_TYPE, ObReplayBarrierType::STRICT_BARRIER),
       version_(GC_LOG_VERSION),
@@ -574,7 +577,7 @@ int ObGCHandler::gc_check_invalid_member_seq(const int64_t gc_seq, bool &need_gc
     WLockGuard wlock_guard(rwlock_);
     CLOG_LOG(INFO, "gc_check_invalid_member_seq", K(gc_seq), K(gc_seq_invalid_member_));
     if (gc_seq == gc_seq_invalid_member_ + 1) {
-      //连续两轮都不在leader成员列表中
+      //Not in the leader member list for two consecutive rounds
       need_gc = true;
     }
     gc_seq_invalid_member_ = gc_seq;
@@ -972,7 +975,7 @@ int ObGCHandler::submit_log_(const ObGCLSLOGType log_type, bool &is_success)
     }
     if (OB_SUCC(ret)) {
       const ObLSID ls_id = ls_->get_ls_id();
-      // 此处需要考虑能否做成异步
+      // Here it needs to be considered whether it can be made asynchronous
       bool is_finished = false;
       int64_t WAIT_TIME = 10 * 1000L; // 10ms
       constexpr int64_t MIN = 60 * 1000 * 1000;
@@ -1049,7 +1052,7 @@ int ObGCHandler::block_ls_transfer_in_(const SCN &block_scn)
   int ret = OB_SUCCESS;
   LSGCState gc_state = INVALID_LS_GC_STATE;
   ObLSID ls_id = ls_->get_ls_id();
-  //过滤重复回放场景
+  //Filter duplicate replay scenarios
   if (OB_FAIL(ls_->get_gc_state(gc_state))) {
     CLOG_LOG(WARN, "get_gc_state failed", K(ls_id), K(gc_state));
   } else if (!is_valid_ls_gc_state(gc_state)) {
@@ -1088,7 +1091,7 @@ int ObGCHandler::offline_ls_(const SCN &offline_scn)
   int ret = OB_SUCCESS;
   LSGCState gc_state = INVALID_LS_GC_STATE;
   ObLSID ls_id = ls_->get_ls_id();
-  //过滤重复回放场景
+  //Filter duplicate replay scenarios
   if (OB_FAIL(ls_->get_gc_state(gc_state))) {
     CLOG_LOG(WARN, "get_gc_state failed", K(ls_id), K(gc_state));
   } else if (!is_valid_ls_gc_state(gc_state)) {

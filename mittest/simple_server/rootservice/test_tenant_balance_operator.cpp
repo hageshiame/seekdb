@@ -1,16 +1,20 @@
 // owner: msy164651 
 // owner group: rs
 
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SHARE
@@ -464,8 +468,7 @@ TEST_F(TestBalanceOperator, balance_execute)
     }
   }
 }
-
-//验证merge任务在transfer结束后再次设置part_list然后结束
+// Verify merge task sets part_list again after transfer ends and then finishes
 TEST_F(TestBalanceOperator, merge_task)
 {
   ObBalanceTask task;
@@ -487,7 +490,7 @@ TEST_F(TestBalanceOperator, merge_task)
   task_type = ObString("LS_MERGE");
   task_status = ObString("TRANSFER");
   ObString comment;
-  //防止后台线程结束这个任务
+  // Prevent the background thread from ending this task
   ASSERT_EQ(OB_SUCCESS, parent_list.push_back(task_id));
   ASSERT_EQ(OB_SUCCESS, task.init(
       tenant_id, job_id, task_id,
@@ -498,7 +501,7 @@ TEST_F(TestBalanceOperator, merge_task)
       parent_list, child_list, comment));
   common::ObMySQLProxy &sql_proxy = get_curr_simple_server().get_sql_proxy2();
   ASSERT_EQ(OB_SUCCESS, ObBalanceTaskTableOperator::insert_new_task(task, sql_proxy));
-  //设置part_list
+  // Set part_list
   ObTransferPartInfo part_info(50001, 50001);
   ASSERT_EQ(OB_SUCCESS, part_list.push_back(part_info));
   transfer_task_id = ObTransferTaskID(1);

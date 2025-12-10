@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_OBSERVER_MYSQL_OBMP_BASE_H_
@@ -117,7 +121,7 @@ protected:
   int build_encode_param_(obmysql::ObProtoEncodeParam &param,
                           obmysql::ObMySQLPacket *pkt, const bool is_last);
   void set_request_expect_group_id(sql::ObSQLSessionInfo *session);
-  // 计算并设置当前用户所属 cgroup，用于资源隔离。如未设置，默认 cgroup id 为 0
+  // Calculate and set the current user's cgroup for resource isolation. If not set, the default cgroup id is 0
   int response_row(sql::ObSQLSessionInfo &session,
                    common::ObNewRow &row,
                    const ColumnsFieldIArray *fields,
@@ -138,14 +142,14 @@ protected:
 private:
   DISALLOW_COPY_AND_ASSIGN(ObMPBase);
   int64_t process_timestamp_;
-  uint64_t proxy_version_; // 控制prepare statement返回stmt id的策略
+  uint64_t proxy_version_; // Control the strategy for prepare statement to return stmt id
 }; // end of class ObMPBase
 
 inline void ObMPBase::setup_wb(sql::ObSQLSessionInfo &session)
 {
   // just in case, not really need to call this
   session.reset_warnings_buf();
-  // 将当前session的wb设置到线程局部，以便于代码中随处可以写warning进wb
+  // Set the current session's wb to thread-local so that warning can be written to wb anywhere in the code
   ob_setup_tsi_warning_buffer(&session.get_warnings_buffer());
 }
 

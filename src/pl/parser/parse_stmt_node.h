@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SRC_PL_PARSER_PARSE_STMT_NODE_H_
@@ -62,12 +66,12 @@ typedef struct _ObParseCtx
   int stmt_len_;
   const char *orig_stmt_str_;
   int orig_stmt_len_;
-  ObQuestionMarkCtx question_mark_ctx_;//用来记录整个anonymous中所有的question mark
+  ObQuestionMarkCtx question_mark_ctx_;//used to record all the question marks in the entire anonymous
   int comp_mode_;
   bool is_not_utf8_connection_;
   const struct ObCharsetInfo *charset_info_;
   const struct ObCharsetInfo *charset_info_oracle_db_;
-  int64_t last_escape_check_pos_;  //解析quoted string时的一个临时变量，处理连接gbk字符集时遇到的转义字符问题
+  int64_t last_escape_check_pos_;  // A temporary variable used during quoted string parsing to handle escape characters encountered when connecting with the gbk character set
   int connection_collation_;
   bool mysql_compatible_comment_; //whether the parser is parsing "/*! xxxx */"
   int copied_pos_;
@@ -81,14 +85,15 @@ typedef struct _ObParseCtx
   {
     uint32_t is_inner_parse_:1;   //is inner parser, not from the user's call
     uint32_t is_for_trigger_:1;
-    uint32_t is_dynamic_:1; //是否是从dynamic sql过来的
+    uint32_t is_dynamic_:1; //whether it comes from dynamic sql
     uint32_t is_for_preprocess_:1;
     uint32_t is_include_old_new_in_trigger_:1; // indicates whether include :old/:new/:parent in trigger body
     uint32_t in_q_quote_:1;
     uint32_t is_pl_fp_  :1;
-    uint32_t is_forbid_anony_parameter_ : 1; // 1 表示禁止匿名块参数化
+    uint32_t is_forbid_anony_parameter_ : 1; // 1 indicates that anonymous block parameterization is forbidden
     uint32_t need_switch_to_wrap_ : 1; // 1 indicates that the parser needs to switch to <wrap_begin>
-    uint32_t reserved_:23;
+    uint32_t contain_sensitive_data_ : 1; // 1 indicates whether contains sensitive data like create_ai_endpoint
+    uint32_t reserved_:22;
   };
 } ObParseCtx;
 

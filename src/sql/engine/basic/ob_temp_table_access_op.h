@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SRC_SQL_ENGINE_BASIC_OB_TEMP_TABLE_ACCESS_OP_H_
@@ -105,12 +109,12 @@ public:
 
 private:
   ObChunkDatumStore::Iterator datum_store_it_;
-  //这里的result id是当前算子可用的任务（对于rescan而言）或者是已经完成或正在完成的任务
-  //TempTableAccess的rescan不会重新从任务池中抢占任务，而是选择重新执行之前抢占到的任务
+  // Here the result id is the current operator's available task (for rescan) or tasks that have been completed or are being completed
+  // TempTableAccess's rescan will not reacquire tasks from the task pool, but instead choose to re-execute the previously acquired tasks
   common::ObSEArray<uint64_t, 8> interm_result_ids_;
   uint64_t cur_idx_;
   bool can_rescan_;
-  //如果是local result，只能读一次
+  // If it is local result, it can only be read once
   bool is_started_;
   const ObChunkDatumStore::StoredRow **stored_rows_;
   dtl::ObDTLIntermResultInfoGuard result_info_guard_;

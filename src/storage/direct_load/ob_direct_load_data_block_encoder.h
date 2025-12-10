@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 #pragma once
 
@@ -138,7 +142,7 @@ int ObDirectLoadDataBlockEncoder<Header, align>::realloc_bufs(const int64_t size
       }
       buf_ = tmp_buf;
       buf_size_ = buf_size;
-      // pos_不变
+      // pos_unchanged
     }
   }
 
@@ -204,15 +208,13 @@ int ObDirectLoadDataBlockEncoder<Header, align>::write_item(const T &item)
 {
   int ret = common::OB_SUCCESS;
   const int64_t item_size = item.get_serialize_size();
-
-  // 内存太大恢复到默认数据块大小
+  // Memory is too large, revert to default block size
   if (item_size + pos_ < data_block_size_) {
     if (OB_FAIL(realloc_bufs(data_block_size_))) {
       STORAGE_LOG(WARN, "fail to realloc bufs", KR(ret));
     }
   }
-
-  // 单行数据超过默认数据块大小, 且buf未扩容, 重新分配buf
+  // Single line data exceeds the default data block size, and buf has not been resized, reallocate buf
   if (OB_SUCC(ret)) {
     if (item_size > data_block_size_ - header_size_ && item_size > buf_size_ - header_size_) {
       if (OB_FAIL(realloc_bufs(item_size + header_size_))) {

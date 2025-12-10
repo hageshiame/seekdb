@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef SRC_SQL_ENGINE_BASIC_OB_SELECT_INTO_OP_H_
@@ -102,7 +106,7 @@ public:
   common::ObObj outfile_name_;
   common::ObObj field_str_; // FARM COMPAT WHITELIST FOR filed_str_: renamed
   common::ObObj line_str_;
-  // 431以下版本select into无法并行执行, 不会序列化算子, 修改closed_cht_类型不会导致升级兼容性问题
+  // Versions below 431 cannot execute select into in parallel, will not serialize operators, modifying closed_cht_type will not cause upgrade compatibility issues
   common::ObObj closed_cht_; // FARM COMPAT WHITELIST FOR closed_cht_: change type
   bool is_optional_;
   common::ObFixedArray<ObExpr*, common::ObIAllocator> select_exprs_;
@@ -449,7 +453,7 @@ private:
   common::ObObjPrintParams print_params_;
   ObEscapePrinter escape_printer_;
   bool do_partition_;
-  char *json_buf_;  //json需要多一个buffer用来放转义前的string
+  char *json_buf_;  // json needs one more buffer to hold the string before escaping
   int64_t json_buf_len_;
   char *shared_buf_;
   int64_t shared_buf_len_;

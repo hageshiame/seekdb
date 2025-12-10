@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "lib/restore/ob_storage.h"
@@ -713,6 +717,8 @@ static void convert_http_error(const Aws::S3::S3Error &s3_err, int &ob_errcode)
     case S3_BAD_REQUEST: {
       if (exception == "InvalidRequest" && err_msg.find("x-amz-checksum") != std::string::npos) {
         ob_errcode = OB_OBJECT_STORAGE_CHECKSUM_ERROR;
+      } else if (exception == "InvalidRequest" && err_msg.find("Appid, Bucket") != std::string::npos) {
+        ob_errcode = OB_INVALID_OBJECT_STORAGE_ENDPOINT;
       } else if (err_msg.find("region") != std::string::npos
                  && err_msg.find("is wrong; expecting") != std::string::npos) {
         ob_errcode = OB_S3_REGION_MISMATCH;
@@ -727,6 +733,8 @@ static void convert_http_error(const Aws::S3::S3Error &s3_err, int &ob_errcode)
       else if (err_msg.find("KeyTooLongError") != std::string::npos
           || err_msg.find("InvalidObjectName") != std::string::npos
           || err_msg.find("InvalidArgument") != std::string::npos) {
+        ob_errcode = OB_INVALID_ARGUMENT;
+      } else if (exception == "InvalidURI") {
         ob_errcode = OB_INVALID_ARGUMENT;
       } else {
         ob_errcode = OB_OBJECT_STORAGE_IO_ERROR;

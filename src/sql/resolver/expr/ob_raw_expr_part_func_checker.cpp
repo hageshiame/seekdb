@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_RESV
@@ -88,21 +92,21 @@ int ObRawExprPartFuncChecker::visit(ObOpRawExpr &expr)
     case T_OP_BIT_NEG:
     case T_OP_BIT_LEFT_SHIFT:
     case T_OP_BIT_RIGHT_SHIFT: {
-      //限制bit操作符和bool运算符不能作为partition by range(part_expr) partition p0 values less than (value_expr)
-      //part_expr和value_expr中的运算符类型
+      // Limit bit operators and bool operators cannot be used as partition by range(part_expr) partition p0 values less than (value_expr)
+      // operator types in part_expr and value_expr
       ret = OB_ERR_PARTITION_FUNCTION_IS_NOT_ALLOWED;
       LOG_WARN("invalid partition function", K(ret),
                "item_type", expr.get_expr_type());
       break;
     }
-    // 仅oracle模式生成列支持
+    // Only Oracle mode column generation is supported
     case T_OP_DIV:    // /
     {
       ret = OB_ERR_PARTITION_FUNCTION_IS_NOT_ALLOWED;
       LOG_WARN("invalid partition function", K(ret), "item_type", expr.get_expr_type());
       break;
     }
-    // mysql模式及oracle模式生成列支持
+    // MySQL mode and Oracle mode generated column support
     case T_OP_ADD:    // +
     case T_OP_MINUS:  // -
     case T_OP_MUL:    // *
@@ -159,7 +163,7 @@ int ObRawExprPartFuncChecker::visit(ObSysFunRawExpr &expr)
      */
     //white list, some of them are not implemented now
     switch(expr.get_expr_type()) {
-      // mysql模式及oracle模式都支持
+      // MySQL mode and Oracle mode are both supported
       case T_FUN_SYS_DAY:
       case T_FUN_SYS_DAY_OF_MONTH:
       case T_FUN_SYS_DAY_OF_WEEK:
@@ -194,7 +198,7 @@ int ObRawExprPartFuncChecker::visit(ObSysFunRawExpr &expr)
           ret = OB_SUCCESS;
           break;
         }
-        // 仅生成列支持
+        // Only generate column support
       case T_FUN_SYS_SUBSTR:
       case T_FUN_SYS_SUBSTRING_INDEX:
       case T_OP_CNN:
@@ -220,7 +224,7 @@ int ObRawExprPartFuncChecker::visit(ObSysFunRawExpr &expr)
           }
           break;
         }
-        // mysql模式及oracle生成列支持
+        // MySQL mode and Oracle generated column support
       case T_OP_ABS:  //ABS()
       case T_FUN_SYS_CEIL:  //CEILING()
       case T_FUN_SYS_CEILING:
@@ -235,7 +239,7 @@ int ObRawExprPartFuncChecker::visit(ObSysFunRawExpr &expr)
           }
           break;
         }
-        // 仅oracle模式支持
+        // Only oracle mode is supported
       case T_FUN_SYS_RPAD:
         {
           ret = OB_ERR_PARTITION_FUNCTION_IS_NOT_ALLOWED;

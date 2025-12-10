@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_DML_OB_TABLE_INSERT_UP_OP_H_
@@ -106,8 +110,7 @@ public:
 
   int update_auto_increment(const ObExpr &expr,
                             const uint64_t cid);
-
-  // 执行所有尝试插入的 das task， fetch冲突行的主表主键
+  // Execute all attempted insert das tasks, fetch primary key of the main table for conflicting rows
   int fetch_conflict_rowkey(int64_t row_cnt);
   int get_next_conflict_rowkey(DASTaskIter &task_iter);
 
@@ -122,8 +125,7 @@ public:
   }
 
 protected:
-
-  // 物化所有要被replace into的行到replace_row_store_
+  // Materialize all rows to be replace into to replace_row_store_
   int load_batch_insert_up_rows(bool &is_iter_end, int64_t &insert_rows);
 
   int get_next_row_from_child();
@@ -131,18 +133,15 @@ protected:
   int do_insert_up();
 
   int rollback_savepoint(const transaction::ObTxSEQ &savepoint_no);
-
-  // 检查是否有duplicated key 错误发生
+  // Check for duplicated key error occurrence
   bool check_is_duplicated();
-
-  // 遍历replace_row_store_中的所有行，并且更新冲突map，
+  // Traverse all rows in replace_row_store_ and update the conflict map,
   int do_insert_up_cache();
 
   int set_heap_table_new_pk(const ObUpdCtDef &upd_ctdef,
                             ObUpdRtDef &upd_rtdef);
-
-  // 遍历主表的hash map，确定最后提交delete + update + insert das_tasks
-  // 提交顺序上必须先提交delete
+  // Traverse the hash map of the main table, determine the final submitted delete + update + insert das_tasks
+  // In submission order, delete must be submitted first
   int prepare_final_insert_up_task();
 
   int lock_one_row_to_das(const ObUpdCtDef &upd_ctdef,
@@ -180,8 +179,7 @@ protected:
   int calc_update_multi_tablet_id(const ObUpdCtDef &upd_ctdef,
                                   ObExpr &part_id_expr,
                                   common::ObTabletID &tablet_id);
-
-  // 其实这里就是计算update 的old_row 的pkey
+  // Actually here it is calculating the old_row's pkey of update
   int calc_upd_old_row_tablet_loc(const ObUpdCtDef &upd_ctdef,
                                   ObUpdRtDef &upd_rtdef,
                                   ObDASTabletLoc *&tablet_loc);
@@ -189,8 +187,7 @@ protected:
   int calc_upd_new_row_tablet_loc(const ObUpdCtDef &upd_ctdef,
                                   ObUpdRtDef &upd_rtdef,
                                   ObDASTabletLoc *&tablet_loc);
-
-  // TODO @kaizhan.dkz 这个函数后续被删除
+  // TODO @kaizhan.dkz This function will be deleted later
   int calc_insert_tablet_loc(const ObInsCtDef &ins_ctdef,
                              ObInsRtDef &ins_rtdef,
                              ObDASTabletLoc *&tablet_loc);
@@ -202,15 +199,12 @@ protected:
   int do_insert(const ObConflictValue &constraint_value);
 
   int do_update_with_ignore();
-
-  // 提交当前所有的 das task;
+  // Submit all current das tasks;
   int post_all_dml_das_task(ObDMLRtCtx &das_ctx);
   int post_all_try_insert_das_task(ObDMLRtCtx &dml_rtctx);
-
-  // batch的执行插入 process_row and then write to das,
+  // batch execution insert process_row and then write to das,
   int try_insert_row(bool &is_skipped);
-
-  // batch的执行插入 process_row and then write to das,
+  // batch execution insert process_row and then write to das,
   int update_row_to_das(bool need_do_trigger);
 
   int inner_open_with_das();
@@ -249,8 +243,8 @@ protected:
   ObDMLRtCtx upd_rtctx_;
   ObConflictChecker conflict_checker_;
   common::ObArrayWrap<ObInsertUpRtDef> insert_up_rtdefs_;
-  ObChunkDatumStore insert_up_row_store_; //所有的insert_up的行的集合
-  bool is_ignore_; // 暂时记录一下是否是ignore的insert_up SQL语句
+  ObChunkDatumStore insert_up_row_store_; // All the rows of insert_up collection
+  bool is_ignore_; // temporarily record whether it is an ignore insert_up SQL statement
   ObDmlGTSOptState gts_state_;
   bool has_guarantee_last_insert_id_;
 };

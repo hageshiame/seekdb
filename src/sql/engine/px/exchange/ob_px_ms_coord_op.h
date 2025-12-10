@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_ENGINE_PX_EXCHANGE_OB_PX_MS_COORD_OP_H_
@@ -92,7 +96,7 @@ public:
     ObMsgReceiveFilter(ObRowHeap<ObMaxDatumRowCompare, ObChunkDatumStore::LastStoredRow> &heap)
         : data_ch_idx_start_(-1), data_ch_idx_end_(-1), heap_(heap) {}
     ~ObMsgReceiveFilter() = default;
-    // idx range 范围左闭右开: [start_idx, end_idx)
+    // idx range range left closed right open: [start_idx, end_idx)
     void set_data_channel_idx_range(int64_t start_idx, int64_t end_idx)
     {
       data_ch_idx_start_ = start_idx;
@@ -101,12 +105,12 @@ public:
     bool pred_process(int64_t ch_idx, dtl::ObDtlChannel *ch) override
     {
       UNUSED(ch);
-      // NOTE: 多个 DFO 的控制信息 channel 创建时间不同，某些可能晚于 ROOT DFO 被调度起来
-      //       所以 heap 的范围可能是中间的一段
-      return (-1 == data_ch_idx_start_) || /* 还没到接收 ROOT DFO 数据，只接受控制消息阶段 */
-          (ch_idx < data_ch_idx_start_) || /* 控制消息 */
-          (ch_idx >= data_ch_idx_end_)  || /* 控制消息 */
-          (heap_.writable_channel_idx() + data_ch_idx_start_ == ch_idx); /* 预期数据消息 */
+      // NOTE: The control information channel creation time for multiple DFOs is different, some may be scheduled later than the ROOT DFO
+      //       so the range of heap might be a segment in the middle
+      return (-1 == data_ch_idx_start_) || /* Haven't received ROOT DFO data yet, only accepting control messages phase */
+          (ch_idx < data_ch_idx_start_) || /* control message */
+          (ch_idx >= data_ch_idx_end_)  || /* control message */
+          (heap_.writable_channel_idx() + data_ch_idx_start_ == ch_idx); /* expected data message */
     }
     OB_INLINE int64_t get_data_channel_start_idx() { return data_ch_idx_start_; }
   private:
@@ -155,7 +159,7 @@ private:
   ObPxMSCoordOpEventListener listener_;
   ObSerialDfoScheduler serial_scheduler_;
   ObParallelDfoScheduler parallel_scheduler_;
-  ObPxMsgProc msg_proc_; // msg_loop 处理消息的回调函数
+  ObPxMsgProc msg_proc_; // msg_loop processing message callback function
   ObPxFinishSqcResultP sqc_finish_msg_proc_;
   ObPxInitSqcResultP sqc_init_msg_proc_;
   ObBarrierPieceMsgP barrier_piece_msg_proc_;
@@ -170,11 +174,11 @@ private:
   ObSPWinFuncPXPieceMsgP sp_winfunc_px_piece_msg_proc_;
   ObRDWinFuncPXPieceMsgP rd_winfunc_px_piece_msg_proc_;
   ObJoinFilterCountRowPieceMsgP join_filter_count_row_piece_msg_proc_;
-  // 存储merge sort的每一路的当前行
+  // Store the current row of each run in merge sort
   ObArray<ObChunkDatumStore::LastStoredRow*> store_rows_;
   ObChunkDatumStore::LastStoredRow* last_pop_row_;
-  // row_heap 和 receive_order 仅仅用于有序收取数据的场景
-  // 这里采用最大内存方式避免每一行都申请内存
+  // row_heap and receive_order are only used for scenarios where data is received in order
+  // Here the maximum memory approach is used to avoid allocating memory for each line
   ObRowHeap<ObMaxDatumRowCompare, ObChunkDatumStore::LastStoredRow> row_heap_;
   ObMsgReceiveFilter receive_order_;
 

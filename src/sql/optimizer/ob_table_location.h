@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef _OCEANBASE_SQL_OPTIMIZER_OB_TABLE_LOCATION_H
@@ -400,9 +404,9 @@ struct TableLocationKey
 };
 
 class ObOptimizerContext;
-// 默认false=false，array等内存用array内部的分配器，必须显示析构此对象。
-// 对于非plan set的调用, 指定为false没有区别，因为必须用传allocator给构造函数，
-// 然后对array等在构造函数中将allocator也传入.
+// Default false=false, array etc memory uses the allocator inside the array, must explicitly destruct this object.
+// For non-plan set calls, specifying false makes no difference, because the allocator must be passed to the constructor,
+// Then pass the allocator to array etc. in the constructor.
 class ObSqlSchemaGuard;
 class ObTableLocation
 {
@@ -535,8 +539,7 @@ public:
     is_dynamic_replica_select_table_(false)
   {
   }
-
-  // 用于优化器等不调析构函数的情况，保证每个成员数组都传入外部的allocator
+  // Used for optimizers etc., where destructors are not called, to ensure each member array is passed an external allocator
   ObTableLocation(common::ObIAllocator &allocator)
   : inited_(false),
     is_partitioned_(true),
@@ -616,7 +619,8 @@ public:
            const common::ObDataTypeCastParams &dtc_params,
            const bool is_dml_table,
            common::ObIArray<ObRawExpr*> *sort_exprs = NULL);
-  int init(const share::schema::ObTableSchema *table_schema,
+  int init(ObSchemaGetterGuard &schema_guard,
+           const share::schema::ObTableSchema *table_schema,
            const ObDMLStmt &stmt,
            ObExecContext *exec_ctx,
            const common::ObIArray<ObRawExpr*> &filter_exprs,
@@ -948,8 +952,7 @@ private:
                            uint64_t data_table_id,
                            ObRawExprFactory &expr_factory,
                            RowDesc &row_desc);
-
-  //对partition ids和to_inter_ids取交集,结果存储在partition_ids中
+  // Take the intersection of partition ids and to_inter_ids, and store the result in partition_ids
   template <typename T>
   int intersect_partition_ids(const common::ObIArray<T> &to_inter_ids,
                               common::ObIArray<T> &partition_ids) const;
@@ -957,8 +960,8 @@ private:
   //add partition columns.
   //For insert stmt with generated column,
   //the dependent columns would added to partitoin columns.
-  //gen_cols: 对非insert语句，单column的partition expr存储generated_column的dependent column
-  //gen_col_expr: generated_column的dependent expr
+  //gen_cols: for non-insert statements, single-column partition expr stores the dependent column of generated_column
+  //gen_col_expr: generated column's dependent expr
   int add_partition_columns(const ObDMLStmt &stmt,
                             const ObRawExpr *part_expr,
                             common::ObIArray<ColumnItem> &partition_columns,
@@ -1210,9 +1213,9 @@ private:
   common::ObArenaAllocator inner_allocator_;
   common::ObIAllocator &allocator_; //used for deep copy other table location
   ObDASTableLocMeta loc_meta_;
-  ObPartLocCalcNode *calc_node_;//一级分区分区计算node
+  ObPartLocCalcNode *calc_node_;//first-level partition location calculation node
   ObPartLocCalcNode *gen_col_node_;//query range node of columns dependented by generated column
-  ObPartLocCalcNode *subcalc_node_;//二级分区分区计算Node
+  ObPartLocCalcNode *subcalc_node_;//secondary partition location calculation Node
   ObPartLocCalcNode *sub_gen_col_node_;//query range node of column dependented by sub partition generated column
 
   common::ObSEArray<ObPartLocCalcNode *, 5, common::ModulePageAllocator, false> calc_nodes_;

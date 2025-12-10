@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SHARE_SCHEMA
@@ -24,7 +28,7 @@ namespace share
 
 #define N_PIRVS_PER_GROUP 30
 
-/* 300个权限*/
+/* 300 permissions */
 int group_id_arr[] = 
 {
     0,
@@ -40,7 +44,7 @@ int group_id_arr[] =
     9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
 };
 
-/* 300个权限 */
+/* 300 permissions */
 int th_in_group_arr[] = 
 {
     0,
@@ -112,7 +116,7 @@ int ObPrivPacker::raw_obj_priv_to_packed_info(
   return ret;
 }
 
-/* 判断一个相对的priv id是否在privset里面，同时输出option信息 */
+/* Determine if a relative priv id is in the privset, and output option information */
 int ObPrivPacker::has_raw_priv(
     const ObRawPriv raw_priv,
     const ObPrivSet priv_set,
@@ -135,7 +139,7 @@ int ObPrivPacker::has_raw_priv(
   return ret;
 }
 
-/* 将相对raw priv和group idx，还原到raw priv，根据option，push back到相应的链表 */
+/* Restore relative raw priv and group idx to raw priv, according to option, push back to the corresponding list */
 int ObPrivPacker::push_back_raw_priv_array(
     ObRawPriv raw_priv,
     bool exists,
@@ -155,7 +159,7 @@ int ObPrivPacker::push_back_raw_priv_array(
   return ret;
 }
 
-/* 解析packed_array到raw privs array，根据是否有option，输出两个链表 */
+/* Parse packed_array to raw privs array, output two lists based on whether there is an option */
 
 bool ObOraPrivCheck::user_is_owner(
    const ObString &user_name,

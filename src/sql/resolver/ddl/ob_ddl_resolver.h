@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SQL_RESOLVER_DDL_OB_DDL_RESOLVER_H_
@@ -44,7 +48,7 @@ struct PartitionInfo
 {
   share::schema::ObPartitionLevel part_level_;
   share::schema::ObPartitionOption part_option_;
-  share::schema::ObPartitionOption subpart_option_;
+  share::schema::ObSubPartitionOption subpart_option_;
   common::ObSEArray<share::schema::ObPartition, 4> parts_;
   common::ObSEArray<share::schema::ObSubPartition, 2> subparts_;
   common::ObSEArray<common::ObString, 8> part_keys_;
@@ -60,7 +64,7 @@ enum NUMCHILD {
   COLUMN_DEF_NUM_CHILD = 3,
   INDEX_NUM_CHILD = 5,
   CREATE_SYNONYM_NUM_CHILD = 7,
-  GEN_COLUMN_DEFINITION_NUM_CHILD = 7, // generated column、identity column参数个数相同
+  GEN_COLUMN_DEFINITION_NUM_CHILD = 7, // generated column, identity column parameter count is the same
   IDEN_OPTION_DEFINITION_NUM_CHILD = 1
 };
 
@@ -194,6 +198,7 @@ public:
       ObIArray<obrpc::ObCreateIndexArg> &index_arg_list,
       ObIAllocator *allocator);
   static int append_multivalue_args(
+      const share::schema::ObTableSchema &data_schema,
       const ObPartitionResolveResult &resolve_result,
       const obrpc::ObCreateIndexArg &index_arg,
       bool &fts_common_aux_table_exist,
@@ -463,6 +468,10 @@ public:
   static int resolve_external_file_location(ObResolverParams &params,
                                             ObTableSchema &table_schema,
                                             common::ObString table_location);
+  static int resolve_external_file_location_object(ObResolverParams &params,
+                                                  ObTableSchema &table_schema,
+                                                  common::ObString location_obj,
+                                                  common::ObString sub_path);
                                             
   static int mask_properties_sensitive_info(const ParseNode *node,
                                             ObString &ddl_sql,
@@ -1098,8 +1107,7 @@ private:
   template <typename STMT>
   DISALLOW_COPY_AND_ASSIGN(ObDDLResolver);
 };
-
-//FIXME:支持非模版化二级分区
+//FIXME:support non-template secondary partitioning
 template <typename STMT>
 int ObDDLResolver::resolve_split_at_partition(STMT *stmt, const ParseNode *node,
                                               const share::schema::ObPartitionFuncType part_type,
@@ -1146,7 +1154,7 @@ int ObDDLResolver::resolve_split_at_partition(STMT *stmt, const ParseNode *node,
     bool check_part_name = false;
     if (OB_NOT_NULL(node->children_[PARTITION_DEFINE_NODE])
         && OB_NOT_NULL(node->children_[PARTITION_DEFINE_NODE]->children_[0])) {
-      //如果into （partition）不为空，必须有两个
+      // If into (partition) is not empty, there must be two
       const ParseNode *part_node = node->children_[PARTITION_DEFINE_NODE]->children_[0];
       if (part_node->num_child_ != 2
           || OB_ISNULL(part_node->children_[0])
@@ -1156,12 +1164,12 @@ int ObDDLResolver::resolve_split_at_partition(STMT *stmt, const ParseNode *node,
         LOG_USER_ERROR(OB_ERR_INVALID_SPLIT_COUNT);
       } else if (OB_NOT_NULL(part_node->children_[0]->children_[ObResolverUtils::PARTITION_ELEMENT_NODE])
                  || OB_NOT_NULL(part_node->children_[1]->children_[ObResolverUtils::PARTITION_ELEMENT_NODE])) {
-        //at的语法中，不允许显示指定最大值
+        // in the syntax of at, it is not allowed to explicitly specify the maximum value
         ret = OB_ERR_INVALID_SPLIT_GRAMMAR;
         SQL_RESV_LOG(WARN,"split at no need specify less than values", K(ret));
         LOG_USER_ERROR(OB_ERR_INVALID_SPLIT_GRAMMAR);
       } else if (OB_NOT_NULL(part_node->children_[0]->children_[ObResolverUtils::PARTITION_NAME_NODE])) {
-        //分区名不为空的情况下，需要判断是否检查分区名冲突
+        // Partition name is not empty, it is necessary to determine whether to check for partition name conflicts
         check_part_name = true;
         part_name_node = part_node->children_[0]->children_[ObResolverUtils::PARTITION_NAME_NODE];
         ObString part_name(static_cast<int32_t>(part_name_node->str_len_),
@@ -1305,8 +1313,8 @@ int ObDDLResolver::resolve_split_into_partition(STMT *stmt, const ParseNode *nod
 
 /**
  * @brief create_name_for_empty_partition
- * 为用户未显示命名的分区自动命名，分区名为Pnumber
- * number从8192开始自增
+ * Automatically name partitions that the user has not explicitly named, with partition names Pnumber
+ * number starts from 8192 and increments
  */
 template <typename PARTITION>
 int ObDDLResolver::create_name_for_empty_partition(ObIArray<PARTITION> &partitions)

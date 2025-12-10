@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX  SQL_ENG
@@ -163,7 +167,7 @@ int ObPxTargetMgr::add_tenant(const uint64_t tenant_id)
   ObPxResInfo *px_res_info = NULL;
 
   if (OB_SYS_TENANT_ID != tenant_id && OB_MAX_RESERVED_TENANT_ID >= tenant_id) {
-    // 除系统租户外, 内部租户不分配 px 线程
+    // Except for the system tenant, internal tenants do not allocate px threads
   } else if (!is_inited_) {
     LOG_ERROR("px target mgr not inited");
   } else if (OB_FAIL(px_info_map_.contains_key(tenant_info))) {
@@ -206,7 +210,7 @@ int ObPxTargetMgr::delete_tenant(const uint64_t tenant_id)
   int ret = OB_SUCCESS;
   ObPxTenantInfo tenant_info(tenant_id);
   if (OB_SYS_TENANT_ID != tenant_id && OB_MAX_RESERVED_TENANT_ID >= tenant_id) {
-    // 除系统租户外, 内部租户不分配 px 线程
+    // Except for the system tenant, internal tenants do not allocate px threads
   } else {
     ObPxResInfo *res_info = NULL;
     if (OB_FAIL(px_info_map_.del(tenant_info))) {

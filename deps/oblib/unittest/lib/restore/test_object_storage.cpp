@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include <gtest/gtest.h>
@@ -59,8 +63,6 @@ public:
 
   static void SetUpTestCase()
   {
-    ASSERT_EQ(OB_SUCCESS, init_oss_env());
-    ASSERT_EQ(OB_SUCCESS, init_cos_env());
     ASSERT_EQ(OB_SUCCESS, init_s3_env());
     if (enable_test) {
       ASSERT_EQ(OB_SUCCESS, set_storage_info(bucket, endpoint, secretid, secretkey,
@@ -69,8 +71,6 @@ public:
   }
   static void TearDownTestCase()
   {
-    fin_oss_env();
-    fin_cos_env();
     fin_s3_env();
   }
 
@@ -124,10 +124,6 @@ public:
                                   "host=%s&access_id=%s&access_key=%s",
                                   endpoint, secretid, secretkey))) {
         OB_LOG(WARN, "fail to set account", K(ret), K(endpoint), K(secretid), K(secretkey));
-      } else if (ObStorageType::OB_STORAGE_COS == storage_type) {
-        if (OB_FAIL(databuff_printf(account, sizeof(account), pos, "&appid=%s", appid))) {
-          OB_LOG(WARN, "fail to set appid", K(ret), K(pos), K(account), K(appid));
-        }
       } else if (ObStorageType::OB_STORAGE_S3 == storage_type) {
         if (OB_FAIL(databuff_printf(account, sizeof(account), pos, "&s3_region=%s", region))) {
           OB_LOG(WARN, "fail to set region", K(ret), K(pos), K(account), K(region));
@@ -705,11 +701,10 @@ TEST_F(TestObjectStorage, test_util_list_adaptive_files)
           ASSERT_EQ(OB_SUCCESS, appender.close());
         }
       };
-      
-      // 文件层级
-      // 第一级：0-normal, 0-appendable, 0-appendable.back .... 9-normal, 9-appendable, 9-appendable.back
-      // 第二级：0/0-normal, 0/0-appendable, 0/0-appendable.back, ... 9/9-normal, 9/9-appendable, 9/9-appendable.back
-      // 第三级：0/0/0-normal, 0/0/0-appendable, 0/0/0-appendable.back, ... 9/4/4-normal, 9/4/4-appendable, 9/4/4-appendable.back、
+      // file hierarchy
+      // First level: 0-normal, 0-appendable, 0-appendable.back .... 9-normal, 9-appendable, 9-appendable.back
+      // Second level: 0/0-normal, 0/0-appendable, 0/0-appendable.back, ... 9/9-normal, 9/9-appendable, 9/9-appendable.back
+      // Third level: 0/0/0-normal, 0/0/0-appendable, 0/0/0-appendable.back, ... 9/4/4-normal, 9/4/4-appendable, 9/4/4-appendable.back,
       write_group_files(10, "");
       std::string prefix;
       for (int64_t i = 0; i < 10; i++) {
@@ -1157,8 +1152,7 @@ TEST_F(TestObjectStorage, test_append_rw)
     }
   }
 }
-
-// 写入一个模拟追加写文件，包含一个format文件和500个数据文件，共501个子文件
+// Write a simulated append write file, including one format file and 500 data files, totaling 501 sub-files
 int write_appendable_object(const char *obj_name, ObObjectStorageInfo &storage_info)
 {
   int ret = OB_SUCCESS;
@@ -1444,11 +1438,7 @@ TEST_F(TestObjectStorage, test_del_unmerged_parts)
     ASSERT_EQ(content_size, writer.get_length());
 
     ASSERT_EQ(OB_SUCCESS, util.del_unmerged_parts(uri));
-    if (info_base.get_type() == ObStorageType::OB_STORAGE_OSS) {
-      ASSERT_EQ(OB_OBJECT_STORAGE_IO_ERROR, writer.close());
-    } else if (ObStorageType::OB_STORAGE_S3 == info_base.get_type()) {
-      ASSERT_EQ(OB_OBJECT_STORAGE_IO_ERROR, writer.close());
-    } else if (info_base.get_type() == ObStorageType::OB_STORAGE_COS) {
+    if (ObStorageType::OB_STORAGE_S3 == info_base.get_type()) {
       ASSERT_EQ(OB_OBJECT_STORAGE_IO_ERROR, writer.close());
     }
     

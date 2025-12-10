@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SQL_ENGINE_AGGREGATE_PROCESSOR_H
@@ -1150,15 +1154,15 @@ private:
   // HyperLogLogCount-related functions
   int llc_init(AggrCell &aggr_cell);
   int llc_init_empty(ObExpr &expr, ObEvalCtx &eval_ctx);
-  /** (@ banliu.zyd)
-   * 对一行计算HyperLogLogCount所需要的hash值，如果行中存在某列有NULL值，has_null_cell会置true
-   * @note 需要NULL值判断的原因是APPROX_COUNT_DISTINCT统计时不考虑存在NULL的行，而计算hash值
-   * 和判断是否有NULL值可以同时进行以提高效率
-   * @param[in] oprands 带计算hash值的行
-   * @param[in] cs_type 对于字符串计算hash值时需要的collation
-   * @param[out] has_null_cell 为true如果该行某列为NULL值
-   * @return 计算出的hash值，如果传出的has_null_cell为true那么这个值无效
-   */
+  /**
+ * Calculate the hash value required for HyperLogLogCount for one row, if any column in the row has a NULL value, has_null_cell will be set to true
+ * @note The reason for checking NULL values is that APPROX_COUNT_DISTINCT does not consider rows with NULLs when counting, and calculating hash values
+ * and checking for NULLs can be done simultaneously to improve efficiency
+ * @param[in] oprands The row for which to calculate hash values
+ * @param[in] cs_type Collation needed for calculating hash values for strings
+ * @param[out] has_null_cell Set to true if any column in the row is NULL
+ * @return Calculated hash value, this value is invalid if the output has_null_cell is true
+ */
   static int llc_calc_hash_value(const ObChunkDatumStore::StoredRow &stored_row,
                                  const ObIArray<ObExpr *> &param_exprs,
                                  bool &has_null_cell,
@@ -1302,7 +1306,7 @@ private:
   static void check_mysql_decimal_int_overflow(ObDatum &datum);
 
   // HyperLogLogCount-related data members
-  // banliu.zyd: hllc算法中桶数这里取相对合理的值(1<<10)。
+  // banliu.zyd: hllc algorithm bucket count here takes a relatively reasonable value (1<<10).
   static const int8_t LLC_BUCKET_BITS = 10;
   static const int64_t LLC_NUM_BUCKETS = (1 << LLC_BUCKET_BITS);
 

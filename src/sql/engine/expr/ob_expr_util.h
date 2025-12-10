@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef _OB_ENGINE_EXPR_EXPR_UTIL_H_
@@ -80,10 +84,10 @@ public:
                              common::ObCollationType cs_type,
                              common::ObIArray<size_t> &byte_num,
                              common::ObIArray<size_t> &byte_offset);
-  // 将double round到小数点后或者小数点前指定位置
+  // Round double to the specified position after or before the decimal point
   static double round_double(double val, int64_t dec);
   static uint64_t round_uint64(uint64_t val, int64_t dec);
-  // 将double trunc到小数点后或者小数点前指定位置
+  // Truncate double to specified position after or before the decimal point
   static double trunc_double(double val, int64_t dec);
   template <typename T>
   static T trunc_integer(T val, int64_t dec);
@@ -194,10 +198,9 @@ T ObExprUtil::trunc_integer(T val, int64_t dec)
   }
   return res;
 }
-
-// 定义三角函数的计算函数
+// Define the calculation function for trigonometric functions
 // eg: sin/cos/tan sinh/cosh/tanh asin/acos/atan
-// atan2的计算函数单独实现
+// atan2 calculation function implemented separately
 #define DEF_CALC_TRIGONOMETRIC_EXPR(tritype, INVALID_DOUBLE_ARG_CHECK, INVALID_DOUBLE_ARG_ERRNO) \
 int calc_##tritype##_expr(const ObExpr &expr, ObEvalCtx &ctx,                 \
                                ObDatum &res_datum)                        \

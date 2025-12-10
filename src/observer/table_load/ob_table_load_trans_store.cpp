@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SERVER
@@ -228,7 +232,7 @@ int ObTableLoadTransStoreWriter::StoreWriter::append_batch(const ObTabletID &tab
     ret = OB_INVALID_ARGUMENT;
     LOG_WARN("invalid args", KR(ret), K(tablet_id), K(batch_rows));
   } else {
-    // TODO(suzhi.yt) 这一期只有px_write会走append_batch, 这里先写死seq_no
+    // TODO(suzhi.yt) This period only px_write will go through append_batch, here we hardcode seq_no
     datum_row_.seq_no_ = 0;
     ObIDirectLoadPartitionTableBuilder *table_builder = nullptr;
     if (OB_FAIL(get_table_builder(tablet_id, table_builder))) {
@@ -263,7 +267,7 @@ int ObTableLoadTransStoreWriter::StoreWriter::append_selective(
     ret = OB_INVALID_ARGUMENT;
     LOG_WARN("invalid args", KR(ret), K(tablet_id), K(batch_rows), KP(selector), K(size));
   } else {
-    // TODO(suzhi.yt) 这一期只有px_write会走append_selective, 这里先写死seq_no
+    // TODO(suzhi.yt) This period only px_write will go through append_selective, here we hardcode seq_no
     datum_row_.seq_no_ = 0;
     ObIDirectLoadPartitionTableBuilder *table_builder = nullptr;
     if (OB_FAIL(get_table_builder(tablet_id, table_builder))) {
@@ -316,7 +320,7 @@ int ObTableLoadTransStoreWriter::StoreWriter::new_table_builder(
   int ret = OB_SUCCESS;
   table_builder = nullptr;
   if (store_ctx_->write_ctx_.is_multiple_mode_) {
-    // 排序路径
+    // sort path
     ObDirectLoadExternalMultiPartitionTableBuildParam param;
     param.table_data_desc_ = store_ctx_->write_ctx_.table_data_desc_;
     param.file_mgr_ = store_ctx_->tmp_file_mgr_;
@@ -331,7 +335,7 @@ int ObTableLoadTransStoreWriter::StoreWriter::new_table_builder(
       LOG_WARN("fail to init external multi partition table builder", KR(ret));
     }
   } else {
-    // 有主键表不排序路径
+    // Table with primary key does not sort path
     abort_unless(!store_ctx_->data_store_table_ctx_->schema_->is_table_without_pk_);
     ObDirectLoadMultipleSSTableBuildParam param;
     param.tablet_id_ = tablet_id;
@@ -1025,7 +1029,7 @@ int ObTableLoadTransStoreWriter::cast_column(
   cast_ctx.exec_ctx_ = trans_ctx_->ctx_->exec_ctx_;
   ObObj out_obj;
   if (column_schema->is_autoincrement()) {
-    // mysql模式还不支持快速删列, 先加个拦截
+    // mysql mode does not yet support quick column deletion, add an interception first
     if (OB_UNLIKELY(column_schema->is_unused())) {
       ret = OB_ERR_UNEXPECTED;
       LOG_WARN("unexpected unused identity column", KR(ret), KPC(column_schema));
@@ -1043,15 +1047,15 @@ int ObTableLoadTransStoreWriter::cast_column(
       }
     }
   } else if (column_schema->is_identity_column()) {
-    // identity列在快速删除的时候会抹去identity属性
+    // The identity column will erase the identity attribute during fast delete
     if (OB_UNLIKELY(column_schema->is_unused())) {
       ret = OB_ERR_UNEXPECTED;
       LOG_WARN("unexpected unused identity column", KR(ret), KPC(column_schema));
     } else if (column_schema->is_tbl_part_key_column()) {
-      // 自增列是分区键, 在分区计算的时候就已经确定值了
+      // Auto-increment column is the partition key, the value is determined during partition calculation
       out_obj = obj;
     } else {
-      // 生成的seq_value是number, 可能需要转换成decimal int
+      // The generated seq_value is a number, may need to convert to decimal int
       ObObj tmp_obj;
       if (OB_FAIL(handle_identity_column(column_schema, obj, tmp_obj, cast_allocator))) {
         LOG_WARN("fail to handle identity column", KR(ret), K(obj));
@@ -1065,7 +1069,7 @@ int ObTableLoadTransStoreWriter::cast_column(
       }
     }
   } else {
-    // 普通列
+    // ordinary column
     if (OB_FAIL(ObTableLoadObjCaster::cast_obj(cast_obj_ctx, column_schema, obj, out_obj))) {
       LOG_WARN("fail to cast obj and check", KR(ret), K(obj));
     } else if (OB_FAIL(datum.from_obj_enhance(out_obj))) {
@@ -1106,9 +1110,9 @@ int ObTableLoadTransStoreWriter::handle_identity_column(const ObColumnSchemaV2 *
                                                         ObArenaAllocator &cast_allocator)
 {
   int ret = OB_SUCCESS;
-  // 1. generated always as identity : 不能指定此列导入
-  // 2. generated by default as identity : 不指定时自动生成, 不能导入null
-  // 3. generated by default on null as identity : 不指定或者指定null会自动生成
+  // 1. generated always as identity : cannot specify this column for import
+  // 2. generated by default as identity : auto-generated if not specified, cannot import null
+  // 3. generated by default on null as identity : unspecified or specified as null will be generated by default
   if (OB_UNLIKELY(column_schema->is_always_identity_column() && !obj.is_nop_value())) {
     ret = OB_ERR_INSERT_INTO_GENERATED_ALWAYS_IDENTITY_COLUMN;
     LOG_USER_ERROR(OB_ERR_INSERT_INTO_GENERATED_ALWAYS_IDENTITY_COLUMN);
@@ -1116,8 +1120,8 @@ int ObTableLoadTransStoreWriter::handle_identity_column(const ObColumnSchemaV2 *
     ret = OB_BAD_NULL_ERROR;
     LOG_WARN("default identity column cannot insert null", KR(ret));
   } else {
-    // 不论用户有没有指定自增列的值, 都取一个seq_value, 行为与insert into保持一致
-    // 取seq_value的性能受表的参数cache影响
+    // Regardless of whether the user has specified a value for the auto-increment column, take a seq_value, behavior consistent with insert into
+    // The performance of retrieving seq_value is affected by the table's cache parameter
     ObSequenceValue seq_value;
     if (OB_FAIL(ObSequenceCache::get_instance().nextval(trans_ctx_->ctx_->store_ctx_->sequence_schema_,
                                                         cast_allocator,

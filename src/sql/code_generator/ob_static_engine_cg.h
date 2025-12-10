@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SRC_OB_STATIC_ENGINE_CG_H_
@@ -194,11 +198,10 @@ public:
   }
   // generate physical plan
   int generate(const ObLogPlan &log_plan, ObPhysicalPlan &phy_plan);
-
-  // !!! 注意: 下面两个接口仅用于初始化operator中各种表达式, 其他地方慎用， 如需使用
-  // 请先理解这两个接口实际语义, 或者联系@升乐
+  // !!! Note: The following two interfaces are only used for initializing various expressions in the operator, use with caution elsewhere, if necessary
+  // Please understand the actual semantics of these two interfaces, or contact @ShengLe
   //
-  // 接口语义：从raw expr中获取rt_expr，并将raw expr push到cur_op_exprs_中
+  // Spoken meaning: Get rt_expr from raw expr and push raw expr to cur_op_exprs_
   int generate_rt_expr(const ObRawExpr &raw_expr, ObExpr *&rt_expr);
   int generate_rt_exprs(const common::ObIArray<ObRawExpr *> &src, common::ObIArray<ObExpr *> &dst);
   // Mark support true if any operator (in the plan tree) supports vectorization
@@ -631,7 +634,7 @@ private:
   ObSEArray<ObRawExpr *, 8> cur_op_exprs_;
   // all self_produced exprs of current operator
   ObSEArray<ObRawExpr *, 8> cur_op_self_produced_exprs_;
-  //仅供递归cte使用，因为oracle的cte是不允许嵌套的，所以可以采用这种方式
+  //For recursive CTE use only, because Oracle's CTE does not allow nesting, this approach can be used
   common::ObSEArray<ObOpSpec *, 10> fake_cte_specs_;
   ObDmlCgService dml_cg_service_;
   ObTscCgService tsc_cg_service_;

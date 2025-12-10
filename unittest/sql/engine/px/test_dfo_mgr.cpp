@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL
@@ -153,8 +157,7 @@ TEST_F(ObDFOMgrTest, normalizer)
                h1    prob
 
 */
-
-  // 遍历 edge，然后逐个加入 dfo_mgr
+  // Traverse edge, then add each one to dfo_mgr
   ObDFO *c1,*c2;
   ASSERT_EQ(OB_SUCCESS, nlj.get_child_dfo(0, c1));
   ASSERT_EQ(OB_SUCCESS, nlj.get_child_dfo(1, c2));
@@ -272,8 +275,7 @@ TEST_F(ObDFOMgrTest, px_coord)
   MyRunnable myrun;
   obsys::CThread px_thread;
   px_thread.start(&myrun, &coord);
-
-  // 模拟消息到达
+  // Simulate message arrival
   h2.set_state(ObDFOState::FINISH);
   h1.set_state(ObDFOState::FINISH);
   usleep(1000 * 1000);

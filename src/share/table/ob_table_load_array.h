@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #pragma once
@@ -87,8 +91,7 @@ public:
 private:
   value_ptr_t value_ptr_;
 };
-
-// 由于allocator不是ObTableLoadArray自有的, 所以这里不能通过引用计数释放成员
+// Since allocator is not owned by ObTableLoadArray, members cannot be released through reference counting here
 template <class T>
 class ObTableLoadArray final
 {
@@ -161,8 +164,7 @@ public:
     is_ref_ = true;
     return ret;
   }
-
-  // 转移所有权
+  // Transfer ownership
   int move_to(ObTableLoadArray &dest)
   {
     int ret = common::OB_SUCCESS;
@@ -198,8 +200,7 @@ public:
   const_iterator begin() const { return const_iterator(ptr_); }
   const_iterator end() const { return const_iterator(ptr_ + count_); }
   common::ObIAllocator *get_allocator() const { return allocator_; }
-
-  // 获取一份引用
+  // Get a reference
   ObTableLoadArray &operator=(const ObTableLoadArray &rhs)
   {
     reset();
@@ -247,7 +248,7 @@ private:
   int64_t count_;
   T *ptr_;
   common::ObIAllocator *allocator_;
-  bool is_ref_; // 是否是引用, 不参与序列化
+  bool is_ref_; // whether it is a reference, does not participate in serialization
 };
 
 template <class T>

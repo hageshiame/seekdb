@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef LOGSERVICE_COORDINATOR_INTERFACE_OB_LEADER_COORDINATOR_H
@@ -31,8 +35,7 @@ namespace logservice
 {
 namespace coordinator
 {
-
-// 该结构存储的信息是周期性刷新的, 非本机的优先级信息缓存在该结构里
+// This structure stores information that is periodically refreshed, and non-local priority information is cached in this structure.
 typedef common::ObTuple<int64_t/*0. ls_id*/,
                         int64_t/*1. self zone priority*/,
                         bool/*2. is_manual_leader*/,
@@ -59,7 +62,7 @@ public:
   static void mtl_wait(ObLeaderCoordinator *&p_coordinator);
   static void mtl_destroy(ObLeaderCoordinator *&p_coordinator);
   /**
-   * @description: 当内部表更新的时候，可以通过该接口主动触发LeaderCoordinator的刷新流程，以便切主动作可以尽快完成
+   * @description: When the internal table is updated, this interface can be used to proactively trigger the refresh process of LeaderCoordinator so that the role switch can be completed as soon as possible
    * @param {*}
    * @return {*}
    * @Date: 2021-12-27 20:30:39

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -133,7 +137,7 @@ int ObPxMultiPartDeleteOp::read_row(ObExecContext &ctx,
 {
   int ret = OB_SUCCESS;
   UNUSED(ctx);
-  // 从child中读取数据，数据存储在child的output exprs中
+  // Read data from child, data is stored in child's output exprs
   if (OB_ISNULL(child_)) {
     ret = OB_ERR_UNEXPECTED;
     LOG_WARN("child op is null", K(ret));
@@ -143,17 +147,17 @@ int ObPxMultiPartDeleteOp::read_row(ObExecContext &ctx,
     }
   } else {
     op_monitor_info_.otherstat_2_value_++;
-    // 每一次从child节点获得新的数据都需要进行清除计算标记
+    // Every time new data is obtained from the child node, a clear calculation flag is required
     clear_evaluated_flag();
     if (OB_FAIL(ObDMLService::process_delete_row(MY_SPEC.del_ctdef_, del_rtdef_, is_skipped, *this))) {
       LOG_WARN("process delete row failed", K(ret));
     } else if (!is_skipped) {
-      // 通过partition id expr获得对应行对应的分区
+      // Obtain the corresponding partition for the row through the partition id expr
       const int64_t part_id_idx = MY_SPEC.row_desc_.get_part_id_index();
-      // 返回的值是child的output exprs
+      // The returned value is child's output exprs
       row = &child_->get_spec().output_;
       if (NO_PARTITION_ID_FLAG == part_id_idx) {
-        // 如果row中没有partition id expr对应的cell，默认partition id为0
+        // If row does not contain the cell corresponding to partition id expr, default partition id is 0
         ObDASTableLoc *table_loc = del_rtdef_.das_rtdef_.table_loc_;
         if (OB_ISNULL(table_loc) || table_loc->get_tablet_locs().size() != 1) {
           ret = OB_ERR_UNEXPECTED;

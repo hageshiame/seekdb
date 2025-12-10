@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OB_SQL_ENGINE_BASIC_OB_PUSHDOWN_FILTER_H_
@@ -298,7 +302,7 @@ public:
   PushdownFilterType type_;
   uint32_t n_child_;
   ObPushdownFilterNode **childs_;
-  common::ObFixedArray<uint64_t, common::ObIAllocator> col_ids_;           // 这个node涉及到的列集合
+  common::ObFixedArray<uint64_t, common::ObIAllocator> col_ids_;           // this node involved column set
 };
 
 class ObPushdownAndFilterNode : public ObPushdownFilterNode
@@ -358,10 +362,10 @@ public:
   int64_t get_filter_expr_count()
   { return filter_exprs_.empty() ? 1 : filter_exprs_.count(); }
 public:
-  ExprFixedArray column_exprs_; // 列对应的表达式
-  ExprFixedArray filter_exprs_; // 下压filters
-  // 下压临时保存的filter，如果发生merge，则所有的filter放入filter_exprs_
-  // 如果没有发生merge，则将自己的tmp_expr_放入filter_exprs_中
+  ExprFixedArray column_exprs_; // Column corresponding expressions
+  ExprFixedArray filter_exprs_; // push down filters
+  // Push down the temporarily saved filter, if a merge occurs, all filters are placed into filter_exprs_
+  // If no merge occurs, then put one's own tmp_expr_ into filter_exprs_
   ObExpr *tmp_expr_;
   // The exprs to judge greater or less when mono_ is MON_EQ_ASC/MON_EQ_DESC.
   // assist_exprs_[0] is greater expr, assist_exprs_[1] is less expr.
@@ -412,7 +416,7 @@ public:
 protected:
   ObWhiteFilterOperatorType op_type_;
 public:
-  ExprFixedArray column_exprs_; // 列对应的表达式
+  ExprFixedArray column_exprs_; // Column corresponding expressions
 };
 
 class ObPushdownDynamicFilterNode : public ObPushdownWhiteFilterNode
@@ -631,8 +635,8 @@ enum ObCommonFilterTreeStatus : uint8_t
 };
 
 // executor interface
-// 类似新框架的operator，而ObPushdownFilterNode则对应的是ObOpSpec接口
-// 即一个是编译器的接口，一个是运行时接口
+// Similar to the operator in the new framework, while ObPushdownFilterNode corresponds to the ObOpSpec interface
+// One is the compiler interface, one is the runtime interface
 class ObPushdownFilterExecutor
 {
 private:
@@ -1344,7 +1348,8 @@ public:
                K_(max_batch_size),
                K_(pushdown_filters),
                K_(pd_storage_flag),
-               KPC_(trans_info_expr));
+               KPC_(trans_info_expr),
+               K_(ext_tbl_filter_pd_level));
 
   int set_calc_exprs(const ExprFixedArray &calc_exprs, int64_t max_batch_size)
   {
@@ -1352,7 +1357,7 @@ public:
     return calc_exprs_.assign(calc_exprs);
   }
 public:
-  ExprFixedArray calc_exprs_; //所有需要下压到存储层的表达式
+  ExprFixedArray calc_exprs_; // all expressions that need to be pushed down to the storage layer
   ExprFixedArray access_exprs_;
   int64_t max_batch_size_;
 
@@ -1370,9 +1375,9 @@ public:
   uint64_t auto_split_filter_type_;
   ObExpr *auto_split_expr_;
   ExprFixedArray auto_split_params_;
+  int64_t ext_tbl_filter_pd_level_;
 };
-
-//下压到存储层的表达式执行依赖的op ctx
+// Push down expression execution dependent op ctx
 class ObPushdownOperator
 {
 public:

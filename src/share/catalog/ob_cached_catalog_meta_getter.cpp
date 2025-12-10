@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2023 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SHARE
@@ -73,13 +77,12 @@ int ObCachedCatalogSchemaMgr::init()
   // OZ(file_cache_.init("catalog_files_cache"));
   return ret;
 }
-
-// 正常情况下
-// schema_cache_ 调用 get() 获取 Schema -> 检查 Schema 是否过期
-// 如果 Schema 在 Cache 中不存在，执行如下步骤：
-// 加锁->再次从 schema_cache_.get() 尝试获取->检查 Schema 是否过期->从远端拉取 Schema -> 写入 schema_cache_
-// 这样意味着这，如果 Schema 在 schema_cache_ 中不存在的话，一定会发起两次是否过期检查，也就是两次 PRC。
-// 所以我们扩大锁的临界区，减少检查 Schema 过期的次数。
+// In normal circumstances
+// schema_cache_ calls get() to obtain Schema -> check if the Schema is expired
+// If the Schema does not exist in the Cache, perform the following steps:
+// Locking->attempt to get again from schema_cache_.get()->check if Schema is expired->pull Schema from remote->write to schema_cache_
+// This means that, if the Schema does not exist in schema_cache_, it will definitely initiate two expiration checks, which are two PRCs.
+// So we expand the critical section of the lock, reducing the number of checks for Schema expiration.
 int ObCachedCatalogSchemaMgr::get_table_schema(ObCatalogMetaGetter *meta_getter,
                                                const uint64_t tenant_id,
                                                const uint64_t catalog_id,
@@ -104,7 +107,7 @@ int ObCachedCatalogSchemaMgr::get_table_schema(ObCatalogMetaGetter *meta_getter,
     total_wait_secs += (LOCK_TIMEOUT / 1000000);
     LOG_WARN("ObCachedCatalogSchemaMgr cache wait", K(total_wait_secs));
   }
-  // 进入临界区
+  // Enter critical section
 
   const schema::ObSchemaCacheValue *cached_value = NULL;
   const ObTableSchema *cached_table_schema = NULL;

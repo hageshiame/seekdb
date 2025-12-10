@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SRC_SHARE_SCHEMA_OB_ROUTINE_INFO_H_
@@ -29,10 +33,9 @@
 #define SP_PARAM_NOCOPY_MASK  0x100
 // Is cast required by default value
 #define SP_PARAM_DEFAULT_CAST 0x200
-
-// flag_的低2位用来表示参数IN OUT属性
-// 当Type是INT的时候,flag_的低3-6位用来表示PL_INTEGER类型
-// 当Type是Extend的时候,flag_低3-6位用来表示外部类型的来源
+// The low 2 bits of flag_ are used to indicate the parameter IN OUT attribute
+// When Type is INT, the low 3-6 bits of flag_ are used to represent the PL_INTEGER type
+// When Type is Extend, flag_ low 3-6 bits are used to indicate the source of the external type
 enum ObParamExternType
 {
   SP_EXTERN_INVALID = 0,
@@ -54,10 +57,9 @@ enum ObRoutineParamInOut
   SP_PARAM_OUT = 2,
   SP_PARAM_INOUT = 3,
 };
-
-// flag的7-8位用来表示这个参数的额外属性，
+// The 7-8 bits of the flag are used to indicate the additional attributes of this parameter,
 enum ObRoutineParamAttr{
-  SP_PARAM_SELF = 1, // 这是一个udt类型udf的隐藏的 self 参数
+  SP_PARAM_SELF = 1, // This is a hidden self parameter of a udt type udf
 };
 
 enum ObRoutineFlag
@@ -239,7 +241,7 @@ public:
   OB_INLINE void set_out_sp_param_flag() { flag_ = (flag_ & ~SP_PARAM_MODE_MASK) | SP_PARAM_OUT; }
   OB_INLINE void set_inout_sp_param_flag() { flag_ = (flag_ & ~SP_PARAM_MODE_MASK) | SP_PARAM_INOUT; }
   OB_INLINE int64_t get_mode() const { return flag_ & SP_PARAM_MODE_MASK; }
-  // ObExtendType标识该Type不是一个基础类型, 通过flag_来判断最终的类型
+  // ObExtendType indicates that this Type is not a base type, and the final type is determined by flag_
   OB_INLINE bool is_complex_type() const { return ObExtendType == param_type_.get_obj_type() && is_udt_type(); }
   OB_INLINE bool is_extern_type() const { return ObExtendType == param_type_.get_obj_type(); }
 

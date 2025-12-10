@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2022 OceanBase
- * OceanBase is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_OBSERVER_OB_TABLE_CG_SERVICE_H_
@@ -29,22 +33,21 @@ namespace table
 {
 class ObTableExprCgService;
 class ObTableFtsTscCgService;
-
-// 构造表达式的静态类
+// Static class for constructing expressions
 class ObTableExprCgService
 {
 public:
   friend class ObTableFtsExprCgService;
 public:
-  // 构造表达式
+  // Construct expression
   static int generate_exprs(ObTableCtx &ctx,
                              common::ObIAllocator &allocator,
                              ObExprFrameInfo &expr_frame_info);
-  // 基于原生表达式生成表达式内存布局
+  // Generate expression memory layout based on native expression
   static int generate_expr_frame_info(ObTableCtx &ctx,
                                         common::ObIAllocator &allocator,
                                         ObExprFrameInfo &expr_frame_info);
-  // 基于内存表达式内存布局申请内存(这里只是申请了frame内存，dml场景还需要初始化)
+  // Allocate memory based on the memory layout of the in-memory expression (here only frame memory is allocated, initialization is still needed for DML scenarios)
   static int alloc_exprs_memory(ObTableCtx &ctx, ObExprFrameInfo &expr_frame_info);
   static int refresh_insert_exprs_frame(ObTableCtx &ctx,
                                         const common::ObIArray<sql::ObExpr *> &exprs,

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SERVER
@@ -74,7 +78,7 @@ static int varchar2varchar(const ObObj &src, ObObj &dst, ObIAllocator &)
     dst.set_null();
   } else {
     dst = src;
-    //对于oracle租户内部表,从表、列到字符串类型确保所有collation为CS_TYPE_UTF8MB4_BIN
+    //For oracle tenant internal tables, ensure all collation of tables, columns to string type is CS_TYPE_UTF8MB4_BIN
     dst.set_collation_type(ObCollationType::CS_TYPE_UTF8MB4_BIN);
   }
   return OB_SUCCESS;
@@ -267,12 +271,11 @@ int ObAgentVirtualTable::inner_get_next_row(common::ObNewRow *&row)
 
   return ret;
 }
-
-// 如果query range为 (tenant_id, cond1, cond2, ...) <= (v1, v2, v3, ...) and (tenant_id, cond1, cond2, ...) >= (v1', v2', v3', ...)
-// 那么如果在最后的条件加上 and tenant_id = v，也就是
+// If query range is (tenant_id, cond1, cond2, ...) <= (v1, v2, v3, ...) and (tenant_id, cond1, cond2, ...) >= (v1', v2', v3', ...)
+// then if the final condition is added as and tenant_id = v, that is to say
 // (tenant_id, cond1, cond2, ...) <= (v1, v2, v3, ...) and (tenant_id, cond1, cond2, ...) >= (v1', v2', v3', ...) and tenant_id = v
-// 优化器这时候抽不出来query range，只能得到 (tenant_id, min, min), (tenant_id, max, max)，
-// 对于某些只支持get操作的表(比如plan_cache_plan_explain)，结果集总为空，所以需要加上这个判断条件
+// The optimizer cannot extract the query range at this point, and can only obtain (tenant_id, min, min), (tenant_id, max, max),
+// For some tables that only support get operations (e.g., plan_cache_plan_explain), the result set is always empty, so this condition check is necessary
 int ObAgentVirtualTable::should_add_tenant_condition(bool &need, const uint64_t tenant_id) const
 {
   int ret = OB_SUCCESS;

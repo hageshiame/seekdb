@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_COMMON_OB_OBJECT_TYPE_H_
@@ -23,12 +27,11 @@ class ObObjMeta;
 class ObAccuracy;
 template <class T>
 class ObIArray;
-
-// @note Obj类型只能增加，不能删除，顺序也不能变，见ob_obj_cast.h
-// @note 增加类型时需要同步修改ObObjTypeClass和ob_obj_type_class().
+// @note Obj type can only be added, not deleted, and the order cannot change, see ob_obj_cast.h
+// @note When adding a type, you need to synchronize the modification of ObObjTypeClass and ob_obj_type_class().
 enum ObObjType
 {
-  ObNullType        = 0,  // 空类型
+  ObNullType        = 0,  // null type
 
   ObTinyIntType     = 1,  // int8, aka mysql boolean type
   ObSmallIntType    = 2,  // int16
@@ -84,8 +87,7 @@ enum ObObjType
   ObMySQLDateTimeType  = 42, // datetime type which is compatible with MySQL.
   ObRoaringBitmapType  = 43, // Roaring Bitmap Type
   ObMaxType,                 // invalid type, or count of obj type
-
- 
+                            //
   ObTimestampLTZType  = 47, // timestamp with local time zone for oracle
   ObTimestampNanoType = 48, // timestamp nanosecond for oracle
 };
@@ -94,7 +96,7 @@ enum ObObjType
 enum ObObjOType
 {
   ObONotSupport       = 0,
-  ObONullType         = 1,   // 空类型
+  ObONullType         = 1,   // null type
   ObOSmallIntType     = 2,
   ObOIntType          = 3,
   ObONumberFloatType  = 4,  //float
@@ -136,9 +138,9 @@ enum class ObGeoType
   MULTIPOLYGON = 6,
   GEOMETRYCOLLECTION = 7,
   GEOTYPEMAX = 31, // 5 bit for geometry type in column schema,set max 31
-  // 3d geotype is not supported to define as subtype yet, 
-  // only use for inner type    
-  POINTZ = 1001, 
+  // 3d geotype is not supported to define as subtype yet,
+  // only use for inner type
+  POINTZ = 1001,
   LINESTRINGZ = 1002,
   POLYGONZ = 1003,
   MULTIPOINTZ = 1004,
@@ -150,7 +152,7 @@ enum class ObGeoType
 
 //for cast/cmp map
 static ObObjOType OBJ_TYPE_TO_O_TYPE[ObMaxType+1] = {
-  ObONullType,               // 空类型
+  ObONullType,               // null type
   ObOSmallIntType,           // int8, aka mysql boolean type
   ObOSmallIntType,           // int16
   ObONotSupport,             // int24
@@ -200,7 +202,7 @@ static ObObjOType OBJ_TYPE_TO_O_TYPE[ObMaxType+1] = {
   ObOCollectionSqlType,      //ObCollectionSQLType = 40,
   ObONotSupport,             //ObMySQLDateType = 41,
   ObONotSupport,             //ObMySQLDateTimeType = 42,
-  ObORoaringBitmapType,      //Roaring Bitmap Type = 43，
+  ObORoaringBitmapType,      //Roaring Bitmap Type = 43,
   ObONotSupport              //ObMaxType,
 };
 
@@ -229,7 +231,7 @@ enum ObObjTypeClass
   ObIntervalTC      = 19, //oracle interval type class include interval year to month and interval day to second
   ObRowIDTC         = 20, // oracle rowid typeclass, includes urowid and rowid
   ObLobTC           = 21, //oracle lob typeclass
-  ObJsonTC          = 22, // json type class 
+  ObJsonTC          = 22, // json type class
   ObGeometryTC      = 23, // geometry type class
   ObUserDefinedSQLTC = 24, // user defined type class in SQL
   ObDecimalIntTC     = 25, // decimal int class
@@ -346,7 +348,7 @@ const ObObjType OBJ_DEFAULT_TYPE[ObActualMaxTC] =
 static ObObjTypeClass OBJ_O_TYPE_TO_CLASS[ObOMaxType + 1] =
 {
   ObMaxTC,        //ObONotSupport = 1
-  ObNullTC,       // ObONullType = 2,   // 空类型
+  ObNullTC,       // ObONullType = 2,   // null type
   ObIntTC,        // ObOSmallIntType=3,
   ObIntTC,        // ObOIntType=4,
   ObNumberTC,     // ObOBinFloatType=5,          //float
@@ -1280,7 +1282,7 @@ OB_INLINE bool ob_is_int_uint(ObObjTypeClass left_tc, ObObjTypeClass right_tc)
   return (ObIntTC == left_tc && ObUIntTC == right_tc) || (ObIntTC == right_tc && ObUIntTC == left_tc);
 }
 
-OB_INLINE bool ob_is_int_less_than_64(ObObjType type) 
+OB_INLINE bool ob_is_int_less_than_64(ObObjType type)
 {
   return (ObTinyIntType <= type && type <= ObInt32Type)
          || (ObUTinyIntType <= type && type <= ObUInt32Type);
@@ -1531,7 +1533,7 @@ inline bool ob_is_var_len_type(const ObObjType type) {
   return ob_is_string_type(type);
 }
 inline bool ob_is_collection_sql_type(const ObObjType type) { return ObCollectionSQLType == type; }
-inline bool is_lob_storage(const ObObjType type) { return ob_is_large_text(type) 
+inline bool is_lob_storage(const ObObjType type) { return ob_is_large_text(type)
                                                           || ob_is_json_tc(type)
                                                           || ob_is_geometry_tc(type)
                                                           || ob_is_collection_sql_type(type)
@@ -1546,7 +1548,14 @@ inline bool is_decimal_int_accuracy_valid(const int16_t precision, const int16_t
 }
 inline bool ob_is_user_defined_pl_type(const ObObjType type) { return ObExtendType == type; }
 inline bool ob_is_user_defined_type(const ObObjType type) {
-  return ob_is_user_defined_pl_type(type); 
+  return ob_is_user_defined_pl_type(type);
+}
+// xml type without schema
+inline bool ob_is_xml_sql_type(const ObObjType type, const uint16_t sub_schema_id) {
+  return (ObUserDefinedSQLType == type) && (sub_schema_id == ObXMLSqlType);
+}
+inline bool ob_is_xml_pl_type(const ObObjType type, const uint64_t udt_id) {
+  return (ObExtendType == type) && (udt_id == static_cast<uint64_t>(T_OBJ_XML));
 }
 inline bool ob_is_datetime_or_mysql_datetime(const ObObjType type)
 {

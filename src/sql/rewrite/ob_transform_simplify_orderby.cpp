@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_REWRITE
@@ -15,7 +19,7 @@
 #include "sql/resolver/expr/ob_raw_expr_util.h"
 using namespace oceanbase::sql;
 
-/*@brief, remove_stmt_order_by消除stmt中可以消除的order by, eg:
+/*@brief, remove_stmt_order_by removes order by from stmt that can be removed, eg:
 * select * from t1 where c1 in (select c1 from t2 order by c2);
 * ==>
 * select * from t1 where c1 in (select c1 from t2);
@@ -77,7 +81,7 @@ int ObTransformSimplifyOrderby::transform_one_stmt(common::ObIArray<ObParentDMLS
 }
 
 // for select/update/delete/insert
-// 消除subquery中的order by子句
+// Remove order by clause from subquery
 int ObTransformSimplifyOrderby::remove_order_by_for_subquery(ObDMLStmt *stmt, bool &trans_happened)
 {
   int ret = OB_SUCCESS;
@@ -115,7 +119,7 @@ int ObTransformSimplifyOrderby::remove_order_by_for_view_stmt(ObDMLStmt *stmt, b
   if (OB_ISNULL(stmt)) {
     ret = OB_ERR_UNEXPECTED;
     LOG_WARN("stmt is null", K(ret));
-  //select stmt不能有window function,eg:
+  //select stmt cannot have window function,eg:
   // SELECT last_value(c1) OVER (PARTITION BY c2) FROM (SELECT * FROM t1 ORDER BY c1, c2)s
   // ORDER BY c1, c2;
   } else if (!stmt->is_sel_del_upd()) {

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_EXE
@@ -66,8 +70,7 @@ OB_DEF_SERIALIZE(ObTask)
   LST_DO_CODE(OB_UNIS_ENCODE, ctrl_svr_);
   LST_DO_CODE(OB_UNIS_ENCODE, runner_svr_);
   LST_DO_CODE(OB_UNIS_ENCODE, ob_task_id_);
-
-  // 序列化Task的核心部分到远端：sub plan tree
+  // Serialize the core part of Task to remote: sub plan tree
   if (OB_SUCC(ret)) {
     const ObExprFrameInfo *frame_info = &ser_phy_plan_->get_expr_frame_info();
     if (OB_ISNULL(root_spec_)) {
@@ -414,7 +417,7 @@ OB_DEF_DESERIALIZE(ObRemoteTask)
               *ps_params,
               tenant_id);
   if (OB_SUCC(ret)) {
-    //后续创建session需要依赖tenant_id
+    // Subsequent session creation requires dependency on tenant_id
     remote_sql_info_->ps_param_cnt_ = static_cast<int32_t>(ps_params->count());
     if (OB_FAIL(exec_ctx_->create_my_session(tenant_id))) {
       LOG_WARN("create my session failed", K(ret), K(tenant_id));
@@ -491,8 +494,7 @@ int ObRemoteTask::assign_ls_list(const share::ObLSArray ls_ids) {
   }
   return ret;
 }
-
-// 需保证两个ls array中元素不重复
+// Need to ensure that elements in the two ls arrays are not duplicated
 bool ObRemoteTask::check_ls_list(share::ObLSArray &ls_ids) const {
   bool is_valid = true;
 

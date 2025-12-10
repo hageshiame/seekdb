@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SQL_OPTIMIZER_OB_OPT_EST_COST_
@@ -228,12 +232,11 @@ public:
                                       const OptSelectivityCtx &ctx,
                                       const ObIArray<ObRawExpr *> &exprs,
                                       double &width);
-
-   //将scan ranges转换为ObSimpleBatch
-  //@param[in] scan_ranges :抽取出来的query scan range信息
-  //@param[out] batch: 存储层估行需要的query range集合
-  //@param[out] range: T_SCAN batch需要的range
-  //@param[out] range_array: T_MULTI_SCAN batch需要的range
+   // Convert scan ranges to ObSimpleBatch
+  //@param[in] scan_ranges :extracted query scan range information
+  //@param[out] batch: collection of query ranges needed for storage layer estimation
+  //@param[out] range: T_SCAN batch required range
+  //@param[out] range_array: T_MULTI_SCAN batch required range
 
 
   static int calculate_filter_selectivity(AccessPath &path);

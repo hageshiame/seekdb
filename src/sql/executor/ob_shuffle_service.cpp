@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_EXE
@@ -22,20 +26,19 @@ namespace oceanbase
 {
 namespace sql
 {
-
-// 问：为什么 ObShuffleService 里，key 分区的处理总是走一个单独路径？
+// Q: Why does the key partition processing in ObShuffleService always take a separate path?
 //
-// 答：实现原因。理论上二者可以统一。
-//     2017年本逻辑的作者没有努力把二者融合起来，做了两段分支逻辑，导致了现在的局面。
+// Answer: Implementation reason. Theoretically, the two can be unified.
+//     In 2017, the author of this logic did not make an effort to integrate the two, resulting in two separate branches, leading to the current situation.
 //
-//     key 分区依赖于 key 表达式对多列做计算，然后对计算结果取模，
-//     hash 分区对一个 hash function 做计算，然后对计算结果取模。
+//     key partition depends on the key expression performing calculations on multiple columns, then taking the modulus of the result,
+//     hash partition performs a calculation on a hash function, then takes the modulus of the result.
 //
-//     part_func, subpart_func 这两个参数是专门给 key 分区使用的，用他们计算出
-//     一个值，然后再调用 hash 函数计算出最终的 part id。
+//     part_func, subpart_func these two parameters are specifically for key partitioning, use them to calculate out
+//     a value, and then call the hash function to calculate the final part id.
 //
-//     对于 hash 分区，只需要传入 repart_columns, repart_sub_columns 即可，
-//     其计算 hash 值的表达式是固定的函数，函数的参数就是 repart_columns 指定
+//     For hash partitioning, only repart_columns, repart_sub_columns need to be passed in,
+//     Its calculation hash value expression is a fixed function, the function's parameter is specified by repart_columns
 //
 //
 
@@ -79,7 +82,7 @@ int ObShuffleService::get_key_part_id(ObExecContext &exec_ctx,
   int64_t calc_result = 0;
   ObObj func_result;
   int64_t part_count = table_schema.get_part_option().get_part_num();
-  //一级分区
+  // First-level partition
   if (part_count <= 0) {
     ret = OB_ERR_UNEXPECTED;
     LOG_WARN("the part num can not be null", K(part_count), K(part_func), K(ret));
@@ -132,8 +135,7 @@ int ObShuffleService::get_subpart_id(ObExecContext &exec_ctx,
   }
   return ret;
 }
-
-// FIXME: 支持非模版化二级分区
+// FIXME: support non-template secondary partitioning
 int ObShuffleService::get_key_subpart_id(ObExecContext &exec_ctx,
                                          const ObTableSchema &table_schema,
                                          const ObNewRow &row,
@@ -143,8 +145,7 @@ int ObShuffleService::get_key_subpart_id(ObExecContext &exec_ctx,
 {
   return OB_NOT_SUPPORTED;
 }
-
-//FIXME:此处和22x实现不一致，需要check一下
+//FIXME:Here and 22x implementation are inconsistent, need to check it out
 int ObShuffleService::get_non_key_subpart_id(ObExecContext &exec_ctx,
                                              const ObTableSchema &table_schema,
                                              const ObNewRow &row,

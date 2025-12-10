@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SERVER_OMT
@@ -33,7 +37,7 @@ ObMultiTenantOperator::~ObMultiTenantOperator()
 void ObMultiTenantOperator::reset()
 {
   if (inited_) {
-    // 如果迭代未结束，释放残留的资源
+    // If the iteration is not finished, release the remaining resources
     int ret = OB_SUCCESS;
     if (tenant_ != nullptr) {
       {
@@ -43,7 +47,7 @@ void ObMultiTenantOperator::reset()
       tenant_->unlock();
     }
     if (OB_FAIL(ret)) {
-      // 无法处理资源释放不了的问题
+      // Unable to handle the issue of resource release failure
       abort();
     } else {
       tenant_ = nullptr;

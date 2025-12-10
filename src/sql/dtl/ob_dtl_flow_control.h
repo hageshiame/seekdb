@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OB_DTL_FLOW_CONTROL_H
@@ -143,9 +147,7 @@ public:
     ATOMIC_AAF(&accumulated_blocked_cnt_, cnt);
   }
   OB_INLINE void decrease_blocked_cnt(int64_t cnt) { ATOMIC_SAF(&block_ch_cnt_, cnt); }
-
-
-  // 支持多个channel公用一起block，如果block_ch_cnt_大于1，表示block为true
+  // Support multiple channels sharing the same block, if block_ch_cnt_ is greater than 1, it indicates that block is true
   OB_INLINE void set_block(int64_t idx);
   OB_INLINE void unblock(int64_t idx);
   OB_INLINE int64_t get_blocked_cnt() { return (ATOMIC_LOAD(&block_ch_cnt_)); }
@@ -225,7 +227,7 @@ private:
   static const int64_t MAX_BUFFER_FACTOR = 2;
   uint64_t tenant_id_;
   int64_t timeout_ts_;
-  // 标识是否是transmit、receive、qc等
+  // Identify whether it is transmit, receive, qc, etc.
   int communicate_flag_;
   common::ObCompressorType compressor_type_;
   bool is_init_;

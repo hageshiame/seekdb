@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX STORAGE
@@ -28,7 +32,7 @@ int ObIColumnDecoder::get_is_null_bitmap_from_fixed_column(
     const sql::PushdownFilterInfo &pd_filter_info,
     ObBitmap &result_bitmap) const
 {
-  // 定长列从column meta中直接读 bit packing 的 is_null_bitmap
+  // Fixed-length column reads bit packing's is_null_bitmap directly from column meta
   int ret = OB_SUCCESS;
   if (OB_UNLIKELY(pd_filter_info.count_!= result_bitmap.size())
           || OB_ISNULL(col_data)
@@ -74,7 +78,7 @@ int ObIColumnDecoder::get_is_null_bitmap_from_var_column(
     const sql::PushdownFilterInfo &pd_filter_info,
     ObBitmap &result_bitmap) const
 {
-  // 变长列需要遍历对应row区并更新result bitmap
+  // Variable-length columns require traversal of the corresponding row area and update of the result bitmap
   int ret = OB_SUCCESS;
   if (OB_UNLIKELY(pd_filter_info.count_ != result_bitmap.size())
           || OB_ISNULL(row_index)

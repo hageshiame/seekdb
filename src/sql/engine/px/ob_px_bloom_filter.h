@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "rpc/obrpc/ob_rpc_proxy.h"
@@ -130,25 +134,25 @@ private:
 #endif
 
 private:
-  int64_t data_length_;          //原始数据长度
+  int64_t data_length_;          // original data length
   int64_t max_bit_count_;        // max filter size, default 2GB, so the max bit count = 17179869184;
-  int64_t bits_count_;           //filter的位个数
-  double  fpp_;                  //误判率
-  int64_t hash_func_count_;      //哈希函数个数
-  bool is_inited_;                //是否初始化
-  int64_t bits_array_length_;    //数组长度
-  int64_t *bits_array_;          //8字节位数组
-  int64_t true_count_;           //`1`数量
+  int64_t bits_count_;           // number of bits in the filter
+  double  fpp_;                  // false positive rate
+  int64_t hash_func_count_;      // number of hash functions
+  bool is_inited_;                // whether initialized
+  int64_t bits_array_length_;    // array length
+  int64_t *bits_array_;          // 8-byte bit array
+  int64_t true_count_;           //`1` count
   int64_t begin_idx_;            // join filter begin position
   int64_t end_idx_;              // join filter end position
   GetFunc might_contain_;       // function pointer for might contain
 public:
   common::ObArenaAllocator allocator_;
 public:
-  //无需序列化
-   int64_t px_bf_recieve_count_;  // 当前收到bloom filter的个数
-   int64_t px_bf_recieve_size_;   // 预期应该收到的个数
-   volatile int64_t px_bf_merge_filter_count_; // 当前持有filter, 做merge filter操作的线程个数
+  // No need to serialize
+   int64_t px_bf_recieve_count_;  // Current number of bloom filters received
+   int64_t px_bf_recieve_size_;   // Expected number to be received
+   volatile int64_t px_bf_merge_filter_count_; // current number of threads holding the filter and performing merge filter operations
    ObArray<BloomFilterReceiveCount> receive_count_array_;
    int64_t block_mask_;          // for locating block
 DISALLOW_COPY_AND_ASSIGN(ObPxBloomFilter);
@@ -174,8 +178,8 @@ public:
   int64_t tenant_id_;
   int64_t filter_id_;
   int64_t server_id_;
-  bool is_shared_;    // 执行期join filter内存是否共享, false代表线程级, true代表sqc级.
-  bool skip_subpart_; // 是否忽略二级分区
+  bool is_shared_;    // Execution period join filter memory is shared or not, false represents thread-level, true represents sqc-level.
+  bool skip_subpart_; // whether to skip subpart
   int64_t p2p_dh_id_;
   bool is_shuffle_;
   TO_STRING_KV(K(is_inited_), K(tenant_id_), K(filter_id_),
@@ -255,7 +259,7 @@ class ObPxBloomFilterManager
 public:
   static ObPxBloomFilterManager &instance();
   int init();
-  // 这个get接口仅给merge filter定制.
+  // This get interface is only for merge filter customization.
   int get_px_bf_for_merge_filter(ObPXBloomFilterHashWrapper &key, ObPxBloomFilter *&filter);
   void destroy();
 private:

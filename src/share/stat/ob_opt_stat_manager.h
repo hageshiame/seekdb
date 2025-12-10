@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef _OB_OPT_STAT_MANAGER_H_
@@ -123,9 +127,9 @@ public:
                      ObIArray<ObOptTableStatHandle> &handles);
 
   /**
-   *  @brief  外部获取列统计信息的接口，以引用的形式返回一个包含统计信息对象指针的handle，通过这个指针
-   *          可以获取统计信息。这样的方式是由ObKVCache的底层实现决定的。如果返回的handle的指针非空，
-   *          那么handle对象保证在自身析构前其统计信息指针总是有效的。
+   *  @brief  The interface for external acquisition of column statistics, which returns a handle containing a reference to a pointer of the statistics object. Through this pointer,
+   *          statistics can be obtained. This approach is determined by the underlying implementation of ObKVCache. If the pointer of the returned handle is not null,
+   *          the handle object guarantees that its statistics pointer remains valid until its own destruction.
    */
   virtual int get_column_stat(const uint64_t tenant_id,
                               const ObOptColumnStat::Key &key,
@@ -172,7 +176,7 @@ public:
                   const bool is_index_stat,
                   const ObObjPrintParams &print_params);
 
-  /**  @brief  外部获取行统计信息的接口 */
+  /**  @brief  External interface for obtaining row statistics information */
   virtual int get_table_stat(const uint64_t tenant_id,
                              const ObOptTableStat::Key &key,
                              ObOptTableStat &tstat);

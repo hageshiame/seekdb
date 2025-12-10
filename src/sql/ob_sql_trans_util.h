@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SQL_TRANS_UTIL_
@@ -25,26 +29,26 @@ class ObSQLSessionInfo;
 class ObSqlTransUtil
 {
 public:
-  /* 判断一个语句是否应该在远程开启事务 */
+  /* Determine whether a statement should start a transaction remotely */
   static bool is_remote_trans(bool ac, bool in_trans, ObPhyPlanType ptype)
   {
     return true == ac && false == in_trans && OB_PHY_PLAN_REMOTE == ptype;
   }
 
-  /* 判断是否能够自动开启事务 */
+  /* Determine if the transaction can be automatically started */
   static bool plan_can_start_trans(bool ac, bool in_trans)
   {
     UNUSED(ac);
     return false == in_trans;
   }
 
-  /* 判断是否能够自动结束当前事务 */
+  /* Determine if the current transaction can be automatically ended */
   static bool plan_can_end_trans(bool ac, bool explicit_start_trans)
   {
     return false == explicit_start_trans && true == ac;
   }
 
-  /* 判断cmd是否能够自动结束上一个事务 */
+  /* Determine if cmd can automatically end the previous transaction */
   static bool cmd_need_new_trans(bool ac, bool in_trans)
   {
     UNUSED(ac);

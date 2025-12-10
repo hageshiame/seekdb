@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_ENGINE_PX_EXCHANGE_OB_TRANSMIT_OP_H_
@@ -44,8 +48,8 @@ public:
 
   int64_t get_px_dop() const { return px_dop_; }
   bool is_px_single() const { return px_single_; }
-  // 为了在 explain 期间就可以展示出 qc id 和 dfo id
-  // 需要在 transform 阶段就计算出 dfo id 并保存在这里
+  // To display qc id and dfo id during explain
+  // Need to calculate the dfo id during the transform stage and save it here
   inline void set_dfo_id(int64_t dfo_id) { dfo_id_ = dfo_id; }
   inline void set_px_id(int64_t px_id) { px_id_ = px_id; }
   inline int64_t get_dfo_id() const { return dfo_id_; }
@@ -99,18 +103,17 @@ public:
   void set_slave_mapping_type(SlaveMappingType slave_mapping_type) { slave_mapping_type_ = slave_mapping_type; }
   SlaveMappingType get_slave_mapping_type() const { return slave_mapping_type_; }
   bool is_slave_mapping() const { return SlaveMappingType::SM_NONE != slave_mapping_type_; }
-
-  // 切分成多少个task
+  // Split into how many tasks
   int64_t split_task_count_;
-  // 最多同时发送到多少台机器上并行执行
+  // Maximum number of machines to send to for parallel execution at the same time
   int64_t parallel_server_count_;
-  // 每台机器最多并行执行多少个该job的task线程
+  // Each machine can execute up to how many threads of this job's task in parallel
   int64_t server_parallel_thread_count_;
 
   int64_t px_dop_;
   bool px_single_;
-  int64_t dfo_id_; // 在 CG 之前就给 dfo 定下 id
-  int64_t px_id_; // 在 CG 之前就给多个 px 的 plan 定下每个 px 的 id
+  int64_t dfo_id_; // Assign id to dfo before CG
+  int64_t px_id_; // Assign an id to each px's plan before CG
 
   inline bool is_repart_exchange() const
   { return OB_REPARTITION_NO_REPARTITION != repartition_type_;  }
@@ -123,7 +126,7 @@ public:
   ObPQDistributeMethod::Type unmatch_row_dist_method_;
   ObNullDistributeMethod::Type null_row_dist_method_;
   SlaveMappingType slave_mapping_type_;
-  //当前的job中包含light granule iterator operator
+  // The current job contains light granule iterator operator
   bool has_lgi_;
 
   // for rollup distributor and collector

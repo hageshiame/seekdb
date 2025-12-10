@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2025 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 
@@ -236,7 +240,7 @@ struct ObTableSingleQueryInfo : public ObTableInfoBase
   int64_t to_string(char *buf, const int64_t len) const {
     return OB_SUCCESS;
   }
-  // session guard 来自 ObTableQueryAsyncCtx
+  // session guard from ObTableQueryAsyncCtx
   table::ObTableCtx tb_ctx_;
   table::ObTableApiScanRowIterator row_iter_;
   table::ObTableQueryIterableResult result_;
@@ -305,7 +309,7 @@ public:
     if (OB_NOT_NULL(query_ctx_.sess_guard_)) {
       query_ctx_.sess_guard_->~ObTableApiSessGuard();
       query_ctx_.sess_guard_ = nullptr;
-      // multi_cf_infos_ 中tb_ctx的sess_guard就来自于query_ctx_
+      // The sess_guard of tb_ctx in multi_cf_infos_ comes from query_ctx_
       query_ctx_.multi_cf_infos_[0]->tb_ctx_.set_sess_guard(nullptr);
     }
     if (OB_NOT_NULL(result_iterator_)) {

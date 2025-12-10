@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include <codecvt>
@@ -165,10 +169,10 @@ TEST_F(TestCharset, sortkey)
 
   const char ascii_string[] = {'\x7f','\0'};
   const char non_ascii_string[] = {'\xff','\0'};
-  const char gbk_string[] = { '\xc4', '\xe3', '\xba', '\xc3','\0' };//meaing is '你好'
-  const char gb18030_string[] = { '\xc4', '\xe3', '\xba', '\xc3','\0' };//meaing is '你好'
-  const char utf8_string[] = { '\xe4', '\xbd', '\xa0', '\xe5', '\xa5', '\xbd','\0'};//meaing is '你好'
-  const char utf16_string[] = { '\x4f', '\x60', '\x59', '\x7d','\0'};//meaing is '你好'
+  const char gbk_string[] = { '\xc4', '\xe3', '\xba', '\xc3','\0' };//meaning is '你好'
+  const char gb18030_string[] = { '\xc4', '\xe3', '\xba', '\xc3','\0' };//meaning is '你好'
+  const char utf8_string[] = { '\xe4', '\xbd', '\xa0', '\xe5', '\xa5', '\xbd','\0'};//meaning is '你好'
+  const char utf16_string[] = { '\x4f', '\x60', '\x59', '\x7d','\0'};//meaning is '你好'
   test_string.push_back(std::make_pair(std::string(ascii_string),std::string((non_ascii_string)))); //CS_TYPE_LATIN1_SWEDISH_CI
   test_string.push_back(std::make_pair(std::string(gbk_string),std::string((non_ascii_string)))); //CS_TYPE_GBK_CHINESE_CI
   test_string.push_back(std::make_pair(std::string(utf8_string),std::string((non_ascii_string)))); //CS_TYPE_UTF8MB4_GENERAL_CI
@@ -1082,7 +1086,7 @@ TEST_F(TestCharset, foreach_char) {
 
 void debug_print_hex(const char* str,const char* sort_str )
 {
-  // 以16进制格式打印每个字符
+  // Print each character in hexadecimal format
   fprintf(stdout, "origin str = \"%s\"\n", str);
   for (int i = 0; str[i] != '\0'; i++) {
       fprintf(stdout, "%02X ",(unsigned char)str[i]);

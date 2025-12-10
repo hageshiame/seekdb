@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -65,9 +69,8 @@ void point2pointer(T *&dst_pointer, B *dst_base, T *src_pointer, const B *src_ba
 }
 
 }
-
-// 目前仅有ObIArray<ObExpr>方式写入Store
-// 其他基于ObDatum指针方式写入，暂时未使用
+// Currently only ObIArray<ObExpr> way to write into Store
+// Other based on ObDatum pointer way to write, temporarily not used
 int ObRADatumStore::StoredRow::copy_datums(const common::ObIArray<ObExpr*> &exprs,
   ObEvalCtx &ctx, char *buf, const int64_t size, const int64_t row_size,
   const uint32_t row_extend_size)
@@ -864,9 +867,9 @@ int ObRADatumStore::switch_idx_block(bool finish_add /* = false */)
 }
 
 /*
- * 从ObChunkDatumStore读出数据，然后再写入ObChunkDatumStore时，使用copy_row
- * 从operator的ObExpr的ObDatum中写入到ObChunkDatumStore时，使用add_row
- * 理论上只有这两个接口
+ * Read data from ObChunkDatumStore, and then write to ObChunkDatumStore using copy_row
+ * Write from ObExpr's ObDatum of operator to ObChunkDatumStore using add_row
+ * In theory, there are only these two interfaces
  */
 template<bool NEED_EVAL>
 int ObRADatumStore::add_row(const common::ObIArray<ObExpr*> &exprs,
@@ -878,7 +881,7 @@ int ObRADatumStore::add_row(const common::ObIArray<ObExpr*> &exprs,
     ret = OB_NOT_INIT;
     LOG_WARN("not init", K(ret));
   } else if (OB_FAIL(Block::row_store_size<NEED_EVAL>(exprs, *ctx, row_size, row_extend_size_))) {
-    // row store size确保exprs被计算过
+    // row store size ensures exprs have been calculated
     LOG_WARN("failed to calc store size");
   } else {
     const int64_t min_buf_size = Block::min_buf_size(row_size);
@@ -917,7 +920,7 @@ int ObRADatumStore::add_row(const common::ObIArray<ObDatum> &datums,
     ret = OB_NOT_INIT;
     LOG_WARN("not init", K(ret));
   } else if (OB_FAIL(Block::row_store_size(datums, row_size, row_extend_size_))) {
-    // row store size确保exprs被计算过
+    // row store size ensures exprs have been calculated
     LOG_WARN("failed to calc store size");
   } else {
     const int64_t min_buf_size = Block::min_buf_size(row_size);

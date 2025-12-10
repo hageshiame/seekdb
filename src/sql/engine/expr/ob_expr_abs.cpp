@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -168,7 +172,7 @@ DEF_EVAL_ABS_FUNC(ObIntType)
     expr_datum.set_null();
   } else {
     int64_t param_int = param->get_int();
-    // 只有mysql模式会调到这个函数，如果发现是INT64_MIN，需要报out of range
+    // Only mysql mode will call this function, if INT64_MIN is found, out of range needs to be reported
     if (INT64_MIN == param_int) {
       ret = OB_OPERATE_OVERFLOW;
       LOG_WARN("value out of range", K(ret));
@@ -689,7 +693,7 @@ int ObExprAbs::calc_result_type1(ObExprResType &type, ObExprResType &type1,
     }
 
     // collation
-    // 结果不可能为字符类型，无需专门设置collation
+    // The result cannot be of character type, no need to set collation
     if (lib::is_mysql_mode() && type.is_double() && type1.get_scale() != SCALE_UNKNOWN_YET) {
       type.set_scale(type1.get_scale());
       type.set_precision(static_cast<ObPrecision>(ObMySQLUtil::float_length(type1.get_scale())));

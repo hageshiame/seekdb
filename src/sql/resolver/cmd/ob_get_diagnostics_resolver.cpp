@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_RESV
@@ -59,7 +63,7 @@ int ObGetDiagnosticsResolver::resolve(const ParseNode &parse_tree)
   } else if (OB_FAIL(set_diagnostics_type(diagnostics_stmt, is_current->value_, is_condition->value_))) {
     LOG_WARN("set diagnostic type failed", K(ret));
   } else {
-    if (1 == is_condition->value_) {/* 表示是获取condition信息的语句*/
+    if (1 == is_condition->value_) {/* indicates the statement for obtaining condition information */
       CK(OB_NOT_NULL(condition_node));
       ObRawExpr* condition_num = NULL;
       if (OB_SUCC(ret) && NULL == session_info_->get_pl_context() && T_IDENT == condition_node->type_) {
@@ -136,7 +140,7 @@ int ObGetDiagnosticsResolver::resolve(const ParseNode &parse_tree)
     }
   }
 
-  if (OB_ERR_BAD_FIELD_ERROR == ret) {/* sql环境下使用非用户/系统变量作为condition参数时，get diagnostic语句能成功执行，只会在执行期报warning */
+  if (OB_ERR_BAD_FIELD_ERROR == ret) {/* In SQL environment, when using non-user/system variables as condition parameters, the get diagnostic statement can be successfully executed, but it will only report a warning at runtime */
     ret = OB_SUCCESS;
   }
   

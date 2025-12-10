@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_LOGSERVICE_LOG_OFFSET_ALLOCATOR_
@@ -34,7 +38,7 @@ public:
   int get_log_block_size(const uint64_t block_id, int64_t &block_size) const
   {
     // TODO: by haofan
-    // 为了支持log文件大小可配置,需要为每个文件获取对应的size
+    // To support configurable log file size, it is necessary to obtain the corresponding size for each file
     UNUSED(block_id);
     block_size = PALF_BLOCK_SIZE;
     return OB_SUCCESS;
@@ -44,16 +48,16 @@ public:
   int get_curr_end_lsn(LSN &curr_end_lsn) const;
   int try_freeze_by_time(LSN &last_lsn, int64_t &last_log_id);
   int try_freeze(LSN &last_lsn, int64_t &last_log_id);
-  // 功能: 为一条日志分配lsn, scn.
+  // Function: Assign lsn, scn to a log entry.
   //
-  // @param [in] base_scn: scn下界值
-  // @param [in] size: 日志体长度,如果是聚合日志需包含LogHeader长度
+  // @param [in] base_scn: lower bound value of scn
+  // @param [in] size: length of the log body, if it is an aggregated log, it should include the LogHeader length
   //
-  // @param [out] lsn: 分配的lsn
-  // @param [out] scn: 分配的scn
-  // @param [out] is_new_log: 是否需要生成新日志
-  // @param [out] need_gen_padding_entry: 是否需要在本条日志之前生成padding_entry
-  // @param [out] padding_len: padding部分的总长度
+  // @param [out] lsn: allocated lsn
+  // @param [out] scn: allocated scn
+  // @param [out] is_new_log: whether a new log needs to be generated
+  // @param [out] need_gen_padding_entry: whether a padding_entry needs to be generated before this log entry
+  // @param [out] padding_len: total length of the padding part
   //
   int alloc_lsn_scn(const share::SCN &base_scn,
                     const int64_t size,
@@ -65,24 +69,24 @@ public:
                     bool &is_new_log,
                     bool &need_gen_padding_entry,
                     int64_t &padding_len);
-  // 更新last_lsn和log_timestamp
-  // receive_log/append_disk_log 时调用
+  // Update last_lsn and log_timestamp
+  // called when receive_log/append_disk_log is invoked
   int inc_update_last_log_info(const LSN &lsn, const int64_t log_id, const share::SCN &scn);
   // inc update scn base, called by change access mode and to leader active
   int inc_update_scn_base(const share::SCN &scn);
   int truncate(const LSN &lsn, const int64_t log_id, const share::SCN &scn);
-  // 获取last_lsn和log_timestamp
+  // Get last_lsn and log_timestamp
   TO_STRING_KV("max_log_id", get_max_log_id(), "max_lsn", lsn_ts_meta_.lsn_val_,
       "max_scn", get_max_scn());
 private:
-  static const int32_t LOG_ID_DELTA_BIT_CNT = 28;  // log_id_delta部分的位数，可生成25万个log_id
-  static const int32_t LOG_TS_DELTA_BIT_CNT = 35;  // scn_delta部分的位数, ns级别，约可用32秒
+  static const int32_t LOG_ID_DELTA_BIT_CNT = 28;  // number of bits for log_id_delta, can generate 250,000 log_ids
+  static const int32_t LOG_TS_DELTA_BIT_CNT = 35;  // number of bits for scn_delta part, ns level, approximately available for 32 seconds
   static const int64_t LOG_ID_DELTA_UPPER_BOUND = (1ul << LOG_ID_DELTA_BIT_CNT) - 1000;
   static const int64_t LOG_TS_DELTA_UPPER_BOUND = (1ul << LOG_TS_DELTA_BIT_CNT) - 1000;
-  static const uint64_t LOG_CUT_TRIGGER = 1 << 21;          // 聚合日志跨2M边界时切分
+  static const uint64_t LOG_CUT_TRIGGER = 1 << 21;          // Split log when it crosses the 2MB boundary
   static const uint64_t LOG_CUT_TRIGGER_MASK = (1 << 21) - 1;
-  static const uint64_t MAX_SUPPORTED_BLOCK_ID = 0xfffffffff - 1000;  // block_id告警阈值
-  static const uint64_t MAX_SUPPORTED_BLOCK_OFFSET = 0xfffffff;        // block_offset的最大支持256MB
+  static const uint64_t MAX_SUPPORTED_BLOCK_ID = 0xfffffffff - 1000;  // block_id alarm threshold
+  static const uint64_t MAX_SUPPORTED_BLOCK_OFFSET = 0xfffffff;        // the maximum supported block_offset is 256MB
 private:
   union LSNTsMeta
   {

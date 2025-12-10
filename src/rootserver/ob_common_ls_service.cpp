@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX RS
@@ -165,8 +169,8 @@ int ObCommonLSService::try_create_ls_(const share::schema::ObTenantSchema &tenan
   }
   return ret;
 }
-//不管是主库还是备库都有概率存在一个日志流组内的日志流记录的unit_group不一致的情况
-//所有的日志流都对齐日志流id最小的日志流,虽然不是最优，但是可以保证最终一致性
+//Whether it is the primary database or the secondary database, there is a probability that the unit_group recorded in the log streams within a log stream group may be inconsistent.
+// All log streams are aligned with the log stream having the smallest log stream id, although not optimal, it can ensure eventual consistency
 int ObCommonLSService::try_modify_ls_unit_group_(
     const share::schema::ObTenantSchema &tenant_schema)
 {

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef __OB_SQL_ENG_PX_DH_BARRIER_H__
@@ -31,7 +35,7 @@ class ObBarrierPieceMsgListener;
 class ObBarrierPieceMsgCtx;
 class ObPxCoordInfo;
 
-/* 各种 datahub 子类消息定义如下 */
+/* Various datahub subclass message definitions are as follows */
 class ObBarrierPieceMsg
   : public ObDatahubPieceMsg<dtl::ObDtlMsgType::DH_BARRIER_PIECE_MSG>
 
@@ -74,7 +78,7 @@ public:
     ready_state_ = 0;
   }
   VIRTUAL_TO_STRING_KV(K_(ready_state));
-  int ready_state_; // 占位符，并不真用到
+  int ready_state_; // placeholder, not actually used
 };
 
 class ObBarrierPieceMsgCtx : public ObPieceMsgCtx
@@ -91,7 +95,7 @@ public:
                                  int64_t task_cnt,
                                  ObPieceMsgCtx *&msg_ctx);
   INHERIT_TO_STRING_KV("meta", ObPieceMsgCtx, K_(received));
-  int received_; // 已经收到的 piece 数量
+  int received_; // number of pieces already received
 private:
   DISALLOW_COPY_AND_ASSIGN(ObBarrierPieceMsgCtx);
 };

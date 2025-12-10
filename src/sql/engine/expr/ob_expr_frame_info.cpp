@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -69,7 +73,7 @@ int ObExprFrameInfo::assign(const ObExprFrameInfo &other,
                                       (other_frame_mem + j * item_size);
           ObDatum *expr_datum = reinterpret_cast<ObDatum *>
                                       (frame_mem + j * item_size);
-          // 在mysql模式下, 空串len为0, 且ptr = NULL, 当ptr为NULL时, copy时不需要再改变ptr值
+          // In mysql mode, empty string len is 0, and ptr = NULL, when ptr is NULL, no need to change ptr value during copy
           if (NULL == other_expr_datum->ptr_) {
             // do nothing
           } else if ((other_expr_datum->ptr_ < other_frame_mem
@@ -256,11 +260,10 @@ int ObExprFrameInfo::pre_alloc_exec_memory(ObExecContext &exec_ctx, ObIAllocator
       } \
       frames[frame_idx++] = frame_mem; \
     } \
-
-// 分配frame内存, 并将所有frame指针按每个frame idx的序存放到frames数组中
-// 1. const frame内存来自plan中共享的内存, 直接将plan中存放的指针拿来使用
-// 2. param frame内存来自编译期参数化后生成, 这里可直接获取
-// 3. dynamic frame和datum frame内存在这里进行预分配
+// Allocate frame memory, and store all frame pointers in the frames array in order of each frame idx
+// 1. const frame memory comes from shared memory in plan, directly use the pointer stored in plan
+// 2. param frame memory comes from the parameters generated at compile time, here it can be directly obtained
+// 3. dynamic frame and datum frame allocation is done here
 int ObExprFrameInfo::alloc_frame(ObIAllocator &exec_allocator,
                                  const ObIArray<char *> &param_frame_ptrs,
                                  uint64_t &frame_cnt,
@@ -297,7 +300,7 @@ int ObExprFrameInfo::alloc_frame(ObIAllocator &exec_allocator,
     int64_t begin_idx = frame_idx;
     ALLOC_FRAME_MEM(dynamic_frame_);
     //for subquery core 
-    //提前将frame中的datum置为null
+    // Preemptively set datum in frame to null
     int64_t item_size = sizeof(ObDatum) + sizeof(ObEvalInfo);
     if (dynamic_frame_.count() > 0 && dynamic_frame_.at(0).use_rich_format_) {
       item_size += sizeof(VectorHeader);

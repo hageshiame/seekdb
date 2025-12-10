@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 #define USING_LOG_PREFIX SHARE
 #include <gtest/gtest.h>
@@ -176,10 +180,9 @@ static void check_json_diff_valid(ObIAllocator &allocator, const ObString& j_tex
   std::cout << "-------- target" << std::endl;
   std::cout << std::string(j_target_buffer.ptr(), j_target_buffer.length()) << std::endl;  
 }
-
-// rapidjson 解析仅包含字符串的json text测试
-// 输入: json text
-// 预期: 解析完整json tree
+// rapidjson parsing test for json text containing only strings
+// Input: json text
+// Expected: parse complete json tree
 TEST_F(TestJsonBin, test_tree_to_bin)
 {
   common::ObString j_text("{ \"greeting\" : 1, \"farewell\" : 2, \"json_text\" : 3 }");
@@ -495,7 +498,7 @@ TEST_F(TestJsonBin, test_bin_lookup)
 TEST_F(TestJsonBin, test_wrapper_to_string_object)
 {
   set_compat_mode(lib::Worker::CompatMode::MYSQL);
-  // json text 转 json tree
+  // json text to json tree
   common::ObString json_text("{ \"greeting\" : \"Hello!\", \"farewell\" : \"bye-bye!\", \"json_text\" : \"test!\" }");
   common::ObArenaAllocator allocator(ObModIds::TEST);
   const char *syntaxerr = NULL;
@@ -510,7 +513,7 @@ TEST_F(TestJsonBin, test_wrapper_to_string_object)
   ObJsonBuffer buf(&allocator);
   ASSERT_EQ(OB_SUCCESS, j_base->print(buf, true));
   std::cout << buf.ptr() << std::endl;
-  // 由于构建树的过程，进行了排序，顺序已经打乱，所以输出的顺序和用户的输入顺序不一样
+  // Due to the tree construction process, sorting was performed, so the order has been disrupted, and thus the output order is different from the user's input order
   EXPECT_STREQ(buf.ptr(), "{\"farewell\": \"bye-bye!\", \"greeting\": \"Hello!\", \"json_text\": \"test!\"}");
 }
 

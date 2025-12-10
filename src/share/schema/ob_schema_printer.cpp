@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SHARE_SCHEMA
@@ -23,6 +27,8 @@
 #include "storage/fts/ob_fts_plugin_helper.h"
 #include "share/ob_dynamic_partition_manager.h"
 #include "sql/resolver/ddl/ob_storage_cache_ddl_util.h"
+#include "lib/restore/ob_storage_info.h"
+#include "share/external_table/ob_external_table_utils.h"
 
 namespace oceanbase
 {
@@ -500,8 +506,8 @@ int ObSchemaPrinter::print_generated_column_definition(const ObColumnSchemaV2 &g
     } else if (OB_FAIL(session.load_default_sys_variable(false, false))) {
       SHARE_SCHEMA_LOG(WARN, "session load default system variable failed", K(ret));
       /* bug: 
-        构建ObRawExpr对象,当 expr_str = "CONCAT(first_name,' ',last_name)"
-        避免错误的打印成： CONCAT(first_name,\' \',last_name) */
+        Construct ObRawExpr object, when expr_str = "CONCAT(first_name,' ',last_name)"
+        Avoid incorrect printing as: CONCAT(first_name,\' \',last_name) */
     } else if (FALSE_IT(exec_ctx.set_physical_plan_ctx(&phy_plan_ctx))) {
     } else if (FALSE_IT(exec_ctx.set_my_session(&session))) {
     } else if(OB_FAIL(sql::ObRawExprUtils::build_generated_column_expr(NULL,
@@ -665,12 +671,16 @@ int ObSchemaPrinter::print_single_index_definition(const ObTableSchema *index_sc
                                                                     rowkey_column->column_id_))) {
             ret = OB_SCHEMA_ERROR;
             SHARE_SCHEMA_LOG(WARN, "fail to get column schema", K(ret), KPC(index_schema));
-          } else if (index_schema->is_fts_index() && col->is_doc_id_column()) {
-            // skip doc id for fts index.
-          } else if (index_schema->is_multivalue_index_aux() && col->is_doc_id_column()) {
-            // skip doc id for multivalue index.
-          } else if (index_schema->is_vec_index() && (col->is_vec_hnsw_vid_column())) { 
-            // only need vec_type column to show index key, here skip vec_vid column of delta_buffer_table rowkey column
+          } else if (index_schema->is_fts_index() &&
+                     (col->is_doc_id_column() || col->is_hidden_pk_column_id(col->get_column_id()))) {
+            // skip doc id / hidden pk column(for doc id optimization) for fts index.
+          } else if (index_schema->is_multivalue_index_aux() &&
+                     (col->is_doc_id_column() || col->is_hidden_pk_column_id(col->get_column_id()))) {
+            // skip doc id / hidden pk column(for doc id optimization)
+          } else if (index_schema->is_vec_index() &&
+                     (col->is_vec_hnsw_vid_column() || col->is_hidden_pk_column_id(col->get_column_id()))) {
+            // only need vec_type column to show index key,
+            // here skip vec_vid column / hidden pk column(for vid optimization)
           } else if (!col->is_shadow_column()) {
             const ObColumnSchemaV2 *tmp_column = NULL;
             if (index_schema->is_multivalue_index_aux() && 
@@ -1123,11 +1133,11 @@ int ObSchemaPrinter::print_prefix_index_column(const ObColumnSchemaV2 &column,
       ret = OB_ERR_UNEXPECTED;
       LOG_WARN("expr is null");
     } else if (3 != expr->get_param_count()) {
-      // 前缀索引表达式，有三列
+      // Prefix index expression, with three columns
       ret = OB_ERR_UNEXPECTED;
       LOG_WARN("It's wrong expr string", K(ret), K(expr->get_param_count()));
     } else if (1 != columns.count()) {
-      // 表达式列基于某一列
+      // Expression column based on a certain column
       ret = OB_ERR_UNEXPECTED;
       LOG_WARN("It's wrong expr string", K(ret), K(columns.count()));
     } else {
@@ -1349,15 +1359,15 @@ int ObSchemaPrinter::print_table_definition_rowkeys(const ObTableSchema &table_s
           } else {
             has_pk_constraint_name = true;
           }
-          break; // 一张表只可能有一个主键约束
+          break; // A table can only have one primary key constraint
         }
       }
     }
     if (OB_SUCC(ret) && !has_pk_constraint_name) {
-      //以下三种情况打印pk约束时，不打印pk名称
-      //1. mysql mode 没有主键名称
-      //2. oracle mode 2.1.0 之前包含2.1.0 server创建的表，不支持主键名
-      //3. oracle mode 主键名称由系统生成
+      //The following three cases print the pk constraint without printing the pk name
+      //1. mysql mode does not have a primary key name
+      //2. oracle mode 2.1.0 before includes tables created by 2.1.0 server, does not support primary key name
+      //3. oracle mode primary key name is generated by the system
       if (OB_FAIL(databuff_printf(buf, buf_len, pos, ",\n  PRIMARY KEY ("))) {
         SHARE_SCHEMA_LOG(WARN, "fail to print PRIMARY KEY(", K(ret));
       }
@@ -1482,13 +1492,12 @@ int ObSchemaPrinter::print_referenced_table_info(
 
   return ret;
 }
-
-// description: 在 show create table 的时候格式化打印外键信息到标准输出
+// description: format and print foreign key information to standard output when show create table
 //
 // @param [in] table_schema
-// @param [in] buf            记录打印内容的缓冲区
+// @param [in] buf            buffer for recording print content
 // @param [in] buf_len        OB_MAX_VARCHAR_LENGTH
-// @param [in] pos            记录缓冲区中最后一个字符的下标
+// @param [in] pos            index of the last character in the record buffer
 //
 // @return oceanbase error code defined in lib/ob_errno.def
 int ObSchemaPrinter::print_table_definition_foreign_keys(const ObTableSchema &table_schema,
@@ -1498,7 +1507,7 @@ int ObSchemaPrinter::print_table_definition_foreign_keys(const ObTableSchema &ta
 {
   int ret = OB_SUCCESS;
   ObArenaAllocator allocator(ObModIds::OB_SCHEMA);
-  // foreign key 信息应该依附与子表
+  // foreign key information should be attached to the child table
   bool is_oracle_mode = false;
   if (OB_FAIL(table_schema.check_if_oracle_compat_mode(is_oracle_mode))) {
     LOG_WARN("fail to check oracle mode", KR(ret), K(table_schema));
@@ -1509,7 +1518,7 @@ int ObSchemaPrinter::print_table_definition_foreign_keys(const ObTableSchema &ta
       const char *update_action_str = NULL;
       const char *delete_action_str = NULL;
       ObString new_fk_name;
-      // 只打印子表创建的外键信息，不打印作为父表的信息
+      // Only print the foreign key information of the child table, do not print the information as a parent table
       if (foreign_key_info->child_table_id_ == table_schema.get_table_id()) {
         if (is_oracle_mode && foreign_key_info->is_sys_generated_name(false/*check_unknown*/)) {
           if (OB_FAIL(databuff_printf(buf, buf_len, pos, ",\n  "))) {
@@ -1638,14 +1647,13 @@ int ObSchemaPrinter::print_table_definition_store_format(const ObTableSchema &ta
 
   return ret;
 }
-
-// description: 在 show create table 的时候根据输入的 column_ids 格式化打印对应的 column_name 到标准输出
+// description: when showing create table, format and print the corresponding column_name to standard output based on the input column_ids
 //
 // @param [in] table_schema
 // @param [in] column_ids
-// @param [in] buf            记录打印内容的缓冲区
+// @param [in] buf            buffer for recording print content
 // @param [in] buf_len        OB_MAX_VARCHAR_LENGTH
-// @param [in] pos            记录缓冲区中最后一个字符的下标
+// @param [in] pos            index of the last character in the record buffer
 //
 // @return oceanbase error code defined in lib/ob_errno.def
 template<typename T>
@@ -1936,7 +1944,7 @@ int ObSchemaPrinter::print_table_definition_table_options(const ObTableSchema &t
       && ObDuplicateScopeChecker::is_valid_replicate_scope(table_schema.get_duplicate_scope())
       && !is_no_table_options(sql_mode)
       && table_schema.is_user_table()) {
-    // 目前只支持cluster
+    // Currently only supports cluster
     if (table_schema.get_duplicate_scope() == ObDuplicateScope::DUPLICATE_SCOPE_CLUSTER) {
       if (OB_FAIL(databuff_printf(buf, buf_len, pos, "DUPLICATE_SCOPE = 'CLUSTER' "))) {
         SHARE_SCHEMA_LOG(WARN, "fail to print table duplicate scope", K(ret));
@@ -2070,7 +2078,7 @@ static int print_partition_func(const ObTableSchema &table_schema,
                                               func_expr.ptr()))) {
       SHARE_SCHEMA_LOG(WARN, "fail to append display partition expr", K(ret), K(type_str), K(func_expr));
     } else if (is_subpart) { // sub part
-      const ObPartitionOption &sub_part_opt = table_schema.get_sub_part_option();
+      const ObSubPartitionOption &sub_part_opt = table_schema.get_sub_part_option();
       ObString sub_type_str;
       ObPartitionFuncType sub_type = sub_part_opt.get_part_func_type();
 
@@ -2537,7 +2545,7 @@ int ObSchemaPrinter::print_index_definition_columns(
           }
         }
         if (OB_SUCC(ret)) {
-          // 索引表的column flag以及default value expr被清理掉，需要从data table schema获取
+          // The column flag and default value expr of the index table have been cleaned up, need to be obtained from the data table schema
           bool is_oracle_mode = false;
           if (OB_FAIL(data_schema.check_if_oracle_compat_mode(is_oracle_mode))) {
             LOG_WARN("fail to check oracle mode", KR(ret), K(data_schema));
@@ -2564,7 +2572,7 @@ int ObSchemaPrinter::print_index_definition_columns(
                 OB_LOG(WARN, "failed to print func index columns", K(ret));
               }
             } else {
-              // 前缀索引
+              // prefix index
               const ObString &expr_str = data_col->get_cur_default_value().is_null() ?
                 data_col->get_orig_default_value().get_string() :
                 data_col->get_cur_default_value().get_string();
@@ -2590,11 +2598,11 @@ int ObSchemaPrinter::print_index_definition_columns(
                   ret = OB_ERR_UNEXPECTED;
                   OB_LOG(WARN, "expr is null");
                 } else if (3 != expr->get_param_count()) {
-                  // 前缀索引表达式，有三列
+                  // Prefix index expression, with three columns
                   ret = OB_ERR_UNEXPECTED;
                   OB_LOG(WARN, "It's wrong expr string", K(ret), K(expr->get_param_count()));
                 } else if (1 != columns.count()) {
-                  // 表达式列基于某一列
+                  // Expression column based on a certain column
                   ret = OB_ERR_UNEXPECTED;
                   OB_LOG(WARN, "It's wrong expr string", K(ret), K(columns.count()));
                 } else {
@@ -2625,7 +2633,7 @@ int ObSchemaPrinter::print_index_definition_columns(
               }
             }
           } else {
-            // 普通索引
+            // ordinary index
             if (OB_FAIL(databuff_printf(buf, buf_len, pos, " "))) {
               OB_LOG(WARN, "fail to print column name", K(ret), K(*col));
             } else if (OB_FAIL(print_identifier(buf, buf_len, pos, col->get_column_name(), is_oracle_mode))) {
@@ -3239,8 +3247,7 @@ int ObSchemaPrinter::print_hash_sub_partition_elements(ObSubPartition **sub_part
   }
   return ret;
 }
-
-// TODO: yibo tablegroup还不支持hash分区自定义分区名，暂时保留原始的打印方式
+// TODO: yibo tablegroup does not yet support custom partition names for hash partitions, temporarily retaining the original print method
 int ObSchemaPrinter::print_hash_sub_partition_elements_for_tablegroup(const ObPartitionSchema *&schema,
                                                                       char* buf,
                                                                       const int64_t& buf_len,
@@ -3370,7 +3377,7 @@ int ObSchemaPrinter::print_template_sub_partition_elements(const ObPartitionSche
     LOG_WARN("fail to check oracle mode", KR(ret), KPC(schema));
   } else if (is_tablegroup &&
              is_hash_like_part(schema->get_sub_part_option().get_part_func_type())) {
-    // tablegroup还不支持hash subpartition template 语法, 先print subpartitions x
+    // tablegroup does not yet support hash subpartition template syntax, print subpartitions x
     ret = print_hash_sub_partition_elements_for_tablegroup(schema, buf, buf_len, pos);
   } else if (OB_FAIL(databuff_printf(buf, buf_len, pos, " subpartition template"))) {
     SHARE_SCHEMA_LOG(WARN, "fail to print subpartition template", K(ret));
@@ -5239,7 +5246,7 @@ int ObSchemaPrinter::print_hash_partition_elements(const ObPartitionSchema *&sch
     ObPartition **part_array = schema->get_part_array();
     if (OB_ISNULL(part_array)) {
       if (is_virtual_table(schema->get_table_id())) {
-        // 虚拟表
+        // virtual table
         if (OB_FAIL(databuff_printf(buf, buf_len, pos, " partitions %ld\n",
                     schema->get_first_part_num()))) {
           SHARE_SCHEMA_LOG(WARN, "fail to printf partition number",
@@ -5760,6 +5767,125 @@ int ObSchemaPrinter::get_table_schema_(const uint64_t tenant_id, const uint64_t 
     ret = sql_schema_guard_->get_table_schema(tenant_id, table_id, table_schema);
   } else {
     ret = schema_guard_.get_table_schema(tenant_id, table_id, table_schema);
+  }
+  return ret;
+}
+
+int ObSchemaPrinter::print_location_definiton(const uint64_t tenant_id,
+                                             const uint64_t location_id,
+                                             char *buf,
+                                             const int64_t &buf_len,
+                                             int64_t &pos) const
+{
+  int ret = OB_SUCCESS;
+  int64_t mark_pos = 0;
+  const ObLocationSchema *location_schema = NULL;
+
+  if (OB_ISNULL(buf) ||  buf_len <= 0) {
+    ret = OB_INVALID_ARGUMENT;
+    LOG_WARN("invalid argument", K(buf), K(buf_len));
+  }
+
+  if (OB_SUCC(ret)) {
+    if (OB_FAIL(schema_guard_.get_location_schema_by_id(tenant_id, location_id, location_schema))) {
+      LOG_WARN("get location schema failed ", K(ret), K(tenant_id));
+    } else if (NULL == location_schema) {
+      ret = OB_ERR_UNEXPECTED;
+      SHARE_SCHEMA_LOG(WARN, "Unknow location", K(ret), K(tenant_id), K(location_id));
+    } else if (OB_FAIL(databuff_printf(buf, buf_len, pos,
+                                       "CREATE LOCATION "))) {
+      SHARE_SCHEMA_LOG(WARN, "fail to print location definition", K(ret));
+    } else if (OB_FAIL(print_identifier(buf, buf_len, pos,
+                                        location_schema->get_location_name_str(),
+                                        lib::is_oracle_mode()))) {
+      SHARE_SCHEMA_LOG(WARN, "fail to print location definition", K(ret));
+    }
+  }
+
+  if (OB_SUCC(ret)) {
+    mark_pos = pos;
+  }
+  ObString location_url = location_schema->get_location_url();
+  ObString location_access_info = location_schema->get_location_access_info();
+
+  if (OB_SUCC(ret) && OB_FAIL(databuff_printf(buf, buf_len, pos, "\nURL = '%.*s'", location_url.length(), location_url.ptr()))) {
+    SHARE_SCHEMA_LOG(WARN, "fail to print url", K(ret), K(*location_schema));
+  }
+
+  if(OB_SUCC(ret) && !location_access_info.empty()) {
+    if (OB_FAIL(databuff_printf(buf, buf_len, pos, "\nCREDENTIAL = ("))) {
+      SHARE_SCHEMA_LOG(WARN, "fail to print credential", K(ret), K(*location_schema));
+    }
+    char tmp[OB_MAX_BACKUP_STORAGE_INFO_LENGTH] = { 0 };
+    char *token = NULL;
+    char *saved_ptr = NULL;
+    MEMCPY(tmp, location_access_info.ptr(), location_access_info.length());
+    tmp[location_access_info.length()] = '\0';
+    token = tmp;
+    for (char *str = token; OB_SUCC(ret); str = NULL) {
+      token = ::strtok_r(str, "&", &saved_ptr);
+      int length = 0;
+      if (NULL == token) {
+        break;
+      }
+      LOG_INFO("print credential", K(token));
+      if (0 == strncmp(HOST, token, strlen(HOST))) {
+        length = strlen(HOST);
+        if (OB_FAIL(databuff_printf(buf, buf_len, pos, "\n  HOST = "))) {
+          SHARE_SCHEMA_LOG(WARN, "fail to print host", K(ret), K(*location_schema));
+        }
+      } else if (0 == strncmp(ACCESS_ID, token, strlen(ACCESS_ID))) {
+        length = strlen(ACCESS_ID);
+        if (OB_FAIL(databuff_printf(buf, buf_len, pos, "\n  ACCESSID = "))) {
+          SHARE_SCHEMA_LOG(WARN, "fail to print access_id", K(ret), K(*location_schema));
+        }
+      } else if (0 == strncmp(ACCESS_KEY, token, strlen(ACCESS_KEY))) {
+        length = strlen(ACCESS_KEY);
+        if (OB_FAIL(databuff_printf(buf, buf_len, pos, "\n  ACCESSKEY = "))) {
+          SHARE_SCHEMA_LOG(WARN, "fail to print access_key", K(ret), K(*location_schema));
+        }
+      } else if (0 == strncmp(APPID, token, strlen(APPID))) {
+        length = strlen(APPID);
+        if (OB_FAIL(databuff_printf(buf, buf_len, pos, "\n  APPID = "))) {
+          SHARE_SCHEMA_LOG(WARN, "fail to print appid", K(ret), K(*location_schema));
+        }
+      } else if (0 == strncmp(REGION, token, strlen(REGION))) {
+        length = strlen(REGION);
+        if (OB_FAIL(databuff_printf(buf, buf_len, pos, "\n  S3_REGION = "))) {
+          SHARE_SCHEMA_LOG(WARN, "fail to print s3_region", K(ret), K(*location_schema));
+        }
+      } else if (0 == strncmp(PRINCIPAL, token, strlen(PRINCIPAL))) {
+        length = strlen(PRINCIPAL);
+        if (OB_FAIL(databuff_printf(buf, buf_len, pos, "\n  PRINCIPAL = "))) {
+          SHARE_SCHEMA_LOG(WARN, "fail to print principal", K(ret), K(*location_schema));
+        }
+      } else if (0 == strncmp(KEYTAB, token, strlen(KEYTAB))) {
+        length = strlen(KEYTAB);
+        if (OB_FAIL(databuff_printf(buf, buf_len, pos, "\n  KEYTAB = "))) {
+          SHARE_SCHEMA_LOG(WARN, "fail to print keytab", K(ret), K(*location_schema));
+        }
+      } else if (0 == strncmp(KRB5CONF, token, strlen(KRB5CONF))) {
+        length = strlen(KRB5CONF);
+        if (OB_FAIL(databuff_printf(buf, buf_len, pos, "\n  KRB5CONF = "))) {
+          SHARE_SCHEMA_LOG(WARN, "fail to print krb5conf", K(ret), K(*location_schema));
+        }
+      } else if (0 == strncmp(HDFS_CONFIGS, token, strlen(HDFS_CONFIGS))) {
+        length = strlen(HDFS_CONFIGS);
+        if (OB_FAIL(databuff_printf(buf, buf_len, pos, "\n  CONFIGS = "))) {
+          SHARE_SCHEMA_LOG(WARN, "fail to print configs", K(ret), K(*location_schema));
+        }
+      }
+
+      if (length < strlen(token) && OB_FAIL(databuff_printf(buf, buf_len, pos, "'%s'", token+length))) {
+        SHARE_SCHEMA_LOG(WARN, "fail to print value", K(ret), K(*location_schema));
+      }
+    }
+    if (OB_FAIL(databuff_printf(buf, buf_len, pos, "\n )"))) {
+      SHARE_SCHEMA_LOG(WARN, "fail to print credential", K(ret), K(*location_schema));
+    }
+  }
+  if (OB_SUCCESS == ret && pos > mark_pos) {
+    buf[pos] = '\0';      // remove trailer dot and space
   }
   return ret;
 }

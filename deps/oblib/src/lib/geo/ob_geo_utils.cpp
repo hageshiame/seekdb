@@ -1,14 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
- * This file contains implementation support for the geometry utils abstraction.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX LIB
@@ -43,7 +46,7 @@ namespace oceanbase
 {
 namespace common
 {
-// 这里只考虑进行非multi类型的比对，multi类型需额外处理
+// Here only non-multi type comparison is considered, multi type requires additional handling
 bool ObGeoTypeUtil::is_geo1_dimension_higher_than_geo2(ObGeoType type1, ObGeoType type2)
 {
   bool res = false;
@@ -1532,11 +1535,10 @@ int ObGeoBoxUtil::get_geom_poly_box(const ObWkbGeomPolygon &poly, bool not_calc_
   }
   return ret;
 }
-
-// 1. geometry类型可以存储所有其他空间类型;
-// 2. POINT, LINESTRING, 和 POLYGON只能存储各自对应的类型(由表达式校验);
-// 3. GEOMETRYCOLLECTION可以存储任何类型的对象的集合，
-//    MULTIPOINT, MULTILINESTRING, 和 MULTIPOLYGON将集合成员限制为具有特定几何类型的成员
+// 1. geometry type can store all other spatial types;
+// 2. POINT, LINESTRING, and POLYGON can only store their corresponding types (validated by the expression);
+// 3. GEOMETRYCOLLECTION can store a collection of any type of objects,
+//    MULTIPOINT, MULTILINESTRING, and MULTIPOLYGON restrict collection members to members with specific geometric types
 int ObGeoTypeUtil::check_geo_type(const ObGeoType column_type, const ObString &wkb_str)
 {
   int ret = OB_SUCCESS;

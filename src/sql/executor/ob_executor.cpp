@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_EXE
@@ -74,12 +78,11 @@ int ObExecutor::execute_plan(ObExecContext &ctx)
     LOG_WARN("create implicit cursor infos failed", K(ret), K(batched_stmt_cnt));
   } else {
     ObPhyPlanType execute_type = phy_plan_->get_plan_type();
-
-    // 特殊处理如下case：
+    // Special handling for the following cases:
     // MULTI PART INSERT (remote)
     //   SELECT (local)
-    // 这样的计划在优化器生成阶段，plan type是OB_PHY_PLAN_DISTRIBUTED，
-    // 但是需要使用local的方式进行执行调度
+    // Such a plan in the optimizer generation phase, plan type is OB_PHY_PLAN_DISTRIBUTED,
+    // But need to use local way for execution scheduling
     if (execute_type != OB_PHY_PLAN_LOCAL && phy_plan_->is_require_local_execution()) {
       execute_type = OB_PHY_PLAN_LOCAL;
       LOG_TRACE("change the plan execution type",
@@ -118,8 +121,8 @@ int ObExecutor::execute_plan(ObExecContext &ctx)
         } else {
           EVENT_INC(SQL_DISTRIBUTED_COUNT);
         }
-        // PX 特殊路径
-        // PX 模式下，调度工作由 ObPxCoord 算子负责
+        // PX special path
+        // PX mode, scheduling work is handled by the ObPxCoord operator
         ret = execute_static_cg_px_plan(ctx);
         break;
       default:
@@ -158,11 +161,11 @@ int ObExecutor::execute_static_cg_px_plan(ObExecContext &ctx)
 
 int ObExecutor::close(ObExecContext &ctx)
 {
-  // close函数要设计成不管什么时候调都可以，因此不管inited_的值
+  // close function should be designed to be callable at any time, therefore regardless of the value of inited_
   int ret = OB_SUCCESS;
   ObSQLSessionInfo *session_info = ctx.get_my_session();
   if (OB_LIKELY(NULL != session_info)) {
-    //将session中的cur_phy_plan_重置为NULL
+    // Reset cur_phy_plan_ in session to NULL
     session_info->reset_cur_phy_plan_to_null();
   }
   return ret;

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_REWRITE
@@ -62,9 +66,9 @@ int ObTransformSubqueryCoalesce::transform_one_stmt(common::ObIArray<ObParentDML
     }
   }
   if (OB_SUCC(ret)) {
-    /* 将能够合并的尽量合并,如:select * from t1 where t1.c1 in (select 1 from t2 where t2.c2 = t1.c2) 
+    /* Merge as much as possible, e.g.: select * from t1 where t1.c1 in (select 1 from t2 where t2.c2 = t1.c2)
     * and c1 not in (select 1 from t2 where t2.c2 = t1.c2 and t2.c2 > 3) and c1 in (select 1 from t2 where t2.c2 = t1.c2);
-    * 本来这条语句可以为恒fasle,但是第一次合并可能无法判断出，因此需要第二次合并才能判断出。
+    * Originally this statement could be false, but it may not be determined during the first merge, so a second merge is needed to determine it.
     */
     ObSEArray<ObPCParamEqualInfo, 4> rule_based_equal_infos;
     ObSEArray<ObPCParamEqualInfo, 4> cost_based_equal_infos;
@@ -598,7 +602,7 @@ int ObTransformSubqueryCoalesce::check_conditions_validity(ObDMLStmt *stmt,
   ObSqlBitSet<> removed;
   QueryRelation relation = QueryRelation::QUERY_UNCOMPARABLE;
   has_false_conds = false;
-  bool is_used = false;//用于标记一个子查询已经与一个子查询结合,防止一个子查询二次结合,从而出错
+  bool is_used = false;//used to mark that a subquery has already been combined with another subquery, preventing a subquery from being combined twice, which could cause errors
   bool force_trans = false;
   bool force_no_trans = false;
   if (OB_ISNULL(stmt)) {
@@ -703,7 +707,7 @@ int ObTransformSubqueryCoalesce::check_conditions_validity(ObDMLStmt *stmt,
           LOG_WARN("get the same classify exprs failed", K(ret));
         } else {
           removed.reset();
-          bool can_coalesce = (left_type[k] == T_OP_SQ_EQ) ? true : false;//仅仅in于not in可以合并为lnnvl这种情形
+          bool can_coalesce = (left_type[k] == T_OP_SQ_EQ) ? true : false;//Only in and not in can be combined into lnnvl in this scenario
           for (int64_t i = 0; OB_SUCC(ret) && !has_false_conds && i < left_exprs.count(); ++i) {
             param.any_expr_ = left_exprs.at(i);
             param.trans_flag_ = ANY_ALL;

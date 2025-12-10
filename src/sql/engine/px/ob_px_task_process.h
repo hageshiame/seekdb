@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef __OB_SQL_ENGINE_PX_TASK_PROCESS_H__
@@ -74,13 +78,13 @@ public:
 
   ObPxSqcHandler *get_sqc_handler() { return arg_.sqc_handler_; }
 public:
-  // 以下一组时间，是为了便于 sql audit 查看 worker 执行时间消耗在哪里
+  // The following set of times is for convenient sql audit to see where the worker time consumption is
   void set_enqueue_timestamp(int64_t v) { enqueue_timestamp_ = v; }
   int64_t get_enqueue_timestamp() const { return enqueue_timestamp_; }
   int64_t get_process_timestamp() const { return process_timestamp_; }
   int64_t get_exec_start_timestamp() const { return exec_start_timestamp_; }
   int64_t get_exec_end_timestamp() const { return exec_end_timestamp_; }
-  // 为了接口需要，需要实现以下四个方法，因为使用的是线程池，不是 RPC，故而模拟之
+  // For interface requirements, the following four methods need to be implemented, because thread pool is used instead of RPC, so we simulate it
   int64_t get_send_timestamp() const { return get_enqueue_timestamp(); }
   int64_t get_receive_timestamp() const { return get_enqueue_timestamp(); }
   int64_t get_run_timestamp() const { return get_process_timestamp(); }

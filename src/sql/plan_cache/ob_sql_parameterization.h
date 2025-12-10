@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SQL_PLAN_CACHE_OB_SQL_PARAMETERIZATION_
@@ -65,9 +69,9 @@ struct SqlInfo: public ParameterizationHashValue
   int64_t total_;
   common::ObBitSet<> not_param_index_;
   common::ObBitSet<> neg_param_index_;
-  common::ObBitSet<> fixed_param_index_;//记录限流语句中可参数化的位置不为?的位置
+  common::ObBitSet<> fixed_param_index_;//record the positions in the rate-limiting statement that are parameterizable and not '?'
   common::ObBitSet<> trans_from_minus_index_;
-  common::ObBitSet<> must_be_positive_index_; // 记录那些常量必须是正数
+  common::ObBitSet<> must_be_positive_index_; // record which constants must be positive
   common::ObBitSet<> fmt_int_or_ch_decint_idx_;
   common::ObSEArray<common::ObCharsetType, 16> param_charset_type_;
   ObSqlTraits sql_traits_;
@@ -113,9 +117,9 @@ class ObSqlParameterization
 {
 public:
   static const int64_t SQL_PARAMETERIZATION_BUCKET_NUM = 1L << 20;
-  static const int64_t NO_VALUES = -1;        //表示没有values()
-  static const int64_t VALUE_LIST_LEVEL = 0;  //表示在parse的T_VALUE_LIST层
-  static const int64_t VALUE_VECTOR_LEVEL = 1;//表示在parse的T_VALUE_VECTOR层
+  static const int64_t NO_VALUES = -1;        // indicates no values()
+  static const int64_t VALUE_LIST_LEVEL = 0;  // indicates the T_VALUE_LIST level in parse
+  static const int64_t VALUE_VECTOR_LEVEL = 1;//indicates the T_VALUE_VECTOR level in parse
   static const int64_t ASSIGN_LIST_LEVEL = 0;
   static const int64_t ASSIGN_ITEM_LEVEL = 1;
 

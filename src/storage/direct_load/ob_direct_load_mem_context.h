@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #pragma once
@@ -110,18 +114,18 @@ public:
   int64_t mem_chunk_size_;
   int64_t heap_table_mem_chunk_size_;
 
-  int64_t total_thread_cnt_; // 总的线程数目
-  int64_t dump_thread_cnt_; // dump线程数目
-  int64_t load_thread_cnt_; // load线程数目, 在pre_sort中没有实际意义, 只用做sample线程退出标志
+  int64_t total_thread_cnt_; // total number of threads
+  int64_t dump_thread_cnt_; // number of dump threads
+  int64_t load_thread_cnt_; // number of load threads, has no actual meaning in pre_sort, only used as a sample thread exit flag
 
-  int64_t finish_load_thread_cnt_; // 已经结束的load线程数目
-  int64_t running_dump_task_cnt_; // 还在运行的dump任务数目
-  int64_t fly_mem_chunk_count_; // 当前存在的chunk数目, 包含还在写的和已经close的chunk
+  int64_t finish_load_thread_cnt_; // the number of load threads that have finished
+  int64_t running_dump_task_cnt_; // Number of dump tasks still running
+  int64_t fly_mem_chunk_count_; // the current number of chunks, including those still being written and already closed chunks
 
-  ObDirectLoadEasyQueue<int64_t> pre_sort_chunk_queue_; // presort任务队列
-  ObDirectLoadEasyQueue<ObDirectLoadMemWorker *> mem_loader_queue_; // loader任务队列
-  ObMemDumpQueue mem_dump_queue_; // dump任务队列
-  ObDirectLoadEasyQueue<storage::ObDirectLoadExternalMultiPartitionRowChunk *> mem_chunk_queue_; // 已经close的chunk队列
+  ObDirectLoadEasyQueue<int64_t> pre_sort_chunk_queue_; // presort task queue
+  ObDirectLoadEasyQueue<ObDirectLoadMemWorker *> mem_loader_queue_; // loader task queue
+  ObMemDumpQueue mem_dump_queue_; // dump task queue
+  ObDirectLoadEasyQueue<storage::ObDirectLoadExternalMultiPartitionRowChunk *> mem_chunk_queue_; // closed chunk queue
 
   // save result
   lib::ObMutex mutex_;

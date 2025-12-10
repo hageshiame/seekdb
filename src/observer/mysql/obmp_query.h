@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef _OBMP_QUERY_H_
@@ -132,14 +136,14 @@ public:
 private:
   DISALLOW_COPY_AND_ASSIGN(ObMPQuery);
 private:
-  //生命周期在process_single_stmt()中
+  //Lifecycle in process_single_stmt()
   sql::ObSqlCtx ctx_;
   ObQueryRetryCtrl retry_ctrl_;
   common::ObString sql_;
   int64_t single_process_timestamp_;
   int64_t exec_start_timestamp_;
   int64_t exec_end_timestamp_;
-  //由于mysql的COM_FIELD_LIST命令本质上就是获取列的定义信息，只需要返回列定义
+  //Since the MySQL COM_FIELD_LIST command essentially retrieves column definition information, only the column definitions need to be returned
   bool is_com_filed_list_;
   common::ObString wild_str_;//used to save wildware string in COM_FIELD_LIST
   int64_t params_value_len_;

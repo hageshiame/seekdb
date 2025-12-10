@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef __OB_SHARE_SQL_PLAN_MONITOR_NODE_LIST_H__
@@ -29,8 +33,7 @@ namespace oceanbase
 namespace sql
 {
 class ObOperator;
-
-// 用于统计一段代码的执行时间
+// Used to measure the execution time of a piece of code
 class TimingGuard
 {
 public:
@@ -146,7 +149,7 @@ private:
   TraceId trace_id_;
   int64_t rt_node_id_; // for real time sql plan monitor
 public:
-  // 每个算子都要记录的信息
+  // Each operator needs to record the information
   int64_t open_time_;
   int64_t first_row_time_;
   int64_t last_row_time_;
@@ -156,7 +159,7 @@ public:
   uint64_t db_time_; // rdtsc cpu cycles spend on this op, include cpu instructions & io
   uint64_t block_time_; // rdtsc cpu cycles wait for network, io etc
   int64_t disk_read_count_;
-  // 各个算子特有的信息
+  // specific information for each operator
   int64_t otherstat_1_value_;
   int64_t otherstat_2_value_;
   int64_t otherstat_3_value_;
@@ -303,7 +306,7 @@ private:
   common::ObConcurrentFIFOAllocator allocator_;//alloc mem for string buf
   common::ObRaQueue queue_;
   MonitorNodeMap node_map_; // for real time sql plan monitor
-  ObSqlPlanMonitorRecycleTask task_; // 定期回收 sql plan mon 内存
+  ObSqlPlanMonitorRecycleTask task_; // Periodically recycle sql plan mon memory
   bool inited_;
   bool destroyed_;
   uint64_t request_id_;

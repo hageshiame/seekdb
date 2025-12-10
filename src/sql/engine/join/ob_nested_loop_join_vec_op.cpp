@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -175,15 +179,15 @@ int ObNestedLoopJoinVecOp::get_next_left_row()
 int ObNestedLoopJoinVecOp::perform_gi_partition_prunig()
 {
   int ret = OB_SUCCESS;
-  // 左边每一行出来后，去通知右侧 GI 实施 part id 过滤，避免 PKEY NLJ 场景下扫不必要分区
+  // Left each row out after it comes, then notify the right side GI to implement part id filtering, avoid unnecessary partition scanning in PKEY NLJ scenario
   if (OB_SUCC(ret) && !get_spec().enable_px_batch_rescan_ && !get_spec().group_rescan_ && get_spec().enable_gi_partition_pruning_) {
     ObDatum *datum = nullptr;
     if (OB_FAIL(get_spec().gi_partition_id_expr_->eval(eval_ctx_, datum))) {
       LOG_WARN("fail eval value", K(ret));
     } else {
-      // NOTE: 如果右侧对应多张表，这里的逻辑也没有问题
-      // 如 A REPART TO NLJ (B JOIN C) 的场景
-      // 此时 GI 在 B 和 C 的上面
+      // NOTE: If the right side corresponds to multiple tables, the logic here is also correct
+      // Like A REPART TO NLJ (B JOIN C) scenario
+      // At this time, GI is above B and C
       int64_t part_id = datum->get_int();
       ctx_.get_gi_pruning_info().set_part_id(part_id);
     }

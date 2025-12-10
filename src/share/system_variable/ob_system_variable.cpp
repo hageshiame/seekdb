@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SHARE
@@ -50,14 +54,9 @@ ObSpecialSysVarValues::ObSpecialSysVarValues()
   } else if (OB_FAIL(databuff_printf(ObSpecialSysVarValues::version_comment_,
                                      ObSpecialSysVarValues::VERSION_COMMENT_MAX_LEN,
                                      pos,
-#ifdef OB_BUILD_CLOSE_MODULES
-                                     "OceanBase %s (r%s) (Built %s %s)",
-#else
-                                     "OceanBase_CE %s (r%s) (Built %s %s)",
-
-#endif
-                                     PACKAGE_VERSION, build_version(),
-                                     build_date(), build_time()))) {
+                                     "%s %s %s (r%s) (Built %s %s)",
+                                     OB_OCEANBASE_NAME, OB_COMPATIBILITY_VERSION, OB_SEEKDB_NAME, PACKAGE_VERSION,
+                                     build_version(), build_date(), build_time()))) {
     LOG_ERROR("fail to print version_comment to buff", K(ret));
   }
 
@@ -66,12 +65,8 @@ ObSpecialSysVarValues::ObSpecialSysVarValues()
   } else if (FALSE_IT(pos = 0)) {
   } else if (OB_FAIL(databuff_printf(ObSpecialSysVarValues::version_,
                                      ObSpecialSysVarValues::VERSION_MAX_LEN,
-#ifdef OB_BUILD_CLOSE_MODULES
-                                     pos, "5.7.25-OceanBase-v%s", PACKAGE_VERSION))) {
-#else
-                                     pos, "5.7.25-OceanBase_CE-v%s", PACKAGE_VERSION))) {
+                                     pos, "5.7.25-%s %s-v%s", OB_OCEANBASE_NAME, OB_SEEKDB_NAME, PACKAGE_VERSION))) {
 
-#endif
     LOG_ERROR("fail to print version to buff", K(ret));
   }
 
@@ -99,8 +94,7 @@ ObSpecialSysVarValues::ObSpecialSysVarValues()
       LOG_ERROR("fail to print system_time_zone to buff", K(ret), K(is_neg), K(tz_hour), K(tz_minuts));
     }
   }
-
-  // charset和collation相关
+  // charset and collation related
   int64_t default_coll_int = static_cast<int64_t>(ObCharset::get_default_collation(
           ObCharset::get_default_charset()));
   if (OB_FAIL(ret)) {
@@ -213,7 +207,7 @@ const ObString ObBasicSysVar::get_name() const
 /*
 int ObBasicSysVar::is_need_serialize(bool &need_serialize) const
 {
-  // hard code，不使用内部表__all_sys_variable保存的值
+  // hard code, do not use the value saved in the internal table __all_sys_variable
   int ret = OB_SUCCESS;
   int64_t sys_var_idx = -1;
   if (OB_FAIL(ObSysVarFactory::calc_sys_var_store_idx(get_type(), sys_var_idx))) {
@@ -312,8 +306,8 @@ int ObBasicSysVar::session_update(ObExecContext &ctx,
     ret = OB_INVALID_ARGUMENT;
     LOG_WARN("session is NULL", K(ret));
   }
-  // 这里暂时写得有点乱，等下个版本就charset和collation不存两份了，只存collation，直接干掉这些代码
-  // 改变collation相关的系统变量的时候要同时改变对应的charset系统变量
+  // Here it's a bit messy for now, in the next version we won't store charset and collation separately anymore, only collation will be stored, directly remove these codes
+  // Change the collation-related system variables at the same time as the corresponding charset system variables
   if (OB_FAIL(ret)) {
   } else if (set_var.var_name_ == OB_SV_COLLATION_SERVER ||
              set_var.var_name_ == OB_SV_COLLATION_DATABASE ||
@@ -352,7 +346,7 @@ int ObBasicSysVar::session_update(ObExecContext &ctx,
       LOG_WARN("date format not recognized", K(ret), K(set_var.var_name_), K(val));
     }
   }
-  // 改变charset相关的系统变量的时候要同时改变对应的collation系统变量
+  // Change the charset-related system variables at the same time as the corresponding collation system variables
   else if (set_var.var_name_ == OB_SV_CHARACTER_SET_SERVER ||
            set_var.var_name_ == OB_SV_CHARACTER_SET_DATABASE ||
            set_var.var_name_ == OB_SV_CHARACTER_SET_CONNECTION) {
@@ -391,11 +385,11 @@ int ObBasicSysVar::session_update(ObExecContext &ctx,
   } else if (set_var.var_name_ == OB_SV__ENABLE_PARALLEL_QUERY) {
       should_update_extra_var = true;
     // 
-    // 实现 Oracle 兼容行为方式如下：有变量 enable 和 parallel
-    //  alter session enable parallel query 时 enable = true, parallel = 1   => 走 manual table dop 规则
-    //  alter session disable parallel query 时 enable = false, parallel = 1  => 走 no parallel 规则
-    //  alter session force parallel query parallel 1 时 enable = false, parallel = 1  =>  走 no parallel 规则
-    //  alter session force parallel query parallel 7 时 enable = true, parallel = 7   => 走 force parallel 规则
+    // Implement Oracle compatible behavior as follows: there are variables enable and parallel
+    //  alter session enable parallel query  when enable = true, parallel = 1   => follow manual table dop rule
+    //  alter session disable parallel query when enable = false, parallel = 1  => follow no parallel rule
+    //  alter session force parallel query parallel 1 when enable = false, parallel = 1  =>  follow no parallel rule
+    //  alter session force parallel query parallel 7 when enable = true, parallel = 7   => follow force parallel rule
     extra_var_name = ObString::make_string(OB_SV__FORCE_PARALLEL_QUERY_DOP);
     extra_val_obj.set_uint64(1);
   } else if (set_var.var_name_ == OB_SV__ENABLE_PARALLEL_DML) {
@@ -429,9 +423,8 @@ int ObBasicSysVar::session_update(ObExecContext &ctx,
     extra_var_name = ObString::make_string(OB_SV__FORCE_PARALLEL_DDL_DOP);
     extra_val_obj.set_uint64(1);
   }
-
-  // 更新需要额外更新的系统变量
-  //FIXME 暂不考虑原子性
+  // Update system variables that require additional updates
+  //FIXME Temporarily not considering atomicity
   if (true == should_update_extra_var && OB_SUCC(ret)) {
     if (OB_FAIL(session->update_sys_variable_by_name(extra_var_name, extra_val_obj))) {
       LOG_ERROR("fail to set extra variable to session",
@@ -708,8 +701,7 @@ DEF_TO_STRING(ObBasicSysVar)
   J_OBJ_END();
   return pos;
 }
-
-// base_value只是存储基线数据，目前看需要序列化的场景一定是操作增量数据。
+// base_value only stores baseline data, currently it seems that the scenarios requiring serialization are always for operating incremental data.
 //OB_SERIALIZE_MEMBER(ObBasicSysVar, inc_value_, type_, flags_);
 
 OB_DEF_SERIALIZE(ObBasicSysVar)
@@ -742,8 +734,8 @@ void ObTypeLibSysVar::reset()
 int ObTypeLibSysVar::check_update_type(const ObSetVar &set_var, const ObObj &val)
 {
   int ret = OB_SUCCESS;
-  // 为了跟mysql表现得一样，这里不判断flags_中是否带有ObSysVarFlag::NULLABLE，
-  // 而在do_check_and_convert函数中判断in_val的type为ObNullType再报错
+  // In order to behave like MySQL, we do not check if flags_ contains ObSysVarFlag::NULLABLE here,
+  // and in the do_check_and_convert function, report an error if the type of in_val is ObNullType
   if (true == set_var.is_set_default_ || ObNullType == val.get_type()) {
     // do nothing
   } else if (false == ob_is_integer_type(val.get_type())
@@ -799,7 +791,7 @@ int ObTypeLibSysVar::inner_to_show_str(ObIAllocator &allocator,
       LOG_WARN("sys var casted obj is not ObUInt64Type", K(ret),
                K(value), K(*res_obj), K(get_name()));
     } else {
-      int64_t type_lib_idx = static_cast<int64_t>(res_obj->get_uint64()); // FIXME 这里不考虑溢出
+      int64_t type_lib_idx = static_cast<int64_t>(res_obj->get_uint64()); // FIXME This does not consider overflow
       if (OB_UNLIKELY(type_lib_idx < 0) || OB_UNLIKELY(type_lib_idx >= type_lib_.count_)) {
         ret = OB_ERR_UNEXPECTED;
         LOG_ERROR("invalid type lib idx", K(ret), K(type_lib_idx), K(value), K(get_name()));
@@ -944,7 +936,7 @@ int ObEnumSysVar::inner_to_select_obj(ObIAllocator &allocator,
   if (OB_FAIL(inner_to_show_str(allocator, session, show_str))) {
     LOG_WARN("fail to convert to show str", K(ret), K(get_value()));
   } else {
-    // 对于ObEnumSysVar类，inner_to_select_obj和inner_to_show_str显示的内容一样
+    // For the ObEnumSysVar class, inner_to_select_obj and inner_to_show_str display the same content
     select_obj.set_varchar(show_str);
     select_obj.set_collation_type(ObCharset::get_system_collation());
   }
@@ -1140,7 +1132,7 @@ int ObTinyintSysVar::do_check_and_convert(ObExecContext &ctx,
         if (OB_ERR_WRONG_VALUE_FOR_VAR == ret) {
           int log_ret = OB_SUCCESS;
           if (OB_SUCCESS != (log_ret = log_err_wrong_value_for_var(ret, in_val))) {
-            // log_ret仅用于打日志，不覆盖ret
+            // log_ret is only used for logging, does not overwrite ret
             LOG_ERROR("fail to log error", K(ret), K(log_ret), K(in_val));
           } else {}
         } else {
@@ -1229,9 +1221,8 @@ int ObIntSysVar::do_convert(ObExecContext &ctx,
     expr_ctx.calc_buf_ = &(ctx.get_allocator());
     expr_ctx.exec_ctx_ = &ctx;
     EXPR_DEFINE_CAST_CTX(expr_ctx, CM_WARN_ON_FAIL);
-
-    // FIXME(yyy),因为当前ob在parser阶段将所有大于int32的数值均转换为decimal处理，与mysql不兼容;
-    // 因此，在这里进行特殊处理
+    // FIXME(yyy), because the current ob converts all values greater than int32 to decimal processing in the parser stage, which is incompatible with mysql;
+    // Therefore, special handling is performed here
     if (OB_FAIL(ret)) {
     } else if (ObNumberType == in_val.get_type()) {
       common::number::ObNumber in_number;
@@ -1305,7 +1296,7 @@ int ObIntSysVar::do_convert(ObExecContext &ctx,
       } else {
         out_val = *out_val_ptr;
         is_converted = out_val_ptr != &tmp_obj ? true : false;
-        //判断是否进行了值的转换（只是类型的转换不应该设置is_converted）
+        //Determine if a value conversion has occurred (type conversion alone should not set is_converted)
         if (out_val_ptr != &tmp_obj) {
           if (ObIntType == type_) {
             is_converted = static_cast<uint64_t>(out_val_ptr->get_int()) != tmp_obj.get_uint64() ?
@@ -1358,9 +1349,8 @@ int ObStrictRangeIntSysVar::do_check_and_convert(ObExecContext &ctx,
     expr_ctx.calc_buf_ = &(ctx.get_allocator());
     expr_ctx.exec_ctx_ = &ctx;
     EXPR_DEFINE_CAST_CTX(expr_ctx, CM_WARN_ON_FAIL);
-
-    // FIXME(yyy),因为当前ob在parser阶段将所有大于int32的数值均转换为decimal处理，与mysql不兼容;
-    // 因此，在这里进行特殊处理
+    // FIXME(yyy), because the current ob converts all values greater than int32 to decimal handling in the parser stage, which is incompatible with mysql;
+    // Therefore, special handling is performed here
     if (OB_FAIL(ret)) {
     } else if (ObNumberType == in_val.get_type()) {
       common::number::ObNumber in_number;
@@ -1403,14 +1393,14 @@ int ObStrictRangeIntSysVar::do_check_and_convert(ObExecContext &ctx,
         ret = OB_ERR_WRONG_VALUE_FOR_VAR;
         int log_ret = OB_SUCCESS;
         if (OB_SUCCESS != (log_ret = log_err_wrong_value_for_var(ret, in_val))) {
-          // log_ret仅用于打日志，不覆盖ret
+          // log_ret is only used for logging, does not overwrite ret
           LOG_ERROR("fail to log error", K(ret), K(log_ret), K(in_val));
         }
       } else if (!max_val_.is_null() && out_val > max_val_) {
         ret = OB_ERR_WRONG_VALUE_FOR_VAR;
         int log_ret = OB_SUCCESS;
         if (OB_SUCCESS != (log_ret = log_err_wrong_value_for_var(ret, in_val))) {
-          // log_ret仅用于打日志，不覆盖ret
+          // log_ret is only used for logging, does not overwrite ret
           LOG_ERROR("fail to log error", K(ret), K(log_ret), K(in_val));
         }
       }
@@ -1514,7 +1504,7 @@ int ObVarcharSysVar::do_check_and_convert(ObExecContext &ctx,
                                           const ObSetVar &set_var,
                                           const ObObj &in_val, ObObj &out_val)
 {
-  // TODO 像mysql那样做隐式转换
+  // TODO do implicit conversion like mysql
   UNUSED(ctx);
   if (true == set_var.is_set_default_) {
     // do nothing
@@ -1663,7 +1653,7 @@ int ObSqlModeVar::do_check_and_convert(ObExecContext &ctx,
         if (OB_ERR_WRONG_VALUE_FOR_VAR == ret) {
           int log_ret = OB_SUCCESS;
           if (OB_SUCCESS != (log_ret = log_err_wrong_value_for_var(ret, in_val))) {
-            // log_ret仅用于打日志，不覆盖ret
+            // log_ret is only used for logging, does not overwrite ret
             LOG_ERROR("fail to log error", K(ret), K(log_ret), K(in_val));
           } else {}
         } else {
@@ -1678,7 +1668,7 @@ int ObSqlModeVar::do_check_and_convert(ObExecContext &ctx,
         if (OB_ERR_WRONG_VALUE_FOR_VAR == ret) {
           int log_ret = OB_SUCCESS;
           if (OB_SUCCESS != (log_ret = log_err_wrong_value_for_var(ret, in_val))) {
-            // log_ret仅用于打日志，不覆盖ret
+            // log_ret is only used for logging, does not overwrite ret
             LOG_ERROR("fail to log error", K(ret), K(log_ret), K(in_val));
           } else {}
         } else {
@@ -1697,7 +1687,7 @@ int ObSqlModeVar::do_check_and_convert(ObExecContext &ctx,
           if (OB_ERR_WRONG_VALUE_FOR_VAR == ret) {
             int log_ret = OB_SUCCESS;
             if (OB_SUCCESS != (log_ret = log_err_wrong_value_for_var(ret, in_val))) {
-              // log_ret仅用于打日志，不覆盖ret
+              // log_ret is only used for logging, does not overwrite ret
               LOG_ERROR("fail to log error", K(ret), K(log_ret), K(in_val));
             } else {}
           } else {
@@ -1834,12 +1824,6 @@ int ObSysVarOnCheckFuncs::check_and_convert_charset(ObExecContext &ctx,
         ret = OB_ERR_UNEXPECTED;
         LOG_ERROR("charset is valid, but it has no default collation", K(ret),
                   K(cs_name), K(cs_type));
-      } else if (OB_FAIL(sql::ObSQLUtils::is_charset_data_version_valid(static_cast<ObCharsetType>(cs_type),
-                                                                        session->get_effective_tenant_id()))) {
-        LOG_WARN("failed to check charset data version valid", K(ret));
-      } else if (OB_FAIL(sql::ObSQLUtils::is_collation_data_version_valid(static_cast<ObCollationType>(coll_type),
-                                                                        session->get_effective_tenant_id()))) {
-        LOG_WARN("failed to check collation data version valid", K(ret));
       } else {
         out_val.set_int(static_cast<int64_t>(coll_type));
       }
@@ -1852,18 +1836,12 @@ int ObSysVarOnCheckFuncs::check_and_convert_charset(ObExecContext &ctx,
         char val_buf[val_buf_len];
         int64_t pos = 0;
         if (OB_SUCCESS != (p_ret = databuff_printf(val_buf, val_buf_len, pos, "%ld", int64_val))) {
-          // p_ret不覆盖ret
+          // p_ret does not override ret
           LOG_WARN("fail to databuff_printf", K(ret), K(p_ret), K(int64_val));
         } else {
           ObString cs_name_str(val_buf);
           LOG_USER_ERROR(OB_ERR_UNKNOWN_CHARSET, cs_name_str.length(), cs_name_str.ptr());
         }
-      } else if (OB_FAIL(sql::ObSQLUtils::is_charset_data_version_valid(common::ObCharset::charset_type_by_coll(static_cast<ObCollationType>(int64_val)),
-                                                                        session->get_effective_tenant_id()))) {
-        LOG_WARN("failed to check charset data version valid", K(ret));
-      } else if (OB_FAIL(sql::ObSQLUtils::is_collation_data_version_valid(static_cast<ObCollationType>(int64_val),
-                                                                          session->get_effective_tenant_id()))) {
-        LOG_WARN("failed to check collation data version valid", K(ret));
       } else {
         out_val = in_val;
       }
@@ -1941,12 +1919,6 @@ int ObSysVarOnCheckFuncs::check_and_convert_collation_not_null(ObExecContext &ct
       if (CS_TYPE_INVALID == (coll_type = ObCharset::collation_type(coll_name))) {
         ret = OB_ERR_UNKNOWN_COLLATION;
         LOG_USER_ERROR(OB_ERR_UNKNOWN_COLLATION, coll_name.length(), coll_name.ptr());
-      } else if (OB_FAIL(sql::ObSQLUtils::is_charset_data_version_valid(common::ObCharset::charset_type_by_coll(static_cast<ObCollationType>(coll_type)),
-                                                                       session->get_effective_tenant_id()))) {
-        LOG_WARN("failed to check charset data version valid", K(ret));
-      } else if (OB_FAIL(sql::ObSQLUtils::is_collation_data_version_valid(static_cast<ObCollationType>(coll_type),
-                                                                          session->get_effective_tenant_id()))) {
-        LOG_WARN("failed to check collation data version valid", K(ret));
       } else {
         out_val.set_int(static_cast<int64_t>(coll_type));
       }
@@ -1959,18 +1931,12 @@ int ObSysVarOnCheckFuncs::check_and_convert_collation_not_null(ObExecContext &ct
         char val_buf[val_buf_len];
         int64_t pos = 0;
         if (OB_SUCCESS != (p_ret = databuff_printf(val_buf, val_buf_len, pos, "%ld", int64_val))) {
-          // p_ret不覆盖ret
+          // p_ret does not override ret
           LOG_WARN("fail to databuff_printf", K(ret), K(p_ret), K(int64_val));
         } else {
           ObString coll_name_str(val_buf);
           LOG_USER_ERROR(OB_ERR_UNKNOWN_COLLATION, coll_name_str.length(), coll_name_str.ptr());
         }
-      } else if (OB_FAIL(sql::ObSQLUtils::is_charset_data_version_valid(common::ObCharset::charset_type_by_coll(static_cast<ObCollationType>(int64_val)),
-                                                                        session->get_effective_tenant_id()))) {
-        LOG_WARN("failed to check charset data version valid", K(ret));
-      } else if (OB_FAIL(sql::ObSQLUtils::is_collation_data_version_valid(static_cast<ObCollationType>(int64_val),
-                                                                          session->get_effective_tenant_id()))) {
-        LOG_WARN("failed to check collation data version valid", K(ret));
       } else {
         out_val = in_val;
       }
@@ -2037,7 +2003,7 @@ int ObSysVarOnCheckFuncs::check_default_value_for_utf8mb4(ObExecContext &ctx,
         char val_buf[val_buf_len];
         int64_t pos = 0;
         if (OB_SUCCESS != (p_ret = databuff_printf(val_buf, val_buf_len, pos, "%ld", int64_val))) {
-          // p_ret不覆盖ret
+          // p_ret does not override ret
           LOG_WARN("fail to databuff_printf", K(ret), K(p_ret), K(int64_val));
         } else {
           ObString coll_name_str(val_buf);
@@ -2385,7 +2351,7 @@ int ObSysVarOnCheckFuncs::check_and_convert_ob_org_cluster_id(ObExecContext &ctx
   UNUSED(sys_var);
   UNUSED(ctx);
   int ret = OB_SUCCESS;
-  if (true == set_var.is_set_default_) { // 禁止set ob_org_cluster_id = default
+  if (true == set_var.is_set_default_) { // Prohibit set ob_org_cluster_id = default
     ret = OB_ERR_NO_DEFAULT;
     LOG_USER_ERROR(OB_ERR_NO_DEFAULT, set_var.var_name_.length(), set_var.var_name_.ptr());
   } else if (true == in_val.is_null()) {
@@ -2885,9 +2851,9 @@ int ObSysVarOnUpdateFuncs::update_sql_mode(ObExecContext &ctx,
   if (set_var.set_scope_== ObSetVar::SET_SCOPE_GLOBAL) {
     //nothing to do
   } else {
-    //处理MODE_NO_BACKSLASH_ESCAPES
-    //是否将反斜杠作为转义符。保存在系统变量中，
-    //暂时不支持。
+    //Handle MODE_NO_BACKSLASH_ESCAPES
+    //Whether to treat backslashes as escape characters. Stored in a system variable,
+    //Temporarily not supported.
   }
   return ret;
 }
@@ -3085,7 +3051,7 @@ int ObSysVarSessionSpecialUpdateFuncs::update_identity(ObExecContext &ctx,
       LOG_WARN("fail to update identity", K(ret), K(set_var.var_name_),
                K(SYS_VAR_IDENTITY), K(val));
     }
-    //同时update系统变量last_insert_id
+    // simultaneously update system variable last_insert_id
     else if (OB_FAIL(session->update_sys_variable(SYS_VAR_LAST_INSERT_ID, val))) {
       LOG_WARN("succ to update identity, but fail to update last_insert_id",
                K(ret), K(set_var.var_name_), K(OB_SV_LAST_INSERT_ID), K(val));
@@ -3117,7 +3083,7 @@ int ObSysVarSessionSpecialUpdateFuncs::update_last_insert_id(ObExecContext &ctx,
       LOG_WARN("fail to update last_insert_id", K(ret), K(set_var.var_name_),
                K(OB_SV_LAST_INSERT_ID), K(val));
     }
-    //同时update系统变量identity
+    // simultaneously update system variable identity
     else if (OB_FAIL(session->update_sys_variable(SYS_VAR_IDENTITY, val))) {
       LOG_WARN("succ to update last_insert_id, but fail to update identity",
                K(ret), K(set_var.var_name_), K(OB_SV_IDENTITY), K(val));
@@ -3221,6 +3187,21 @@ int ObCharsetSysVarPair::get_collation_var_by_charset_var(const ObString &cs_var
   return ret;
 }
 
+int ObPreProcessSysVars::change_base_values(const ObIArray<std::pair<ObString, ObString>> &sys_vars)
+{
+  int ret = OB_SUCCESS;
+  for (int64_t i = 0; OB_SUCC(ret) && i < sys_vars.count(); ++i) {
+    const std::pair<ObString, ObString> &sys_var = sys_vars.at(i);
+    if (OB_FAIL(ObSysVariables::set_value(sys_var.first, sys_var.second))) {
+      LOG_WARN("fail to change initial value", K(ret), K(sys_var.first), K(sys_var.second));
+      ret = OB_SUCCESS; // ignore errors
+    } else {
+      LOG_INFO("succ to change initial value", K(sys_var.first), K(sys_var.second));
+    }
+  }
+  return ret;
+}
+
 int ObPreProcessSysVars::init_config_sys_vars()
 {
   int ret = OB_SUCCESS;
@@ -3271,6 +3252,15 @@ int ObPreProcessSysVars::init_config_sys_vars()
       LOG_ERROR("fail to print system_pid_file to buff", K(ret));
     }
   }
+
+  // OB_SV_DATADIR
+  if (OB_SUCC(ret)) {
+    if (OB_FAIL(ObSysVariables::set_value(OB_SV_DATADIR, GCONF.data_dir))) {
+      LOG_WARN("fail to set datadir", K(ret));
+    } else if (OB_FAIL(ObSysVariables::set_base_value(OB_SV_DATADIR, GCONF.data_dir))) {
+      LOG_WARN("fail to set datadir base value", K(ret));
+    }
+  }
   return ret;
 }
 
@@ -3296,7 +3286,7 @@ int ObPreProcessSysVars::change_initial_value()
                                                ObSpecialSysVarValues::system_time_zone_str_))) {
     LOG_WARN("fail to change initial value", K(OB_SV_SYSTEM_TIME_ZONE),
              K(ObSpecialSysVarValues::system_time_zone_str_));
-  // charset和collation相关
+  // charset and collation related
   // OB_SV_CHARACTER_SET_SERVER
   } else if (OB_FAIL(ObSysVariables::set_value(OB_SV_CHARACTER_SET_SERVER,
                                              ObSpecialSysVarValues::default_coll_int_str_))) {
@@ -3418,10 +3408,15 @@ int ObPreProcessSysVars::change_initial_value()
   }
   return ret;
 }
-int ObPreProcessSysVars::init_sys_var()
+int ObPreProcessSysVars::init_sys_var(const ObIArray<std::pair<ObString, ObString>> &sys_vars)
 {
   int ret = OB_SUCCESS;
-  if (OB_FAIL(ObPreProcessSysVars::init_config_sys_vars())) {
+  if (OB_FAIL(change_base_values(sys_vars))) {
+    // sys_vars were passed from command line.
+    // we need to change the base values first and if there are some special variables,
+    // such as timezone, version_comment, we will change them to right value later.
+    LOG_WARN("fail to change base values", K(ret));
+  } else if (OB_FAIL(ObPreProcessSysVars::init_config_sys_vars())) {
     LOG_ERROR("fail to initial config sys var", K(ret));
   } else if (OB_FAIL(ObPreProcessSysVars::change_initial_value())) {
     LOG_ERROR("fail to change initial value", K(ret));
@@ -3457,7 +3452,7 @@ int ObSetSysVar::find_set(const ObString &str)
         err_obj.set_varchar(part_str);
         int log_ret = OB_SUCCESS;
         if (OB_SUCCESS != (log_ret = log_err_wrong_value_for_var(ret, err_obj))) {
-          // log_ret仅用于打日志，不覆盖ret
+          // log_ret is only used for logging, does not overwrite ret
           LOG_ERROR("fail to log error", K(ret), K(log_ret), K(err_obj));
         }
       }
@@ -3471,7 +3466,7 @@ int ObSysVarUtils::log_bounds_error_or_warning(ObExecContext &ctx,
                                                const ObObj &in_val)
 {
   int ret = OB_SUCCESS;
-  // 为了兼容mysql，sql mode中含有STRICT_ALL_TABLES的时候报error，否则报warnning
+  // To be compatible with MySQL, when SQL mode contains STRICT_ALL_TABLES, it reports an error; otherwise, it reports a warning
   const int64_t VALUE_STR_LENGTH = 32;
   char val_str[VALUE_STR_LENGTH];
   int64_t pos = 0;

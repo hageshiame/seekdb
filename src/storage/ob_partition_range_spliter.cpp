@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "ob_partition_range_spliter.h"
@@ -993,7 +997,7 @@ int ObPartitionRangeSpliter::get_single_range_info(ObIndexBlockScanEstimator &sc
       }
     }
   } else if (table->is_direct_load_memtable()) {
-    // TODO : @suzhi.yt 可能会导致划分range不均衡, 后续实现
+    // TODO : @suzhi.yt may cause uneven range partitioning, to be implemented later
     total_size = 0;
     macro_block_cnt = 0;
     estimate_micro_block_cnt = 0;
@@ -1106,7 +1110,7 @@ int ObPartitionRangeSpliter::split_ranges_memtable(ObRangeSplitInfo &range_info,
     }
     STORAGE_LOG(DEBUG, "splite ranges with memtable", K(range_info), K(range_array));
   } else if (table->is_direct_load_memtable()) {
-    // TODO : @suzhi.yt 可能会导致划分range不均衡, 后续实现
+    // TODO : @suzhi.yt may cause uneven range partitioning, to be implemented later
     if (OB_FAIL(build_single_range(false/*for compaction*/, range_info, allocator, range_array))) {
       STORAGE_LOG(WARN, "Failed to build single range", K(ret));
     } else {
@@ -1175,7 +1179,7 @@ int ObPartitionMultiRangeSpliter::get_split_tables(ObTableStoreIterator &table_i
           max_memtable = table;
         }
       } else if (table->is_direct_load_memtable()) {
-        // TODO : @suzhi.yt 可能会导致划分range不均衡, 后续实现
+        // TODO : @suzhi.yt may cause uneven range partitioning, to be implemented later
       }
     }
 
@@ -1685,7 +1689,7 @@ int ObPartitionMajorSSTableRangeSpliter::split_ranges(ObIArray<ObStoreRange> &re
     ret = OB_NOT_INIT;
     STORAGE_LOG(WARN, "ObPartitionMajorSSTableRangeSpliter not init", KR(ret));
   } else {
-    // 计算parallel_degree
+    // Calculate parallel_degree
     if (major_sstable_->is_empty() || tablet_size_ == 0) {
       parallel_degree = 1;
     } else {
@@ -1697,7 +1701,7 @@ int ObPartitionMajorSSTableRangeSpliter::split_ranges(ObIArray<ObStoreRange> &re
         parallel_degree = (macro_block_count + macro_cnts - 1) / macro_cnts;
       }
     }
-    // 根据parallel_degree生成ranges
+    // Generate ranges based on parallel_degree
     if (parallel_degree <= 1) {
       ObStoreRange whole_range;
       whole_range.set_whole_range();
@@ -2358,7 +2362,7 @@ int ObPartitionIncrementalRangeSpliter::combine_ranges(const ObDatumRangeArray &
         }
       }
       if (OB_SUCC(ret)) {
-        // base_ranges和inc_ranges交接的地方 (k1, MAX) (MIN, k2] 改成 （k1, endkey] (endkey, k2]
+        // the place where base_ranges and inc_ranges meet (k1, MAX) (MIN, k2] change to (k1, endkey] (endkey, k2]
         ObDatumRange &base_last_range = result_ranges.at(base_ranges.count() - 1);
         ObDatumRange &inc_first_range = result_ranges.at(base_ranges.count());
         if (OB_FAIL(end_rowkey.deep_copy(base_last_range.end_key_, *allocator_))) {

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX RS
@@ -219,7 +223,7 @@ int ObLSRecoveryStatHandler::inc_ref(const int64_t timeout)
         }
         curr_timeout -= wait_time;
       }
-      //不能等于0，会出现死循环
+      //Cannot be 0, will cause an infinite loop
     } while (curr_timeout > 0 && OB_EAGAIN == ret);
   }
   return ret;
@@ -238,17 +242,17 @@ int ObLSRecoveryStatHandler::set_inner_readable_scn(const palf::LogConfigVersion
     SpinWLockGuard guard(lock_);
     if (check_inner_config_valid && (!config_version_in_inner_.is_valid()
           || config_version_in_inner_ != config_version)) {
-      //如果需要校验config_version，只能校验config_version相等
-      //不能无脑推高config_version_in_inner_,这个值要严格和内部表保持一致
-      //如果本地统计的config_version大于config_version_in_inner_
-      //readable_scn_upper_limit_也没必要推高，总是要先把config_version更新成功后，才会更新内部表成功
+      //If config_version needs to be validated, it can only be validated for equality
+      //Do not blindly increase config_version_in_inner_, this value must strictly match the internal table
+      //If the locally statistics config_version is greater than config_version_in_inner_
+      //readable_scn_upper_limit_ also does not need to be increased, it is always necessary to update config_version successfully first before updating the internal table successfully
       ret = OB_NEED_RETRY;
       LOG_WARN("config version in inner is invalid, can not update upper limit readable_scn",
           KR(ret), K(check_inner_config_valid), K(config_version_in_inner_));
     } else if (config_version_in_inner_.is_valid()
         && config_version_in_inner_ > config_version) {
-      //内存中的config_version不会回退，但是内存中存储的readable_scn_upper_limit可能会回退，
-      //可能会由于统计不到某些副本导致可读点回退，但是内存不回退，但是也不报错
+      //The config_version in memory will not roll back, but the readable_scn_upper_limit stored in memory may roll back,
+      //It may roll back the readable point due to not being able to count certain replicas, but the memory will not roll back, and no error will be reported
       ret = OB_NEED_RETRY;
       LOG_WARN("config version not match or readable_scn fallback", KR(ret), K(config_version),
           K(config_version_in_inner_), K(readable_scn_upper_limit_), K(readable_scn));
@@ -976,7 +980,7 @@ int ObLSRecoveryStatHandler::get_majority_readable_scn_(
           K(paxos_replica_number_new), K(member_list_new));
     } else if (OB_FAIL(set_inner_readable_scn(palf_stat_first.config_version_,
             majority_min_readable_scn, true))) {
-      //尝试更新内存中的可读点
+      //try to update the readable point in memory
       LOG_WARN("failed to set inner readable scn", KR(ret), K(palf_stat_first),
         K(majority_min_readable_scn));
     }

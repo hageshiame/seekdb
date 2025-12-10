@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_OPT
@@ -526,9 +530,9 @@ int ObLogWindowFunction::compute_sharding_info()
 bool ObLogWindowFunction::is_block_op() const
 {
   bool is_block_op = false;
-  // 对于window function算子, 在没有partition by以及完整窗口情况下,
-  // 所有数据作为一个窗口, 认为是block算子
-  // 在其他情况下, 认为是非block算子
+  // For window function operator, in the absence of partition by and with a complete window,
+  // All data as a window, considered as block operator
+  // In other cases, consider it as a non-block operator
   ObWinFunRawExpr *win_expr = NULL;
   for (int64_t i = 0; i < win_exprs_.count(); ++i) {
     if (OB_ISNULL(win_expr = win_exprs_.at(i))) {

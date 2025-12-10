@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "observer/virtual_table/ob_virtual_sql_plan_statistics.h"
@@ -118,7 +122,7 @@ int ObVirtualSqlPlanStatistics::inner_open()
           SERVER_LOG(WARN, "invalid tenant id range, can only search one tenant",
                      K(ret), K(start_tenant_id), K(end_tenant_id));
         } else if (OB_SYS_TENANT_ID == start_tenant_id) {
-          //查询租户为系统租户，可以查询所有的plan cache
+          //Query tenant as system tenant, can query all plan cache
           if (OB_FAIL(get_all_tenant_id())) {
             SERVER_LOG(WARN, "fail to get all tenant id", K(ret));
           }
@@ -143,7 +147,7 @@ int ObVirtualSqlPlanStatistics::get_all_tenant_id()
 int ObVirtualSqlPlanStatistics::get_row_from_specified_tenant(uint64_t tenant_id, bool &is_end)
 {
   int ret = OB_SUCCESS;
-  // !!! 引用plan cache资源之前必须加ObReqTimeGuard
+  // !!! Must add ObReqTimeGuard before referencing plan cache resources
   ObReqTimeGuard req_timeinfo_guard;
   is_end = false;
   sql::ObPlanCache *plan_cache = NULL;

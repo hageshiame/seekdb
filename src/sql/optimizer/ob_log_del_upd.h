@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef _OB_LOG_DEL_UPD_H
@@ -45,7 +49,8 @@ public:
     new_rowid_expr_(NULL),
     trans_info_expr_(NULL),
     related_index_ids_(),
-    fk_lookup_part_id_expr_()
+    fk_lookup_part_id_expr_(),
+    is_vec_hnsw_index_vid_opt_(false)
   {
   }
   inline void reset()
@@ -76,6 +81,7 @@ public:
     trans_info_expr_ = NULL,
     related_index_ids_.reset();
     fk_lookup_part_id_expr_.reset();
+    is_vec_hnsw_index_vid_opt_ = false;
   }
   int64_t to_explain_string(char *buf, int64_t buf_len, ExplainType type) const;
   int init_assignment_info(const ObAssignments &assignments,
@@ -83,6 +89,7 @@ public:
 
   int assign_basic(const IndexDMLInfo &other);
   int assign(const ObDmlTableInfo& info);
+  int deep_copy(ObIRawExprCopier &expr_copier, const IndexDMLInfo &other);
 
 
   uint64_t hash(uint64_t seed) const
@@ -136,17 +143,17 @@ public:
   //spk_cnt_:shadow primary key count, used for unique index, unseen in SQL layer,
   //but PDML-sstable-insert will resolve shadow pk in SQL layer
   int64_t spk_cnt_;
-  // 索引表要被更新的列
-  // 例如：create table t0 (c1 int primary key, c2 int, c3 int, c4 int, c5 int, c6 int);
+  // Index table columns to be updated
+  // For example: create table t0 (c1 int primary key, c2 int, c3 int, c4 int, c5 int, c6 int);
   //       update /*+ parallel(3) enable_parallel_dml */ t0 set c3 = 9;
-  //       如果 binlog_row_image = MINIMAL 那么这个 update 计划中：
-  //        - column_exprs_ 为  (c1, c3)，它会显示在 explain 结果 table_columns 中
-  //       如果 binlog_row_image = FULL 那么这个 update 计划中：
-  //        - column_exprs_ 为  (c1,c2,c3,c4,c5,c6)，它会显示在 explain 结果 table_columns 中
+  //       If binlog_row_image = MINIMAL then this update plan:
+  //        - column_exprs_ is (c1, c3), it will be displayed in the explain result table_columns
+  //       If binlog_row_image = FULL then this update statement:
+  //        - column_exprs_ is (c1,c2,c3,c4,c5,c6), it will be displayed in explain result table_columns
   common::ObSEArray<ObColumnRefRawExpr*, 8, common::ModulePageAllocator, true> column_exprs_;
   common::ObSEArray<ObRawExpr*, 8, common::ModulePageAllocator, true> column_convert_exprs_;
-  // 更新表达式，因为可以有多个列被更新，所以有多个 assignment
-  // 至于这个索引表的分区键有没有被更新，由 ObTablesAssignment 中的 is_updated_part_key_ 记录
+  // Update expression, because multiple columns can be updated, so there are multiple assignments
+  // As for whether the partition key of this index table has been updated, it is recorded by is_updated_part_key_ in ObTablesAssignment
   ObAssignments assignments_;
   bool need_filter_null_;
   bool is_primary_index_;
@@ -173,6 +180,8 @@ public:
 
   common::ObSEArray<ObRawExpr*, 4, common::ModulePageAllocator, true> fk_lookup_part_id_expr_;
 
+  bool is_vec_hnsw_index_vid_opt_;
+
   TO_STRING_KV(K_(table_id),
                K_(ref_table_id),
                K_(loc_table_id),
@@ -190,7 +199,8 @@ public:
                K_(is_update_part_key),
                K_(is_update_primary_key),
                K_(distinct_algo),
-               K_(related_index_ids));
+               K_(related_index_ids),
+               K_(is_vec_hnsw_index_vid_opt));
 };
 
 class ObDelUpdLogPlan;
@@ -267,17 +277,17 @@ public:
   void set_index_maintenance(bool is_index_maintenance)
   { is_index_maintenance_ = is_index_maintenance; }
   bool is_index_maintenance() const { return is_index_maintenance_; }
-  // update 拆成 del+ins 时，ins 的 table location 是 uncertain 的，需要全表更新
+  // update split into del+ins, ins's table location is uncertain, need full table update
   // 
   void set_table_location_uncertain(bool uncertain) { table_location_uncertain_ = uncertain; }
   bool is_table_location_uncertain() const { return table_location_uncertain_; }
   void set_pdml_update_split(bool is_pdml_update_split) { is_pdml_update_split_ = is_pdml_update_split; }
   bool is_pdml_update_split() const { return is_pdml_update_split_; }
-  // 返回的是基表对应的id
+  // Returns the id corresponding to the base table
   uint64_t get_loc_table_id() const;
-  // 返回的是索引id，数据表或者索引表真是的id
+  // Returns the index id, the real id of the data table or index table
   uint64_t get_index_tid() const;
-  // 返回的是主表对应的逻辑id
+  // Returns the logical id corresponding to the main table
   void set_gi_above(bool is_gi_above) { gi_charged_ = is_gi_above; }
   bool is_gi_above() const override { return gi_charged_; }
   const ObRawExpr *get_stmt_id_expr() const { return stmt_id_expr_; }
@@ -368,21 +378,20 @@ protected:
   static int get_insert_exprs(const IndexDMLInfo &dml_info,
                               ObIArray<ObRawExpr *> &dml_columns,
                               ObIArray<ObRawExpr *> &dml_values);
-
-   // 当前的DML算子作为partition id expr的consumer添加到ctx中
-  // partition id 列是pdml操作中特有的一个column.
+   // The current DML operator is added as a consumer of the partition id expr to ctx
+  // partition id column is a unique column in pdml operations.
   int generate_pdml_partition_id_expr();
   int generate_ddl_slice_id_expr();
 
   int print_table_infos(const ObString &prefix,
-                        char *buf, 
-                        int64_t &buf_len, 
-                        int64_t &pos, 
+                        char *buf,
+                        int64_t &buf_len,
+                        int64_t &pos,
                         ExplainType type);
   int print_assigns(const ObAssignments &assigns,
-                    char *buf, 
-                    int64_t &buf_len, 
-                    int64_t &pos, 
+                    char *buf,
+                    int64_t &buf_len,
+                    int64_t &pos,
                     ExplainType type);
 
   // The pseudo partition_id for PDML may be produced by repart exchange or TSC.
@@ -392,8 +401,8 @@ protected:
                                         const uint64_t ref_tid,
                                         ObLogExchange *&producer,
                                         ObLogTableScan *&src_tsc);
-                                
-  virtual int get_plan_item_info(PlanText &plan_text, 
+
+  virtual int get_plan_item_info(PlanText &plan_text,
                                 ObSqlPlanItem &plan_item) override;
 
   virtual int print_outline_data(PlanText &plan_text) override;
@@ -407,34 +416,34 @@ protected:
   common::ObSEArray<uint64_t, 1, common::ModulePageAllocator, true> loc_table_list_;
 
   common::ObSEArray<ObRawExpr *, 4, common::ModulePageAllocator, true> view_check_exprs_;
-  // 用于保存当前 DML 算子的 partition 信息
+  // Used to save the partition information of the current DML operator
   ObTablePartitionInfo *table_partition_info_;
   const ObRawExpr *stmt_id_expr_;
   ObRawExpr *lock_row_flag_expr_;
   bool ignore_;
-  bool is_returning_; // 表示当前的dml计划，是否需要return结果
+  bool is_returning_; // indicates whether the current DML plan needs to return a result
   bool is_multi_part_dml_;
-  bool is_pdml_; // 标记当前逻辑算子是 PDML 算子，CG 阶段会据此决定为其生成 PDML 物理算子
+  bool is_pdml_; // Mark the current logical operator as a PDML operator, the CG phase will decide to generate a PDML physical operator based on this
   bool gi_charged_;
-  bool is_index_maintenance_; // 启用了 PDML，并且当前算子负责索引表维护
-  bool need_barrier_; // row movement 场景下为了避免 insert、delete 同时操作同一行，需要加入 barrier
-  bool is_first_dml_op_; // 第一个 dml op 可以和 tsc 形成 partition wise 结构，可少分配一个 exchange
-  // update 拆成 del+ins 时，ins 的 table location 是 uncertain 的，需要全表更新
+  bool is_index_maintenance_; // Enabled PDML, and the current operator is responsible for index table maintenance
+  bool need_barrier_; // row movement scenario to avoid insert, delete operating on the same row at the same time, need to add barrier
+  bool is_first_dml_op_; // The first dml op can form a partition wise structure with tsc, which can save one exchange
+  // update split into del+ins, ins's table location is uncertain, need full table update
   // 
   bool table_location_uncertain_;
-  bool is_pdml_update_split_; // 标记delete, insert op是否由update拆分而来
+  bool is_pdml_update_split_; // Mark whether delete, insert op are split from update
   int64_t das_dop_; // zero marks not use parallel_das_dml
 private:
-  // 如果是PDML，那么对应的DML算子（insert，update，delete）需要一个partition id expr
+  // If it is PDML, then the corresponding DML operator (insert, update, delete) needs a partition id expr
   ObRawExpr *pdml_partition_id_expr_;
   ObRawExpr *ddl_slice_id_expr_;
-  bool pdml_is_returning_; // 如果计划是pdml计划，表示当前逻辑算子转化为的物理算子是否需要吐/返回行
+  bool pdml_is_returning_; // If the plan is a pdml plan, it indicates whether the physical operator converted from the current logical operator needs to output/return rows
   // add for error logging
   ObErrLogDefine err_log_define_;
 protected:
-  // 对于非分区表而言，pdml中的dml是不需要分配partition id expr
-  // 但是对于非分区表，pdml中的dml是需要分配partition id expr
-  bool need_alloc_part_id_expr_; // pdml计划中，用于判断当前dml 算子是否需要分配partition id expr
+  // For non-partitioned tables, the dml in pdml does not need to allocate partition id expr
+  // But for non-partitioned tables, the dml in pdml needs to allocate partition id expr
+  bool need_alloc_part_id_expr_; // in the pdml plan, used to determine whether the current dml operator needs to allocate partition id expr
   bool has_instead_of_trigger_;
   // Only when trans_info_expr can be pushed down to the corresponding table_scan operator,
   // the expression will be added to produced_trans_exprs_

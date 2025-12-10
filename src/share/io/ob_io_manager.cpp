@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX COMMON
@@ -20,6 +24,7 @@
 #ifdef OB_BUILD_SHARED_STORAGE
 #include "share/io/ob_ss_io_request.h"
 #endif
+#include "share/ob_io_device_helper.h"
 
 using namespace oceanbase::lib;
 using namespace oceanbase::common;
@@ -1384,29 +1389,29 @@ int ObTenantIOManager::calc_io_memory(const uint64_t tenant_id, const int64_t me
 {
   int ret = OB_SUCCESS;
   int64_t memory_benchmark = memory / (1L * 1024L * 1024L * 1024L); //base ob 1G
-  //1w req占用1.52M
-  //1w result占用2.44M
+  //1w req occupies 1.52M
+  //1w result occupies 2.44M
   if (lib::is_mini_mode() && OB_SERVER_TENANT_ID == tenant_id) {
     request_count_ = 5000;
     result_count_ = 5000;
     io_memory_limit_ = 256L * 1024L * 1024L;
   } else if (memory_benchmark <= 1) {
-    //1G租户上限共256MB，预分配5w个request(7.6MB)和result(12.2MB)
+    //1G tenant upper limit is 256MB, pre-allocate 50k requests (7.6MB) and results (12.2MB)
     request_count_ = 50000;
     result_count_ = 50000;
     io_memory_limit_ = 256L * 1024L * 1024L;
   } else if (memory_benchmark <= 4) {
-    //4G租户上限共1G，预分配10w个request(15.2MB)和result(24.4MB)
+    //4G tenant upper limit is 1G, pre-allocate 100k request (15.2MB) and result (24.4MB)
     request_count_ = 100000;
     result_count_ = 100000;
     io_memory_limit_ = 1024 * 1024L * 1024L;
   } else if (memory_benchmark <= 8) {
-    //8G租户上限共2G，预分配20w个request和result
+    //8G tenant upper limit is 2G, pre-allocate 200k request and result
     request_count_ = 200000;
     result_count_ = 200000;
     io_memory_limit_ = 2048L * 1024L * 1024L;
   } else {
-    //unlimited，预分配30w个request和result
+    //unlimited, pre-allocate 300k request and result
     request_count_ = 300000;
     result_count_ = 300000;
     io_memory_limit_ = memory;
@@ -1548,8 +1553,13 @@ int ObTenantIOManager::inner_aio(const ObIOInfo &info, ObIOHandle &handle)
   } else if (OB_UNLIKELY(!is_working())) {
     ret = OB_STATE_NOT_MATCH;
     LOG_WARN("tenant not working", K(ret), K(tenant_id_));
+  } else if (OB_ISNULL(info.fd_.device_handle_)) {
+    ret = OB_ERR_UNEXPECTED;
+    LOG_WARN("device handle is null", K(ret), K(info));
   } else if ((SLOG_IO != info.flag_.get_sys_module_id() &&
-              CLOG_READ_IO != info.flag_.get_sys_module_id() && CLOG_WRITE_IO != info.flag_.get_sys_module_id()) &&
+              CLOG_READ_IO != info.flag_.get_sys_module_id() &&
+              CLOG_WRITE_IO != info.flag_.get_sys_module_id()) &&
+              !info.fd_.device_handle_->is_object_device() &&
               NULL != detector && detector->is_data_disk_has_fatal_error()) {
     ret = OB_DISK_HUNG;
     // for temporary positioning issue, get lbt of log replay

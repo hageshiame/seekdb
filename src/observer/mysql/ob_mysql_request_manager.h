@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef SRC_OBSERVER_MYSQL_OB_MYSQL_REQUEST_MANAGER_H_
@@ -77,17 +81,17 @@ public:
   static const int64_t MAX_PARAM_BUF_SIZE = 64 * 1024;
   static const int32_t MAX_RELEASE_TIME = 5 * 1000; //5ms
   static const int64_t US_PER_HOUR = 3600000000;
-  //初始化queue大小，常规模式1000w，mini模式10w
+  //Initialize queue size, regular mode 10 million, mini mode 1 million
   static const int64_t MAX_QUEUE_SIZE = 10000000; //1000w
   static const int64_t MINI_MODE_MAX_QUEUE_SIZE = 100000; // 10w
-  //按行淘汰的高低水位线，以queue大小的百分比设定
+  //High and low watermarks for line-by-line eviction, set as a percentage of queue size
   static constexpr float HIGH_LEVEL_EVICT_PERCENTAGE = 0.9; // 90%
   static constexpr float LOW_LEVEL_EVICT_PERCENTAGE = 0.8; // 80%
-  //每进行一次release_old操作删除的sql_audit百分比
+  //Percentage of sql_audit deleted per release_old operation
   static const int64_t BATCH_RELEASE_SIZE = 64 * 1024; //32k
   static const int64_t MINI_MODE_BATCH_RELEASE_SIZE = 4 * 1024; //4k
   static const int64_t CONSTRUCT_EVICT_INTERVAL = 500000; //0.5s
-  //启动淘汰检查的时间间隔
+  //Start the time interval for eviction check
   static const int64_t EVICT_INTERVAL = 500000; //1s
   typedef common::ObDlQueue::DlRef DlRef;
   typedef lib::ObLockGuard<common::ObRecursiveMutex> LockGuard;

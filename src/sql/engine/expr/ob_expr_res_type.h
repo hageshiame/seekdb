@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef _OB_EXPR_RES_TYPE_H
@@ -33,11 +37,11 @@ namespace sql
 
 typedef common::ObObjMeta ObExprCalcType;
 
-/* 说明：为什么从ObObjMeta继承？
- *  这是为了一个特殊的需求新增的：在calc_result_type阶段，
- *  推导过程可能跟常量值有关系。
- *  对于一个常量，有可能不光需要知道它的type是什么，
- *  还需要知道它的值是什么，才能推出跟MySQL兼容的行为。
+/* Explanation: Why inherit from ObObjMeta?
+ *  This is for a special requirement added: during the calc_result_type phase,
+ *  the derivation process may be related to constant values.
+ *  For a constant, it might not only be necessary to know what its type is,
+ *  but also to know its value in order to derive behavior compatible with MySQL.
  */
 class ObRawExprResType : public common::ObObjMeta
 {
@@ -262,7 +266,7 @@ public:
 protected:
   uint32_t res_flags_; // BINARY, NUM, NOT_NULL, TIMESTAMP, etc
                        // reference: src/lib/regex/include/mysql_com.h
-  common::ObAccuracy accuracy_; //当是Extend类型时，用来表示复杂数据类型的id
+  common::ObAccuracy accuracy_; // When it is Extend type, used to indicate the id of complex data types
 };
 
 class ObExprResType : public ObRawExprResType
@@ -324,8 +328,7 @@ public:
   OB_INLINE ObExprCalcType &get_calc_meta() { return calc_type_; }
   OB_INLINE const ObExprCalcType &get_calc_meta() const { return calc_type_; }
   OB_INLINE void set_calc_meta(const ObExprCalcType &meta) { calc_type_ = meta; }
-
-  // calc_type: 表示表达式计算时，表达式将转换成calc_type后再计算
+  // calc_type: indicates that the expression will be converted to calc_type before calculation
   OB_INLINE void set_calc_type(const common::ObObjType &type) { calc_type_.set_type(type); }
   OB_INLINE void set_calc_subschema_id(const uint16_t subschema_id) { calc_type_.set_subschema_id(subschema_id); }
   OB_INLINE void set_calc_collation_utf8()
@@ -396,7 +399,7 @@ public:
                        K_(cast_mode));
 protected:
   ObExprCalcType calc_type_;
-  common::ObAccuracy calc_accuracy_; //当是Extend类型时，length字段用来表示复杂数据类型的size
+  common::ObAccuracy calc_accuracy_; // When it is Extend type, the length field is used to indicate the size of the complex data type
   common::ObObj param_;
   uint64_t cast_mode_; // store cast mode for decimal int single side cast
 };

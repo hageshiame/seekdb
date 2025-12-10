@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SERVER
@@ -123,7 +127,7 @@ int ObSyncCmdDriver::response_result(ObMySQLResultSet &result)
   OMPKEOF eofp;
   bool need_send_eof = false;
   if (OB_FAIL(result.open())) {
-    // 只有open失败的时候才可能重试，因open的时候会开启事务/语句等，并且没有给用户返回任何信息
+    // Only retry when open fails, because open will start transactions/statements, etc., and no information is returned to the user
     int cret = OB_SUCCESS;
     int cli_ret = OB_SUCCESS;
     if (ObStmt::is_ddl_stmt(result.get_stmt_type(), result.has_global_variable())) {
@@ -138,8 +142,7 @@ int ObSyncCmdDriver::response_result(ObMySQLResultSet &result)
     if (cret != OB_SUCCESS) {
       LOG_WARN("close result set fail", K(cret));
     }
-
-    // open失败，决定是否需要重试
+    // open failed, decide whether to retry
     retry_ctrl_.test_and_save_retry_state(gctx_, ctx_, result, ret, cli_ret);
     LOG_WARN("result set open failed, check if need retry",
              K(ret), K(cli_ret), K(retry_ctrl_.need_retry()));
@@ -248,9 +251,8 @@ int ObSyncCmdDriver::process_schema_version_changes(
         LOG_WARN("fail to update session last schema_version", K(ret));
       }
     }
-
-    // TODO: (xiaochu.yh) 和xiyu沟通结论：这段逻辑可以下移
-    //  > 应该是当时没有细想吧， 可以放到下层的result set中
+    // TODO: (xiaochu.yh) Communicate with xiyu conclusion: This logic can be moved down
+    //  > It should be that we didn't think it through at the time, it could be placed in the lower layer's result set
     if (OB_SUCC(ret)) {
       // - promote local schema up to target version if last_schema_version is set
       if (result.get_stmt_type() == stmt::T_VARIABLE_SET) {
@@ -278,10 +280,9 @@ int ObSyncCmdDriver::process_schema_version_changes(
   }
   return ret;
 }
-
-// FIXME: 在目标租户执行 set @@ob_last_schema_version = 123456;
-//        后是否需要触发刷 schema？
-//        当前的行为是，只要通过 sql 主动设置，则按照设置的来。
+// FIXME: Execute set @@ob_last_schema_version = 123456; on the target tenant;
+//        Should schema brushing be triggered afterwards?
+//        The current behavior is, as long as it is actively set through SQL, it will follow the setting.
 int ObSyncCmdDriver::check_and_refresh_schema(uint64_t tenant_id)
 {
   int ret = OB_SUCCESS;

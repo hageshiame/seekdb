@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SQL_OB_RECURSIVE_UNION_ALL_OP_H_
@@ -49,8 +53,8 @@ protected:
   // disallow copy
   DISALLOW_COPY_AND_ASSIGN(ObRecursiveUnionAllSpec);
 public:
-  //recursive uion all 算子的的输出中的T_OP_UNION表达式，inner data获取输出行以后拷贝到这些表达式的datum中
-  //inner data的输出行总不含search，cycle伪列，所以这里也不包含伪列表达式。
+  //recursive union all operator's output T_OP_UNION expression, inner data get output rows after copying to these expressions' datum
+  //inner data's output line never contains search, cycle pseudo column, so here it also does not contain the pseudo list expression.
   common::ObFixedArray<ObExpr *, common::ObIAllocator> output_union_exprs_;
 protected:
   static const int32_t CMP_DIRECTION_ASC = 1;

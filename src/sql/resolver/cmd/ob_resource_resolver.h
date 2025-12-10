@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SQL_RESOLVER_CMD_RESOURCE_RESOLVER_
@@ -171,7 +175,7 @@ int ObResourcePoolOptionResolver<T>::resolve_unit_num_option(T *stmt, ParseNode 
       ret = common::OB_INVALID_ARGUMENT;
       LOG_USER_ERROR(OB_INVALID_ARGUMENT, "unit_num, can't be zero");
     } else if (1 == node->num_child_) {
-      // 仅有一个child，没有delete unit num，无需继续解析
+      // Only one child, no delete unit num, no need to continue parsing
     } else if (stmt::T_ALTER_RESOURCE_POOL != stmt->get_cmd_type()) {
       if (2 == node->num_child_) {
         ret = common::OB_NOT_SUPPORTED;
@@ -213,8 +217,7 @@ int ObResourcePoolOptionResolver<T>::resolve_zone_list(T *stmt, ParseNode *node)
   }
   return ret;
 }
-
-// 做成模板的原因是：如果将来有Alter Unit的需求, 改动代码量更小
+// The reason for making it a template is: if there is an Alter Unit requirement in the future, the amount of code changes will be smaller
 template <class T>
 class ObResourceUnitOptionResolver : public share::ObUnitResource
 {
@@ -329,19 +332,11 @@ int ObResourceUnitOptionResolver<T>::check_value_(const ValueT value,
 {
   int ret = OB_SUCCESS;
   if (T_DATA_DISK_SIZE == type) {
-    // data_disk_size should be >= 0, and 0 is supported after 4.3.5.2
+    // data_disk_size should be >= 0
     if (OB_UNLIKELY(value < 0)) {
       print_invalid_argument_user_error_(type, ", value can not be negative");
       ret = common::OB_INVALID_ARGUMENT;
       LOG_WARN("param can not be negative", KR(ret), K(type), K(value));
-    } else if (0 == value) {
-      uint64_t sys_data_version = 0;
-      if (OB_FAIL(GET_MIN_DATA_VERSION(OB_SYS_TENANT_ID, sys_data_version))) {
-        LOG_WARN("failed to get sys tenant min data version", KR(ret));
-      } else if (sys_data_version < DATA_VERSION_4_3_5_2) {
-        ret = common::OB_NOT_SUPPORTED;
-        LOG_USER_ERROR(OB_NOT_SUPPORTED, "SYS tenant data version is below 4.3.5.2, DATA_DISK_SIZE being 0");
-      }
     }
   } else if (T_IOPS_WEIGHT != type
       && T_NET_BANDWIDTH_WEIGHT != type) {
@@ -401,18 +396,18 @@ int ObResourceUnitOptionResolver<T>::resolve_varchar_(ParseNode *child, const Ob
     // bugfix: 
     //
     // create resource unit unit_test4 max_cpu '1', max_iops '128'
-    // 等价于
+    // equivalent to
     // create resource unit unit_test4 max_cpu 1, max_iops 128
-    // 因为按照大家公认的理解，它们的单位是“个”
+    // Because according to everyone's common understanding, their unit is "individual"
     //
     // create resource unit unit_test4 memory_size '1', log_disk_size '128'
-    // 等价于
+    // equivalent to
     // create resource unit unit_test4 memory_size 1048576, max_iops 134217728
-    // 因为“按照 OceanBase 历史标准” 它们的默认单位为 mb
+    // Because "according to OceanBase historical standards" their default unit is mb
     //
-    // 之所以没有在语法层禁止 min_cpu 等用 varchar 表示，是 backward compatibility
-    // 考虑。万一已经有项目在 iops 等值上用了 '912312' 这种 varchar 表示，
-    // 我们不能让他报错。
+    // The reason why min_cpu and other similar fields are not prohibited from using varchar at the syntax layer is for backward compatibility
+    // Consider. In case there is already a project using '912312' this kind of varchar representation on iops equal value,
+    // We cannot let him throw an error.
     if (T_MIN_CPU == type ||
         T_MAX_CPU == type ||
         T_MIN_IOPS == type ||

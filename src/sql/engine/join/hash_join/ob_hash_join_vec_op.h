@@ -1,12 +1,17 @@
-/** * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef SRC_SQL_ENGINE_JOIN_HASH_JOIN_OB_HASH_JOIN_VEC_OP_H_
@@ -287,11 +292,10 @@ public:
   {
     return &build_rows_output_;
   }
-
-  // all_exprs组成:(all_left_exprs keys, all_right_exprs keys)
-  // 前面的all_xxx_exprs keys没有去重
-  // 同理hash_funcs也保存了left和right的join key对应hash function
-  // 为什么保存left和right分别保存，因为可能存在类型不一致情况，如sint = usint
+  // all_exprs composition: (all_left_exprs keys, all_right_exprs keys)
+  // The previous all_xxx_exprs keys were not deduplicated
+  // Similarly, hash_funcs also stores the hash function corresponding to the join key of left and right
+  // Why save left and right separately, because there may be type inconsistency cases, such as sint = usint
   ExprFixedArray join_conds_;
   ExprFixedArray build_keys_;
   ExprFixedArray probe_keys_;
@@ -520,7 +524,7 @@ private:
   {
     nth_nest_loop_ = 0;
   }
-  // 这里可能会放大，暂时这样
+  // Here it may be amplified, temporarily like this
   int64_t get_extra_memory_size() const
   {
     int64_t bucket_cnt = profile_.get_bucket_size();
@@ -568,7 +572,7 @@ public:
   static constexpr int64_t MIN_ROW_COUNT = 10000;
   static constexpr int64_t INIT_LTB_SIZE = 64;
   static constexpr int64_t MAX_PART_COUNT_PER_LEVEL = INIT_LTB_SIZE << 1;
-  // 目前最大层次为4，通过高位4个字节作为recursive处理，超过partition level采用nest loop方式处理
+  // Currently the maximum level is 4, using the high 4 bytes for recursive processing, and using nest loop method for levels exceeding partition level
   static constexpr int64_t MIN_PART_COUNT = 8;
   static constexpr int64_t MAX_PART_LEVEL = 4;
   static constexpr int64_t PRICE_PER_ROW = 48;

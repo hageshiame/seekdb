@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "observer/virtual_table/ob_information_triggers_table.h"
@@ -66,7 +70,7 @@ int ObInfoSchemaTriggersTable::inner_get_next_row(ObNewRow *&row)
               ret = OB_ERR_UNEXPECTED;
               SERVER_LOG(WARN, "Trigger info should not be null", K(ret));
             } else if (tg_info->is_in_recyclebin()) {
-              //在回收站中的trigger不需要展示
+              //triggers in the recycle bin do not need to be displayed
             } else if (OB_FAIL(exec_env.init(tg_info->get_package_exec_env()))) {
               SERVER_LOG(ERROR, "fail to load exec env", K(ret));
             } else {
@@ -77,7 +81,7 @@ int ObInfoSchemaTriggersTable::inner_get_next_row(ObNewRow *&row)
                            K(tg_info->get_owner_id()), K(ret));
               } else {
                 if (OB_NOT_NULL(user_info)) {
-                  // 这里兼容mysql,如果user存在,则给user_name赋值,如果user已经被删除,则user_name = ""
+                  // Here compatibility with mysql is ensured, if user exists, then assign value to user_name, if user has been deleted, then user_name = ""
                   const int64_t USERNAME_AUX_LEN = 6;// "''@''" + '\0'
                   int64_t pos = 0;
                   int64_t buf_size = user_info->get_user_name_str().length()

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef _OB_RESOLVER_DEFINE_H
@@ -400,8 +404,8 @@ public:
   bool show_seed_;
   bool is_from_show_resolver_;
   bool is_restore_;
-  //查询建表、创建视图不能包含临时表;
-  //前者是实现起来问题, 后者是兼容MySQL;
+  // Query table creation, creating views cannot include temporary tables;
+  // The former is an implementation issue, the latter is for MySQL compatibility;
   bool is_from_create_view_;
   bool is_from_create_mview_;
   bool is_from_create_table_;
@@ -411,8 +415,8 @@ public:
   bool is_dynamic_sql_;
   bool is_dbms_sql_;
   uint64_t statement_id_;
-  // 记录顶层 stmt 的类型。如果是 prepare 或 outline，
-  // 则记录目标要被执行的 stmt 类型（如 select、insert 等）
+  // Record the type of top-level stmt. If it is prepare or outline,
+  // Then record the type of stmt to be executed (such as select, insert, etc.)
   ObItemType resolver_scope_stmt_type_;
   common::ObString cur_sql_;
   bool contain_dml_;
@@ -431,7 +435,7 @@ private:
   friend class ObStmtResolver;
 public:
   bool is_resolve_table_function_expr_;  // used to mark resolve table function expr.
-  int64_t tg_timing_event_;      // mysql mode, trigger的触发时机和类型
+  int64_t tg_timing_event_;      // mysql mode, trigger timing and type
   bool is_column_ref_;                   // used to mark normal column ref
   ObStmtScope hidden_column_scope_; // record scope for first hidden column which need check hidden_column_visable in opt_param hint
   const char *hidden_column_name_;  // record column name for first hidden column which need check hidden_column_visable in opt_param hint

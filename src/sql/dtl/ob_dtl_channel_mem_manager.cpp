@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_DTL
@@ -117,11 +121,6 @@ ObDtlLinkedBuffer *ObDtlChannelMemManager::alloc(int64_t chid, int64_t size)
     }
   }
   if (nullptr != allocated_buf) {
-  } else if (out_of_memory()) {
-    ret = OB_ALLOCATE_MEMORY_FAILED;
-    LOG_WARN("the memory of dtl reach the maxinum memory limit", K(ret), K(get_used_memory_size()),
-      K(get_max_tenant_memory_limit_size()), K(get_max_dtl_memory_size()),
-      K(max_mem_percent_), K_(memstore_limit_percent), K(allocated_buf), K(size));
   } else {
     const int64_t alloc_size = sizeof (ObDtlLinkedBuffer)
         + std::max(size, size_per_buffer);
@@ -206,7 +205,7 @@ int ObDtlChannelMemManager::auto_free_on_time(int64_t cur_max_reserve_count)
       reserve_cnt = delta_per_sec;
     }
     if (0 < reserve_cnt) {
-      // 考虑到并发，这里要么释放到足够多buffer，要么free_queue_.size()大于reserve_cnt
+      // Considering concurrency, here we either release enough buffer or free_queue_.size() greater than reserve_cnt
       int64_t need_free_cnt = free_queue_.size() - reserve_cnt;
       void *buf = nullptr;
       while (OB_SUCC(ret) && (0 < need_free_cnt && reserve_cnt < free_queue_.size())) {

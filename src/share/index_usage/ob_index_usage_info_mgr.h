@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 #ifndef OCEANBASE_SHARE_OB_INDEX_USAGE_INFO_MGR_H_
 #define OCEANBASE_SHARE_OB_INDEX_USAGE_INFO_MGR_H_
@@ -213,7 +217,7 @@ private:
 private:
   bool is_inited_;
   ObIndexUsageInfoMgr *mgr_;
-  common::ObMySQLProxy *sql_proxy_; // 写入内部表需要 sql proxy
+  common::ObMySQLProxy *sql_proxy_; // Write to internal table requires sql proxy
   IndexUsageDeletedMap deleted_map_;
 };
 
@@ -259,7 +263,7 @@ private:
 
 class ObIndexUsageInfoMgr final 
 {
-  static const int64_t SAMPLE_RATIO = 10; // 采样模式下的采样比例 10%
+  static const int64_t SAMPLE_RATIO = 10; // Sampling ratio in sampling mode 10%
   static const int64_t DEFAULT_MAX_HASH_BUCKET_CNT = 3000;
   static const int64_t INDEX_USAGE_REFRESH_CONF_INTERVAL = 2 * 1000 * 1000L; // 2s
   static const int64_t ONE_HASHMAP_MEMORY = 4 << 20; // 4M

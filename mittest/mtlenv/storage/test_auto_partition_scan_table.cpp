@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include <gtest/gtest.h>
@@ -21,14 +25,14 @@
 
 
 /*
-  0. 用主表模拟局部索引表扫描，两者差别在于主表会进行范围切割，局部索引表会进行 行过滤
-  1. 创建分区
-	2. 设置分区为split状态，把自己设置为局部索引，并且把origin tablet id设置为自己
-	3. 启动table_scan
-	4. 预期逻辑
-    1）同时获取origin table的tables ；
-    2）不会cut range；
-    3）根据当前tablet id 过滤数据，当然当前代码里分裂后的schema没有变更，计算分区方式也没有改变，因此数据全部符合
+  0. Use the main table to simulate a local index table scan, the difference being that the main table performs range cutting, while the local index table performs row filtering
+  1. Create partition
+	2. Set partition to split state, set yourself as a local index, and set the origin tablet id to yourself
+	3. Start table_scan
+	4. Expected logic
+    1) Simultaneously obtain tables from the origin table ;
+    2) Will not cut range;
+    3) Filter data based on the current tablet id, of course, the schema has not changed after splitting in the current code, and the partition calculation method has not changed, so all data fits
 */
 
 namespace oceanbase

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "ob_trace.h"
@@ -86,16 +90,6 @@ void flush_trace()
           }
         }
         INIT_SPAN(span->source_span_);
-        _FLT_LOG(INFO,
-                      TRACE_PATTERN "%s}",
-                      UUID_TOSTRING(trace.get_trace_id()),
-                      __span_type_mapper[span->span_type_],
-                      UUID_TOSTRING(span->span_id_),
-                      span->start_ts_,
-                      span->end_ts_,
-                      UUID_TOSTRING(OB_ISNULL(span->source_span_) ? OBTRACE->get_root_span_id() : span->source_span_->span_id_),
-                      span->is_follow_ ? "true" : "false",
-                      buf);
         buf[0] = '\0';
         IGNORE_RETURN sql::handle_span_record(sql::get_flt_span_manager(), buf, pos, span);
         if (0 != span->end_ts_) {

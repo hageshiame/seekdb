@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define UNUSED(param) (void)param
@@ -40,8 +44,7 @@ extern "C"
 using namespace oceanbase::common;
 using std::cout;
 using std::endl;
-
-// 必须实现以下4个函数
+// Must implement the following 4 functions
 void *parser_alloc_buffer(void *malloc_pool, const int64_t buff_size)
 {
   UNUSED(malloc_pool);
@@ -142,7 +145,7 @@ void test_fast_parser()
   memset(&parse_result, 0, sizeof(parse_result));
   parse_result.is_fp_ = true;
   parse_result.is_multi_query_ = false;
-  parse_result.malloc_pool_ = &tmp_ptr; // 为了parse_malloc内部的检查，malloc_pool在正常情况下绝对不能为空
+  parse_result.malloc_pool_ = &tmp_ptr; // For the internal check in parse_malloc, malloc_pool must absolutely not be empty under normal circumstances
   parse_result.is_ignore_hint_ = false;
   parse_result.need_parameterize_ = true;
   parse_result.pl_parse_info_.is_pl_parse_ = false;
@@ -212,7 +215,7 @@ void test_sql_parser()
   parse_result.sql_mode_ = DEFAULT_MYSQL_MODE;
   parse_result.is_fp_ = false;
   parse_result.is_multi_query_ = false;
-  parse_result.malloc_pool_ = &tmp_ptr;  // 为了parse_malloc内部的检查，malloc_pool在正常情况下绝对不能为空
+  parse_result.malloc_pool_ = &tmp_ptr;  // For the internal check in parse_malloc, malloc_pool must absolutely not be empty under normal circumstances
   parse_result.is_ignore_hint_ = false;
   parse_result.need_parameterize_ = true;
   parse_result.pl_parse_info_.is_pl_parse_ = false;
@@ -260,7 +263,7 @@ void setup_parse_result(ParseResult &parse_result, int &tmp_ptr)
   parse_result.sql_mode_ = DEFAULT_MYSQL_MODE;
   parse_result.is_fp_ = false;
   parse_result.is_multi_query_ = false;
-  parse_result.malloc_pool_ = &tmp_ptr;  // 为了parse_malloc内部的检查，malloc_pool在正常情况下绝对不能为空
+  parse_result.malloc_pool_ = &tmp_ptr;  // For the internal check in parse_malloc, malloc_pool must absolutely not be empty under normal circumstances
   parse_result.is_ignore_hint_ = false;
   parse_result.need_parameterize_ = true;
   parse_result.pl_parse_info_.is_pl_parse_ = false;

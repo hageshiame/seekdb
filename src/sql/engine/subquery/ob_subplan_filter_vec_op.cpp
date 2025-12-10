@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -151,7 +155,7 @@ int ObSubPlanFilterVecOp::switch_iterator()
   if (OB_FAIL(ObOperator::inner_switch_iterator())) {
     LOG_WARN("failed to inner switch iterator", K(ret));
   } else if (OB_FAIL(child_->switch_iterator())) {
-    //TODO: 目前只支持对非相关子查询做多组迭代器切换，只切换主表
+    //TODO: Currently only supports multi-group iterator switch for non-correlated subqueries, only switches the main table
     if (OB_ITER_END != ret) {
       LOG_WARN("switch child operator iterator failed", K(ret));
     }
@@ -183,7 +187,7 @@ int ObSubPlanFilterVecOp::init_subplan_iters()
         iter->set_parent(this);
         if (MY_SPEC.init_plan_idxs_.has_member(i)) {
           iter->set_init_plan();
-          //init plan 移到get_next_row之后
+          //init plan move to get_next_rowafter
         } else if (MY_SPEC.one_time_idxs_.has_member(i)) {
           iter->set_onetime_plan();
         } else if (!MY_SPEC.enable_px_batch_rescans_.empty() &&

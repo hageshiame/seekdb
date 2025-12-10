@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SERVER
@@ -366,6 +370,7 @@ void ObTableLoadService::mtl_destroy(ObTableLoadService *&service)
   if (OB_UNLIKELY(nullptr == service)) {
     LOG_WARN_RET(OB_ERR_UNEXPECTED, "meta mem mgr is nullptr", KP(service));
   } else {
+    service->destroy();
     OB_DELETE(ObTableLoadService, ObModIds::OMT_TENANT, service);
     service = nullptr;
   }
@@ -623,7 +628,7 @@ int ObTableLoadService::check_support_direct_load_for_columns(
         ret = OB_ERR_UNEXPECTED;
         LOG_WARN("invalid column schema", KR(ret), KP(column_schema));
       } else if (column_schema->is_unused()) {
-        // 快速删除列, 仍然需要写宏块, 直接填null
+        // Fast delete column, still need to write macro block, directly fill null
       } else if ((!ObDirectLoadMethod::is_full(method) || !ObDirectLoadMode::is_insert_into(load_mode)) && column_schema->is_generated_column()) {
         ret = OB_NOT_SUPPORTED;
         LOG_WARN("direct-load does not support table has generated column", KR(ret), KPC(column_schema), K(method), K(load_mode));
@@ -677,15 +682,15 @@ int ObTableLoadService::check_support_direct_load_for_default_value(
           ret = OB_ERR_UNEXPECTED;
           LOG_WARN("unexpected null column schema", KR(ret), K(col_desc));
         }
-        // 快速删除列
-        // 对于insert into, sql会填充null
-        // 对于load data和java api, 用户无法指定被删除的列写数据, 旁路导入在类型转换时直接填充null
+        // Quick delete column
+        // For insert into, SQL will fill null
+        // For load data and java api, the user cannot specify writing data to deleted columns, bypass import directly fills null during type conversion
         else if (column_schema->is_unused()) {
         }
-        // 自增列
+        // auto-increment column
         else if (column_schema->is_autoincrement() || column_schema->is_identity_column()) {
         }
-        // 默认值是表达式
+        // Default value is expression
         else if (OB_UNLIKELY(lib::is_mysql_mode() && column_schema->get_cur_default_value().is_ext())) {
           ret = OB_NOT_SUPPORTED;
           LOG_WARN("direct-load does not support column default value is ext", KR(ret), KPC(column_schema));
@@ -695,8 +700,8 @@ int ObTableLoadService::check_support_direct_load_for_default_value(
           LOG_WARN("direct-load does not support column default value is expr", KR(ret), KPC(column_schema));
           FORWARD_USER_ERROR_MSG(ret, "direct-load does not support column default value is expr");
         }
-        // 没有默认值, 且为NOT NULL
-        // 例外:枚举类型默认为第一个
+        // No default value, and is NOT NULL
+        // Exception: Enum type defaults to the first one
         else if (OB_UNLIKELY(column_schema->is_not_null_for_write() &&
                              column_schema->get_cur_default_value().is_null() &&
                              !column_schema->get_meta_type().is_enum())) {
@@ -841,6 +846,7 @@ void ObTableLoadService::put_ctx(ObTableLoadTableCtx *table_ctx)
 ObTableLoadService::ObTableLoadService(const uint64_t tenant_id)
   : tenant_id_(tenant_id),
     manager_(tenant_id),
+    tg_id_(INVALID_TG_ID),
     check_tenant_task_(*this),
     heart_beat_task_(*this),
     gc_task_(*this),
@@ -877,14 +883,18 @@ int ObTableLoadService::start()
     ret = OB_NOT_INIT;
     LOG_WARN("ObTableLoadService not init", KR(ret), KP(this));
   } else {
-    if (OB_FAIL(timer_.set_run_wrapper_with_ret(MTL_CTX()))) {
+    if (OB_FAIL(TG_CREATE_TENANT(lib::TGDefIDs::TLD_HTimer, tg_id_))) {
+      LOG_WARN("fail to create tld heart beat timer", KR(ret));
+    } else if (OB_FAIL(TG_START(tg_id_))) {
+      LOG_WARN("fail to start tld heart beat timer", KR(ret));
+    } else if (OB_FAIL(TG_SCHEDULE(tg_id_, heart_beat_task_, HEART_BEEAT_INTERVAL, true))) {
+      LOG_WARN("fail to schedule heart beat task", KR(ret));
+    } else if (OB_FAIL(timer_.set_run_wrapper_with_ret(MTL_CTX()))) {
       LOG_WARN("fail to set gc timer's run wrapper", KR(ret));
     } else if (OB_FAIL(timer_.init("TLD_Timer", ObMemAttr(MTL_ID(), "TLD_TIMER")))) {
       LOG_WARN("fail to init gc timer", KR(ret));
     } else if (OB_FAIL(timer_.schedule(check_tenant_task_, CHECK_TENANT_INTERVAL, true))) {
       LOG_WARN("fail to schedule check tenant task", KR(ret));
-    } else if (OB_FAIL(timer_.schedule(heart_beat_task_, HEART_BEEAT_INTERVAL, true))) {
-      LOG_WARN("fail to schedule heart beat task", KR(ret));
     } else if (OB_FAIL(timer_.schedule(gc_task_, GC_INTERVAL, true))) {
       LOG_WARN("fail to schedule gc task", KR(ret));
     } else if (OB_FAIL(timer_.schedule(release_task_, RELEASE_INTERVAL, true))) {
@@ -905,15 +915,30 @@ int ObTableLoadService::stop()
   int ret = OB_SUCCESS;
   is_stop_ = true;
   timer_.stop();
+  if (INVALID_TG_ID != tg_id_) {
+    TG_STOP(tg_id_);
+  }
   return ret;
 }
 
 void ObTableLoadService::wait()
 {
   timer_.wait();
+  if (INVALID_TG_ID != tg_id_) {
+    TG_WAIT(tg_id_);
+  }
   release_all_ctx();
 }
 
+void ObTableLoadService::destroy()
+{
+  is_inited_ = false;
+  timer_.destroy();
+  if (INVALID_TG_ID != tg_id_) {
+    TG_DESTROY(tg_id_);
+    tg_id_ = INVALID_TG_ID;
+  }
+}
 
 void ObTableLoadService::abort_all_client_task(int error_code)
 {
@@ -963,11 +988,10 @@ void ObTableLoadService::release_all_ctx()
   // 1. check all obj removed
   bool all_removed = false;
   do {
-    // 通知后台线程快速退出
+    // Notify the background thread to exit quickly
     abort_all_client_task(OB_CANCELED);
     fail_all_ctx(OB_CANCELED);
-
-    // 移除对象
+    // Remove object
     manager_.remove_inactive_table_ctx();
     manager_.remove_inactive_client_task();
     manager_.remove_all_client_task_brief();
@@ -980,7 +1004,7 @@ void ObTableLoadService::release_all_ctx()
   // 2. check all obj released
   bool all_released = false;
   do {
-    // 释放对象
+    // Release object
     manager_.gc_table_ctx_in_list();
     manager_.gc_client_task_in_list();
 
@@ -1045,7 +1069,7 @@ int ObTableLoadService::delete_assigned_task(ObDirectLoadResourceReleaseArg &arg
       LOG_WARN("fail to delete_assigned_task", KR(ret), K(arg.task_key_));
     } else if (OB_FAIL(ObTableLoadResourceService::release_resource(arg))) {
       LOG_WARN("fail to release resource", KR(ret));
-      ret = OB_SUCCESS;   // 允许失败，资源管理模块可以回收
+      ret = OB_SUCCESS;   // Allow failure, the resource management module can reclaim
     }
   }
 

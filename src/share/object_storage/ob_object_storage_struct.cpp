@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SHARE
@@ -266,7 +270,7 @@ int ObStorageDestCheck::parse_shared_storage_info(
   } else if (OB_FAIL(databuff_printf(access_info, sizeof(access_info), pos, "%s&%s",
              storage_dest.get_storage_info()->access_id_, storage_dest.get_storage_info()->access_key_))) {
     LOG_WARN("failed to set access info", KR(ret), K(storage_dest));
-  // TODO: 等三月份方丹合入ram_url才能支持，先注释，现在只支持AK/SK的方式格式化启动 @xiaotao.ht
+  // TODO: Wait until Fangdan merges ram_url in March to support, comment out for now, currently only supports AK/SK format startup @xiaotao.ht
   // } else if (OB_FAIL(storage_dest.get_storage_info()->get_authorization_info(authorization, sizeof(authorization)))) {
   //   LOG_WARN("fail to get authorization info str", KR(ret), K(authorization));
   // } else if (ObStorageAccessMode::ACCESS_BY_RAM_URL == storage_dest.get_storage_info()->access_mode_ &&

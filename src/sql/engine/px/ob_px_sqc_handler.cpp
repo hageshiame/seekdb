@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -30,9 +34,9 @@ int ObPxWorkNotifier::wait_all_worker_start()
   const int64_t wait_us = 30000;
   uint32_t wait_key = cond_.get_key();
   /**
-   * 这个信号量可能存在丢信号的情况；
-   * 如果丢了信号，则wait一段时间，
-   * 如果未丢信号量，则是直接被唤醒。
+   * This semaphore may miss signals;
+   * if a signal is missed, then wait for a period of time,
+   * if the signal is not missed, then it is directly awakened.
    */
   bool is_interrupted = false;
   int64_t cnt = 1;
@@ -60,8 +64,8 @@ void ObPxWorkNotifier::worker_end(bool &all_worker_finish)
 {
   all_worker_finish = false;
   /**
-   * 不应在ATOMIC_AAF执行后再访问任何内存，因为堆上的数据可能已经被回收了。
-   * 故这里提前做了记录。
+   * Memory should not be accessed after ATOMIC_AAF execution, as data on the heap may have been recycled.
+   * Therefore, a record was made in advance here.
    */
   const int64_t rpc_thread = 1;
   int64_t expect_end_count = expect_worker_count_ + rpc_thread;
@@ -101,9 +105,8 @@ int ObPxSqcHandler::pre_acquire_px_worker(int64_t &reserved_thread_count)
   int ret = OB_SUCCESS;
   int64_t max_thread_count = sqc_init_args_->sqc_.get_max_task_count();
   int64_t min_thread_count = sqc_init_args_->sqc_.get_min_task_count();
-    // 提前在租户中预留线程数，用于 px worker 执行
-  ObPxSubAdmission::acquire(max_thread_count, min_thread_count, reserved_px_thread_count_);
-  reserved_px_thread_count_ = reserved_px_thread_count_ < min_thread_count ? 0 : reserved_px_thread_count_;
+    // Pre-reserve thread count in the tenant for px worker execution
+  reserved_px_thread_count_ = max_thread_count;
   if (OB_FAIL(notifier_->set_expect_worker_count(reserved_px_thread_count_))) {
     LOG_WARN("failed to set expect worker count", K(ret), K(reserved_px_thread_count_));
   } else {
@@ -121,7 +124,7 @@ int ObPxSqcHandler::pre_acquire_px_worker(int64_t &reserved_thread_count)
               K(sqc_init_args_));
     }
     /**
-     * sqc handler的引用计数，1为rpc线程, 此时只有rpc线程引用.
+     * sqc handler's reference count, 1 for rpc thread, at this time only the rpc thread references it.
      */
     reference_count_ = 1;
     LOG_TRACE("SQC acquire px worker", K(max_thread_count), K(min_thread_count),
@@ -305,8 +308,8 @@ int ObPxSqcHandler::destroy_sqc(int &report_ret)
   int ret = OB_SUCCESS;
   int end_ret = OB_SUCCESS;
   report_ret = OB_SUCCESS;
-  // end_ret_记录的错误时SQC end process的时候发生的错误，该时刻语句已经执行完成，收尾工作发生了
-  // 问题。相比起事务的错误码，收尾的错误码优先级更低。
+  // end_ret_records the error that occurred when SQC end process happened, at this moment the statement has already been executed, and the cleanup work has been done
+  // Issue. Compared to the error codes of the transaction, the error codes at the end have a lower priority.
   end_ret = end_ret_;
 
   // clean up ddl context if needed
@@ -317,11 +320,10 @@ int ObPxSqcHandler::destroy_sqc(int &report_ret)
   }
   if (has_flag(OB_SQC_HANDLER_QC_SQC_LINKED)) {
     /**
-     * sqc-qc通道的连接是rpc中process的最后一步，如果link成功就会有这个flag。
-     * 那也就是意味着一旦有这个flag，rpc就会正常返回，qc就会认为sqc正常启动了，
-     * qc会在自己的信息中记录该sqc正常启动了了。qc现在的结束是同步结束，每一个
-     * 被标记启动的sqc都必须在自己正常或者异常结束的时候，报告给qc自己已经结束
-     * 了。有任何一个标记启动的sqc不report，qc都会一直等待直到超时。
+     * The connection of the sqc-qc channel is the last step in rpc process. If the link is successful, this flag will be set.
+     * That means once this flag is set, rpc will return normally, and qc will consider sqc as started normally,
+     * qc will record in its own information that this sqc has started normally. qc's current termination is synchronous termination, every
+     * marked started sqc must report to qc when it ends normally or abnormally. If any marked started sqc does not report, qc will keep waiting until timeout.
      */
     if (OB_FAIL(sub_coord_->report_sqc_finish(end_ret))) {
       LOG_WARN("fail report sqc to qc", K(ret), K(end_ret_));
@@ -335,9 +337,9 @@ int ObPxSqcHandler::destroy_sqc(int &report_ret)
     ObPxSqcMeta &sqc = sqc_init_args_->sqc_;
     dtl::ObDtlChannelInfo &ci = sqc.get_sqc_channel_info();
     dtl::ObDtlChannel *ch = sqc.get_sqc_channel();
-    // 这里的ch是可能为0的，如果是正常的执行，
-    // 它会在ObPxSQCProxy的unlink_sqc_qc_channel里面，将ch置为0.
-    // 没有走正常收尾流程时则依赖于这里来进行释放.
+    // Here ch may be 0, if it is normal execution,
+    // It will set ch to 0 inside the unlink_sqc_qc_channel of ObPxSQCProxy.
+    // If the normal termination process is not followed, then rely on here for release.
     if (OB_NOT_NULL(ch) && OB_FAIL(dtl::ObDtlChannelGroup::unlink_channel(ci))) {
       LOG_WARN("Failed to unlink channel", K(ret));
     }
@@ -376,7 +378,7 @@ void ObPxSqcHandler::check_interrupt()
 {
   if (OB_UNLIKELY(IS_INTERRUPTED())) {
     has_interrupted_ = true;
-    // 中断错误处理
+    // Interrupt error handling
     ObInterruptCode code = GET_INTERRUPT_CODE();
     int ret = code.code_;
     if (OB_NOT_NULL(sqc_init_args_)) {

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SRC_PL_OB_PL_CODE_GENERATOR_H_
@@ -277,8 +281,8 @@ public:
                      const uint64_t &package_id,
                      const uint64_t &routine_id,
                      const int64_t &cursor_index,
-                     bool ignore = false, //是否忽略未打开的游标，不忽略的情况下遇到未打开的游标会报错，默认不忽略
-                     bool exception = true); //在关闭过程中遇到错误是否抛出exception，默认抛出
+                     bool ignore = false, //whether to ignore unclosed cursors, if not ignored, an error will be reported when encountering an unclosed cursor, default is not to ignore
+                     bool exception = true); //Whether to throw an exception when an error occurs during shutdown, default is to throw
   int generate_check_not_null(const ObPLStmt &s,
                               bool is_not_null,
                               jit::ObLLVMValue &p_result_obj);
@@ -702,7 +706,7 @@ private:
   ObLLVMTypeMap user_type_map_;
   jit::ObLLVMValue saved_ob_error_;
   jit::ObLLVMValue saved_exception_;
-  ObPLSEArray<jit::ObLLVMValue> vars_; //第0个是隐藏ctx参数，从第1个开始与ObPLSymbolTable对应
+  ObPLSEArray<jit::ObLLVMValue> vars_; // The 0th is the hidden ctx parameter, starting from the 1st it corresponds to ObPLSymbolTable
   // key: stmt id, value: pair(key: index, -1,)
   goto_label_map goto_label_map_;
 

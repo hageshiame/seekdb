@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SQL_ENGINE_JOIN_OB_MERGE_JOIN_OP_
@@ -52,8 +56,8 @@ public:
       common::ObDatumCmpFuncType ns_cmp_func_;
       sql::serializable_function ser_eval_func_;
     };
-    //表示equal condition 左右子表达式是否分别来自join算子左节点和右节点,
-    //如果是, 则is_opposite_ = false, 如果不是, 则is_opposite_ = true;
+    // indicates equal condition whether left and right sub-expressions are respectively from the left and right nodes of the join operator,
+    // If it is, then is_opposite_ = false, if not, then is_opposite_ = true;
     bool is_opposite_;
   };
 

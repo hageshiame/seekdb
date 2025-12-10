@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_VIRTUAL_TABLE_OB_AGENT_VIRTUAL_TABLE_H_
@@ -52,11 +56,11 @@ private:
   int should_add_tenant_condition(bool &need, const uint64_t tenant_id) const;
 
 private:
-  // 切sys前被代理的普通租户ID
+  // ID of the regular tenant being proxied before switching sys
   uint64_t general_tenant_id_;
   // agent table Compat Mode
   lib::Worker::CompatMode mode_;
-  // 表明是否这张代理表只查系统租户下的数据
+  // Indicates whether this proxy table only queries data under the system tenant
   bool only_sys_data_;
   DISALLOW_COPY_AND_ASSIGN(ObAgentVirtualTable);
 };

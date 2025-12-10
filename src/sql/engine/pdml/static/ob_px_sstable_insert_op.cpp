@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -250,7 +254,8 @@ int ObPxMultiPartSSTableInsertOp::get_next_row_from_child(ObInsertMonitor *inser
     FLOG_INFO("all partition iterate finished", KP(this));
   }
   if (share::schema::is_vec_delta_buffer_type(ddl_dag_->get_ddl_table_schema().table_item_.index_type_)
-      || share::schema::is_vec_index_id_type(ddl_dag_->get_ddl_table_schema().table_item_.index_type_)) {
+      || share::schema::is_vec_index_id_type(ddl_dag_->get_ddl_table_schema().table_item_.index_type_)
+      || share::schema::is_hybrid_vec_index_log_type(ddl_dag_->get_ddl_table_schema().table_item_.index_type_)) {
     is_all_partition_finished_ = true;
     ret = OB_ITER_END;
     FLOG_INFO("all partition iterate finished for vec index type", KP(this));
@@ -273,7 +278,8 @@ int ObPxMultiPartSSTableInsertOp::get_next_batch_from_child(const int64_t max_ba
     FLOG_INFO("all partition iterate finished", KP(this));
   }
   if (share::schema::is_vec_delta_buffer_type(ddl_dag_->get_ddl_table_schema().table_item_.index_type_)
-      || share::schema::is_vec_index_id_type(ddl_dag_->get_ddl_table_schema().table_item_.index_type_)) {
+      || share::schema::is_vec_index_id_type(ddl_dag_->get_ddl_table_schema().table_item_.index_type_)
+      || share::schema::is_hybrid_vec_index_log_type(ddl_dag_->get_ddl_table_schema().table_item_.index_type_)) {
     is_all_partition_finished_ = true;
     ret = OB_ITER_END;
     FLOG_INFO("all partition iterate finished for vec index type", KP(this));
@@ -977,6 +983,46 @@ int ObPxMultiPartSSTableInsertOp::get_continue_slice(
   return ret;
 }
 
+int ObPxMultiPartSSTableInsertOp::get_data_tablet_id(const ObTabletID &tablet_id, ObTabletID &data_tablet_id)
+{
+  int ret = OB_SUCCESS;
+  ObSqlCtx *sql_ctx = nullptr;
+  const ObTableSchema *ddl_table_schema = nullptr;
+  const ObTableSchema *data_table_schema = nullptr;
+  data_tablet_id.reset();
+  if (OB_ISNULL(sql_ctx = ctx_.get_sql_ctx()) || OB_ISNULL(sql_ctx->schema_guard_) || OB_ISNULL(MY_SPEC.plan_)) {
+    ret = OB_ERR_UNEXPECTED;
+    LOG_WARN("schema guard, sql_ctx or plan is null", K(ret));
+  } else if (OB_FAIL(sql_ctx->schema_guard_->get_table_schema(MTL_ID(), MY_SPEC.plan_->get_ddl_table_id(), ddl_table_schema))) {
+    LOG_WARN("fail to get ddl table schema", K(ret), K(MY_SPEC.plan_->get_ddl_table_id()));
+  } else if (OB_ISNULL(ddl_table_schema)) {
+    ret = OB_ERR_UNEXPECTED;
+    LOG_WARN("ddl table schema is null", K(ret), K(MY_SPEC.plan_->get_ddl_table_id()));
+  } else if (OB_FAIL(sql_ctx->schema_guard_->get_table_schema(MTL_ID(), ddl_table_schema->get_data_table_id(), data_table_schema))) {
+    LOG_WARN("fail to get data table schema", K(ret), K(ddl_table_schema->get_data_table_id()));
+  } else if (OB_ISNULL(data_table_schema)) {
+    ret = OB_ERR_UNEXPECTED;
+    LOG_WARN("data table schema is null", K(ret), K(ddl_table_schema->get_data_table_id()));
+  } else if (!data_table_schema->is_partitioned_table()) {
+    data_tablet_id = data_table_schema->get_tablet_id();
+  } else {
+    int64_t part_idx = OB_INVALID_INDEX;
+    int64_t subpart_idx = OB_INVALID_INDEX;
+    ObObjectID object_id;
+    ObObjectID first_level_part_id;
+    if (OB_FAIL(ddl_table_schema->get_part_idx_by_tablet(tablet_id, part_idx, subpart_idx))) {
+      LOG_WARN("fail to get part idx by tablet", K(ret), K(tablet_id));
+    } else if (OB_FAIL(data_table_schema->get_tablet_and_object_id_by_index(part_idx,
+                                                                            subpart_idx,
+                                                                            data_tablet_id,
+                                                                            object_id,
+                                                                            first_level_part_id))) {
+      LOG_WARN("fail to get data tablet id", K(ret), K(part_idx), K(subpart_idx));
+    }
+  }
+  return ret;
+}
+
 int ObPxMultiPartSSTableInsertOp::sync_tablet_doc_id(ObISliceWriter *slice_writer)
 {
   int ret = OB_SUCCESS;
@@ -991,6 +1037,7 @@ int ObPxMultiPartSSTableInsertOp::sync_tablet_doc_id(ObISliceWriter *slice_write
   } else {
     const ObTabletID tablet_id = slice_writer->get_tablet_id();
     const int64_t slice_idx = slice_writer->get_slice_idx();
+    ObTabletID data_tablet_id;
     if (OB_FAIL(ddl_dag_->get_tablet_context(tablet_id, tablet_context))) {
       LOG_WARN("get ddl tablet context failed", K(ret), K(tablet_id));
     } else {
@@ -998,7 +1045,9 @@ int ObPxMultiPartSSTableInsertOp::sync_tablet_doc_id(ObISliceWriter *slice_write
                                                                             slice_idx,
                                                                             rootserver::ObDDLSliceInfo::AUTOINC_RANGE_INTERVAL,
                                                                             slice_writer->get_row_count());
-      if (OB_FAIL(ObDDLUtil::set_tablet_autoinc_seq(tablet_context->ls_id_, tablet_id, last_autoinc_val))) {
+      if (OB_FAIL(get_data_tablet_id(tablet_id, data_tablet_id))) {
+        LOG_WARN("fail to get data tablet id", K(ret), K(tablet_id));
+      } else if (OB_FAIL(ObDDLUtil::set_tablet_autoinc_seq(tablet_context->ls_id_, data_tablet_id, last_autoinc_val))) {
         LOG_WARN("set tablet autoinc seq failed", K(ret), KPC(slice_writer));
       }
     }

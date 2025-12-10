@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2024 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SERVER
@@ -89,7 +93,7 @@ int ObTableLoadUniqueIndexRowHandler::handle_update_row(const ObTabletID &tablet
         LOG_WARN("fail to handle error row", KR(ret));
       } else {
         ATOMIC_DEC(&result_info_->rows_affected_); // delete one row in load data
-        // 需要删除数据行
+        // Need to delete data row
         ObTableLoadDataTableBuilder *data_builder = nullptr;
         if (OB_FAIL(store_ctx_->data_store_table_ctx_->get_delete_table_builder(data_builder))) {
           LOG_WARN("fail to get delete table builder", KR(ret));
@@ -99,7 +103,7 @@ int ObTableLoadUniqueIndexRowHandler::handle_update_row(const ObTabletID &tablet
       }
     } else if (ObLoadDupActionType::LOAD_REPLACE == dup_action_) {
       ATOMIC_DEC(&result_info_->rows_affected_); // delete one row in data tablex
-      // 需要删除数据行
+      // Need to delete data row
       ObTableLoadDataTableBuilder *data_builder = nullptr;
       if (OB_FAIL(store_ctx_->data_store_table_ctx_->get_delete_table_builder(data_builder))) {
         LOG_WARN("fail to get delete table builder", KR(ret));
@@ -109,7 +113,7 @@ int ObTableLoadUniqueIndexRowHandler::handle_update_row(const ObTabletID &tablet
     } else if (ObLoadDupActionType::LOAD_IGNORE == dup_action_) {
       ATOMIC_INC(&result_info_->skipped_);
       ATOMIC_DEC(&result_info_->rows_affected_); // delete one row in load data
-      // 需要删除数据行
+      // Need to delete data row
       ObTableLoadDataTableBuilder *data_builder = nullptr;
       if (OB_FAIL(store_ctx_->data_store_table_ctx_->get_delete_table_builder(data_builder))) {
         LOG_WARN("fail to get delete table builder", KR(ret));
@@ -169,7 +173,7 @@ int ObTableLoadUniqueIndexRowHandler::handle_update_row(
     }
     // mark result row is ack
     const_cast<ObDirectLoadExternalRow *>(result_row)->is_ack_ = true;
-    // 删除其他行
+    // Delete other lines
     for (int64_t i = 0; OB_SUCC(ret) && i < rows.count(); i++) {
       const ObDirectLoadExternalRow *row = rows.at(i);
       ObTableLoadDataTableBuilder *data_builder = nullptr;
@@ -229,7 +233,7 @@ int ObTableLoadUniqueIndexRowHandler::handle_update_row(
     }
     // mark result row is ack
     const_cast<ObDirectLoadMultipleDatumRow *>(result_row)->is_ack_ = true;
-    // 删除其他行
+    // Delete other lines
     for (int64_t i = 0; OB_SUCC(ret) && i < rows.count(); i++) {
       const ObDirectLoadMultipleDatumRow *row = rows.at(i);
       ObTableLoadDataTableBuilder *data_builder = nullptr;

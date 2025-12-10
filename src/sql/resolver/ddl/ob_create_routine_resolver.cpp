@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_RESV
@@ -126,7 +130,7 @@ int ObCreateRoutineResolver::resolve_sp_definer(const ParseNode *parse_node,
         LOG_WARN("user must be specified", K(ret));
       } else {
         user_name.assign_ptr(user_node->str_value_, static_cast<int32_t>(user_node->str_len_));
-        // 得区分current_user和“current_user”, 前者需要获取当前用户和host，后者是作为用户名存在
+        // Need to distinguish between current_user and "current_user", the former needs to obtain the current user and host, the latter exists as a username
         if (0 == user_name.case_compare("current_user") && T_IDENT == user_node->type_) {
           user_name = cur_user_name;
           host_name = cur_host_name;
@@ -134,7 +138,7 @@ int ObCreateRoutineResolver::resolve_sp_definer(const ParseNode *parse_node,
           ret = OB_ERR_NO_PRIVILEGE;
           LOG_WARN("no privilege", K(ret));
         } else if (OB_ISNULL(host_node)) {
-          // 需要检查当前用户是否有超级权限或者set user id的权限，如果权限ok，那么host为%
+          // Need to check if the current user has superuser permissions or set user id permissions, if permissions are ok, then host is %
           if (session_info_->has_user_super_privilege()) {
             host_name.assign_ptr("%", 1);
           } else if (user_name == cur_user_name) {
@@ -145,7 +149,7 @@ int ObCreateRoutineResolver::resolve_sp_definer(const ParseNode *parse_node,
           }
         } else {
           host_name.assign_ptr(host_node->str_value_, static_cast<int32_t>(host_node->str_len_));
-          // 显式指定host为%，需要当前用户有超级权限或者set user id的权限
+          // Explicitly specify host as %, requires the current user to have superuser permissions or set user id permission
           if (user_name == cur_user_name && host_name == cur_host_name) {
             // do nothing
           } else if (0 == host_name.case_compare("%") && !session_info_->has_user_super_privilege()) {
@@ -154,7 +158,7 @@ int ObCreateRoutineResolver::resolve_sp_definer(const ParseNode *parse_node,
           }
         }
         if (OB_SUCC(ret)) {
-          // 检查user@host是否在mysql.user表中
+          // Check if user@host is in the mysql.user table
           const ObUserInfo* user_info = nullptr;
           if (OB_FAIL(schema_checker_->get_schema_guard()->get_user_info(session_info_->get_effective_tenant_id(),
                                                                          user_name,
@@ -170,12 +174,12 @@ int ObCreateRoutineResolver::resolve_sp_definer(const ParseNode *parse_node,
       }
     }
   } else if (lib::is_mysql_mode()) {
-    // 不指定definer时，默认为当前用户和host
+    // Do not specify definer, default to current user and host
     user_name = cur_user_name;
     host_name = cur_host_name;
   }
   if (OB_SUCC(ret) && lib::is_mysql_mode()) {
-    //user@host作为一个整体存储到priv_user字段
+    // user@host as a whole is stored in the priv_user field
     char tmp_buf[common::OB_MAX_USER_NAME_LENGTH + common::OB_MAX_HOST_NAME_LENGTH + 2] = {};
     snprintf(tmp_buf, sizeof(tmp_buf), "%.*s@%.*s", user_name.length(), user_name.ptr(),
                                                     host_name.length(), host_name.ptr());
@@ -299,7 +303,7 @@ int ObCreateRoutineResolver::set_routine_param(const ObIArray<ObObjAccessIdx> &a
       } else {
         OX (routine_param.set_type_owner(access_idxs.at(0).var_index_));
       }
-    } else if (OB_SYS_TENANT_ID == get_tenant_id_by_object_id(access_idxs.at(0).var_index_)) { // 系统包中的var
+    } else if (OB_SYS_TENANT_ID == get_tenant_id_by_object_id(access_idxs.at(0).var_index_)) { // var in system package
       OX (routine_param.set_type_owner(OB_SYS_DATABASE_ID));
     }
     if (OB_SUCC(ret)) {
@@ -351,7 +355,7 @@ int ObCreateRoutineResolver::set_routine_param(const ObIArray<ObObjAccessIdx> &a
       OX (routine_param.set_type_name(access_idxs.at(access_idxs.count()-1).var_name_));
       if (2 == access_idxs.count()) { // pkg.type
         OX (routine_param.set_type_subname(access_idxs.at(0).var_name_));
-        if (OB_SYS_TENANT_ID == get_tenant_id_by_object_id(access_idxs.at(0).var_index_)) { // 系统包中的type
+        if (OB_SYS_TENANT_ID == get_tenant_id_by_object_id(access_idxs.at(0).var_index_)) { // type in system package
           OX (routine_param.set_type_owner(OB_SYS_DATABASE_ID));
         }
       } else if (3 == access_idxs.count()) { // db.pkg.type
@@ -692,7 +696,7 @@ int ObCreateRoutineResolver::resolve_param_list(const ParseNode *param_list, obr
       if (OB_SUCC(ret) && 1 == param_node->int32_values_[1]) {
         routine_param.set_nocopy_param();
       }
-      // 设置default value expr str
+      // set default value expr str
       if (OB_SUCC(ret)
           && 3 == param_node->num_child_ // oracle mode has default node
           && OB_NOT_NULL(param_node->children_[2])) {
@@ -725,7 +729,7 @@ int ObCreateRoutineResolver::resolve_param_list(const ParseNode *param_list, obr
                                                         *(allocator_),
                                                         *(params_.sql_proxy_),
                                                         pl_type));
-            // 默认值在CreateRoutine阶段不需要计算,执行时计算,但是这里要resolve下,避免用户使用非法变量
+            // Default value does not need to be calculated in the CreateRoutine stage, it is calculated at execution time, but here we need to resolve it to avoid users using illegal variables
             OZ (pl::ObPLResolver::resolve_raw_expr(*(default_node->children_[0]),
                                                   params_,
                                                   default_expr,
@@ -874,7 +878,7 @@ int ObCreateRoutineResolver::resolve_impl(ObRoutineType routine_type,
   if (need_reset_default_database) {
     int tmp_ret = OB_SUCCESS;
     if (OB_SUCCESS != (tmp_ret = session_info_->set_default_database(old_database_name.string()))) {
-      ret = OB_SUCCESS == ret ? tmp_ret : ret; // 不覆盖错误码
+      ret = OB_SUCCESS == ret ? tmp_ret : ret; // Do not overwrite error code
       LOG_ERROR("failed to reset default database", K(ret), K(tmp_ret), K(old_database_name));
     } else {
       session_info_->set_database_id(old_database_id);
@@ -906,8 +910,8 @@ int ObCreateRoutineResolver::resolve(const ParseNode &parse_tree,
     if (lib::is_mysql_mode()
                && session_info_->is_inner()
                && FALSE_IT(crt_routine_arg->is_or_replace_ = true)) {
-      // MySQL模式下该字段被复用未是否是InnerSQL发送的请求。用于恢复MySQL下被放入回收站的Routine。
-      // Oracle模式下不做处理, 因为Oracle模式下PL对象不进入回收站。
+      // MySQL mode this field is reused to indicate whether the request is sent by InnerSQL. Used to restore Routine placed in the recycle bin under MySQL.
+      // Oracle mode does not process, because PL objects do not enter the recycle bin in Oracle mode.
     } else if (OB_FAIL(resolve_impl(type,
                                     sp_definer_node,
                                     name_node,

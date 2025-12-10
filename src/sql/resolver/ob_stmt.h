@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SQL_OB_STMT_H_
@@ -104,8 +108,8 @@ public:
   virtual int get_first_stmt(common::ObString &first_stmt);
   void set_stmt_type(const stmt::StmtType stmt_type);
   stmt::StmtType get_stmt_type() const;
-  // 因为对于show，字面type是SHOW，实际stmt_type_是SELECT
-  // 所以这里实现成通用方法
+  // Because for show, literal type is SHOW, actual stmt_type_ is SELECT
+  // So here it is implemented as a generic method
   static bool is_diagnostic_stmt(const stmt::StmtType type)
   {
     return stmt::T_SHOW_WARNINGS == type || stmt::T_SHOW_ERRORS == type || stmt::T_DIAGNOSTICS == type;
@@ -286,8 +290,8 @@ public:
             || stmt_type == stmt::T_SET_COLUMN_COMMENT
             // audit and noaudit
             || stmt_type == stmt::T_AUDIT
-            // analyze, 这个在 oracle 里属于 ddl，但是 ob 判定其为 ddl 时会有一些问题
-            // TODO:待溪峰处理完 analyze 的问题后放开
+            // analyze, this in oracle belongs to ddl, but ob determines it as ddl there will be some issues
+            // TODO: wait for Xi Feng to finish handling the analyze issue then uncomment
             //|| stmt_type == stmt::T_ANALYZE
             // optimize
             || stmt_type == stmt::T_OPTIMIZE_TABLE
@@ -329,7 +333,7 @@ public:
             || stmt_type == stmt::T_REVOKE
 
             // variable
-            //目前只有set global variable才是DDL操作，session级别的variable变更不是DDL
+            // Currently only set global variable is DDL operation, session level variable change is not DDL
             || (stmt_type == stmt::T_VARIABLE_SET && has_global_variable)
 
             // stored procedure
@@ -380,6 +384,10 @@ public:
             // ccl
             || stmt_type == stmt::T_CREATE_CCL_RULE
             || stmt_type == stmt::T_DROP_CCL_RULE
+            // location
+            || stmt_type == stmt::T_CREATE_LOCATION
+            || stmt_type == stmt::T_ALTER_LOCATION
+            || stmt_type == stmt::T_DROP_LOCATION
             );
   }
 
@@ -420,8 +428,8 @@ public:
         // || stmt_type == stmt::T_SET_COLUMN_COMMENT
         // audit and noaudit
         || stmt_type == stmt::T_AUDIT
-        // analyze, 这个在 oracle 里属于 ddl，但是 ob 判定其为 ddl 时会有一些问题
-        // TODO:待溪峰处理完 analyze 的问题后放开
+        // analyze, this in oracle belongs to ddl, but ob determines it as ddl there will be some issues
+        // TODO: wait for Xi Feng to finish the analyze issue before releasing
         //|| stmt_type == stmt::T_ANALYZE
         // optimize
         // || stmt_type == stmt::T_OPTIMIZE_TABLE
@@ -467,7 +475,7 @@ public:
         //  || stmt_type == stmt::T_DROP_SYNONYM
 
         // variable
-        // 目前只有set global variable才是DDL操作，session级别的variable变更不是DDL
+        // Currently only set global variable is DDL operation, session level variable change is not DDL
         || (stmt_type == stmt::T_VARIABLE_SET && has_global_variable)
 
         // stored procedure
@@ -593,7 +601,7 @@ public:
             // sequence
             || stmt_type == stmt::T_DROP_SEQUENCE
             // variable
-            //目前只有set global variable才是DDL操作，session级别的variable变更不是DDL
+            // Currently only set global variable is DDL operation, session level variable change is not DDL
             || (stmt_type == stmt::T_VARIABLE_SET && has_global_variable)
             // stored procedure
             || stmt_type == stmt::T_DROP_ROUTINE
@@ -628,7 +636,7 @@ public:
             || stmt_type == stmt::T_MODIFY_TENANT
             || stmt_type == stmt::T_LOCK_TENANT
             // variable
-            //目前只有set global variable才是DDL操作，session级别的variable变更不是DDL
+            // Currently only set global variable is DDL operation, session level variable change is not DDL
             || (stmt_type == stmt::T_VARIABLE_SET && !has_global_variable));
   }
 
@@ -713,9 +721,9 @@ private:
   DISALLOW_COPY_AND_ASSIGN(ObStmt);
 //protected:
 public:
-  // 实际stmt类型，即：resolver改写后的类型
+  // Actual stmt type, i.e.: resolver rewritten type
   stmt::StmtType  stmt_type_;
-  // 字面stmt类型，例如show语句的字面类型为show，而stmt_type_为SELECT
+  // Literal stmt type, for example, the literal type of a show statement is show, while stmt_type_ is SELECT
   ObQueryCtx *query_ctx_;
   int64_t stmt_id_;
 };

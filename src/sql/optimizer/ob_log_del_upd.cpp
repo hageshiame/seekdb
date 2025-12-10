@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_OPT
@@ -16,6 +20,7 @@
 #include "sql/optimizer/ob_log_table_scan.h"
 #include "sql/optimizer/ob_log_exchange.h"
 #include "sql/optimizer/ob_log_join.h"
+#include "share/ob_fts_index_builder_util.h"
 
 using namespace oceanbase;
 using namespace oceanbase::sql;
@@ -23,6 +28,49 @@ using namespace oceanbase::share;
 using namespace oceanbase::share::schema;
 using namespace common;
 
+int IndexDMLInfo::deep_copy(ObIRawExprCopier &expr_copier, const IndexDMLInfo &other)
+{
+  int ret = OB_SUCCESS;
+  table_id_ = other.table_id_;
+  loc_table_id_ = other.loc_table_id_;
+  ref_table_id_ = other.ref_table_id_;
+  index_name_ = other.index_name_;
+  spk_cnt_ = other.spk_cnt_;
+  rowkey_cnt_ = other.rowkey_cnt_;
+  need_filter_null_ = other.need_filter_null_;
+  is_primary_index_ = other.is_primary_index_;
+  is_update_unique_key_ = other.is_update_unique_key_;
+  is_update_part_key_ = other.is_update_part_key_;
+  is_update_primary_key_ = other.is_update_primary_key_;
+  is_vec_hnsw_index_vid_opt_ = other.is_vec_hnsw_index_vid_opt_;
+  assignments_.reset();
+  if (OB_FAIL(expr_copier.copy(other.column_exprs_, column_exprs_))) {
+    LOG_WARN("failed to assign column exprs", K(ret));
+  } else if (OB_FAIL(expr_copier.copy(other.column_convert_exprs_,
+                                      column_convert_exprs_))) {
+    LOG_WARN("failed to copy exprs", K(ret));
+  } else if (OB_FAIL(expr_copier.copy(other.column_old_values_exprs_,
+                                      column_old_values_exprs_))) {
+    LOG_WARN("failed to copy exprs", K(ret));
+  } else if (OB_FAIL(assignments_.prepare_allocate(other.assignments_.count()))) {
+    LOG_WARN("failed to prepare allocate assignment array", K(ret));
+  } else if (OB_FAIL(expr_copier.copy(other.ck_cst_exprs_, ck_cst_exprs_))) {
+    LOG_WARN("failed to copy exprs", K(ret));
+  } else if (OB_FAIL(part_ids_.assign(other.part_ids_))) {
+    LOG_WARN("failed to assign part ids", K(ret));
+  } else if (OB_NOT_NULL(other.trans_info_expr_)) {
+    if (OB_FAIL(expr_copier.copy(other.trans_info_expr_, trans_info_expr_))) {
+      LOG_WARN("failed to trans info exprs", K(ret), KPC(other.trans_info_expr_));
+    }
+  }
+  for (int64_t i = 0; OB_SUCC(ret) && i < other.assignments_.count(); ++i) {
+    if (OB_FAIL(assignments_.at(i).deep_copy(expr_copier,
+                                             other.assignments_.at(i)))) {
+      LOG_WARN("failed to deep copy assignment", K(ret));
+    }
+  }
+  return ret;
+}
 
 int IndexDMLInfo::assign_basic(const IndexDMLInfo &other)
 {
@@ -39,6 +87,7 @@ int IndexDMLInfo::assign_basic(const IndexDMLInfo &other)
   is_update_part_key_ = other.is_update_part_key_;
   is_update_primary_key_ = other.is_update_primary_key_;
   trans_info_expr_ = other.trans_info_expr_;
+  is_vec_hnsw_index_vid_opt_ = other.is_vec_hnsw_index_vid_opt_;
   if (OB_FAIL(column_exprs_.assign(other.column_exprs_))) {
     LOG_WARN("failed to assign column exprs", K(ret));
   } else if (OB_FAIL(column_convert_exprs_.assign(other.column_convert_exprs_))) {
@@ -110,7 +159,7 @@ int IndexDMLInfo::init_assignment_info(const ObAssignments &assignments,
   assignments_.reset();
   for (int64_t i = 0; OB_SUCC(ret) && i < assignments.count(); ++i) {
     if (has_exist_in_array(column_exprs_, assignments.at(i).column_expr_)) {
-      //将更新表达式的index添加到index info中，表示该index跟assignment有关
+      // Add the index of the update expression to the index info, indicating that this index is related to the assignment
       if (OB_FAIL(assignments_.push_back(assignments.at(i)))) {
         LOG_WARN("add assignment index to assign info failed", K(ret));
       }
@@ -144,10 +193,10 @@ int IndexDMLInfo::get_rowkey_exprs(ObIArray<ObRawExpr *> &rowkey, bool need_spk)
 
 int IndexDMLInfo::init_column_convert_expr(const ObAssignments &assignments)
 {
-  // 将 col1 = expr1 这种表达式中的 expr1 放到 column_convert_exprs
-  // 中，用于后面的插入操作
+  // Put expr1 in the expression col1 = expr1 into column_convert_exprs
+  // , used for the subsequent insert operation
   int ret = OB_SUCCESS;
-  int found = 0; // 在 assignment 中找到匹配表达式的个数
+  int found = 0; // The number of matching expressions found in the assignment
   column_convert_exprs_.reset();
   for (int i = 0; OB_SUCC(ret) && i < column_exprs_.count(); ++i) {
     ObRawExpr *insert_expr = column_exprs_.at(i);
@@ -251,7 +300,7 @@ ObLogDelUpd::ObLogDelUpd(ObDelUpdLogPlan &plan)
 {
 }
 
-int ObLogDelUpd::get_plan_item_info(PlanText &plan_text, 
+int ObLogDelUpd::get_plan_item_info(PlanText &plan_text,
                                     ObSqlPlanItem &plan_item)
 {
   int ret = OB_SUCCESS;
@@ -267,14 +316,14 @@ int ObLogDelUpd::get_plan_item_info(PlanText &plan_text,
                                                 base_table,
                                                 index_table))) {
       BEGIN_BUF_PRINT;
-      if (OB_FAIL(BUF_PRINTF("%.*s(%.*s)", 
-                             base_table.length(), 
+      if (OB_FAIL(BUF_PRINTF("%.*s(%.*s)",
+                             base_table.length(),
                              base_table.ptr(),
-                             index_table.length(), 
+                             index_table.length(),
                              index_table.ptr()))) {
         LOG_WARN("failed to print str", K(ret));
       }
-      END_BUF_PRINT(plan_item.object_alias_, 
+      END_BUF_PRINT(plan_item.object_alias_,
                     plan_item.object_alias_len_);
     }
   }
@@ -379,7 +428,7 @@ int ObLogDelUpd::allocate_granule_post(AllocGIContext &ctx)
   if (OB_ISNULL(get_plan())) {
     ret = OB_ERR_UNEXPECTED;
     LOG_WARN("get unexpected null", K(ret));
-  } else if (OB_FAIL(pw_allocate_granule_post(ctx))){ // 分配完GI以后，会对ctx的状态进行清理
+  } else if (OB_FAIL(pw_allocate_granule_post(ctx))){ // After allocating GI, the status of ctx will be cleaned up
     LOG_WARN("failed to allocate pw gi post", K(ret));
   } else {
     if (is_partition_wise_state && ctx.is_op_set_pw(this)) {
@@ -393,7 +442,7 @@ int ObLogDelUpd::allocate_granule_post(AllocGIContext &ctx)
           // do nothing
           set_gi_above(true);
         } else {
-          // tsc op与当前dml算子都需要set gi above
+          // tsc op and current dml operator both need to set gi above
           ARRAY_FOREACH(tsc_ops, idx) {
             ObLogTableScan *tsc_op = static_cast<ObLogTableScan*>(tsc_ops.at(idx));
             tsc_op->set_gi_above(true);
@@ -415,9 +464,9 @@ int ObLogDelUpd::allocate_granule_post(AllocGIContext &ctx)
 int ObLogDelUpd::generate_pdml_partition_id_expr()
 {
   int ret = OB_SUCCESS;
-  // pdml 分配 partition id expr
-  // 1. 如果当前pdml op对应的表是非分区表，就不分配partition id expr
-  // 2. 如果当前pdml op对应的表是分区表，就分配partition id expr
+  // pdml assign partition id expr
+  // 1. If the table corresponding to the current pdml op is a non-partitioned table, do not allocate partition id expr
+  // 2. If the table corresponding to the current pdml op is a partitioned table, allocate partition id expr
   uint64_t table_id = OB_INVALID_ID;
   ObOpPseudoColumnRawExpr *partition_id_expr = nullptr;
   ObLogExchange *producer = NULL;
@@ -486,23 +535,23 @@ int ObLogDelUpd::find_pdml_part_id_producer(ObLogicalOperator *op,
   } else if (op->is_dml_operator()) {
     // for pdml insert split by update, generate partition id by exchange above delete
   } else if (op->get_type() == log_op_def::LOG_TABLE_SCAN) {
-    // PDML partition id expr在table scan分配的逻辑
-    // pdml table scan分配partition id expr的producer
-    // table scan中分配partition id expr的producer的逻辑比较特殊：
-    //  分配partition id的时候，需要保证partition id expr对应的table id与table
-    // scan的table id是相同的
-    //  对应insert的dml操作，例如：insert into t1 select from t1，
-    //  产生的计划如下：
+    // PDML partition id expr allocation logic in table scan
+    // pdml table scan assign partition id expr's producer
+    // The logic of the producer that allocates partition id expr in table scan is special:
+    //  Assign partition id when, need to ensure partition id expr corresponding table id with table
+    // scan's table id is the same
+    //  Corresponding insert DML operation, for example: insert into t1 select from t1,
+    //  The generated plan is as follows:
     //      insert
     //        subplan
     //          GI
     //            TSC
     //            ....
     //
-    // 这种情况下，如果给TSC算子分配partition idexpr，那么根据表达式分配的框架，
-    // 其会被裁剪掉，因此目前insert与subplan之间会添加一个EX算子.
-    // 后期会进行优化，如果insert与subplan是一个full partition wise
-    // join，那么就在insert算子上分配一个GI算子，目前先使用在subplan上分配EX算子的方式实现
+    // In this case, if the partition idexpr is assigned to the TSC operator, then according to the framework of expression-based allocation,
+    // It will be trimmed, therefore an EX operator will be added between insert and subplan currently.
+    // Later will be optimized, if insert with subplan is a full partition wise
+    // join, then allocate a GI operator on the insert operator, currently implemented by allocating an EX operator on the subplan
     ObLogTableScan *tsc = static_cast<ObLogTableScan*>(op);
     if (loc_tid == tsc->get_table_id() &&
         ref_tid == (tsc->get_is_index_global() ? tsc->get_index_table_id() : tsc->get_ref_table_id())) {
@@ -961,9 +1010,9 @@ int ObLogDelUpd::get_table_index_name(const IndexDMLInfo &index_info,
   return ret;
 }
 
-int ObLogDelUpd::print_table_infos(const ObString &prefix, 
-                                   char *buf, 
-                                   int64_t &buf_len, 
+int ObLogDelUpd::print_table_infos(const ObString &prefix,
+                                   char *buf,
+                                   int64_t &buf_len,
                                    int64_t &pos,
                                    ExplainType type)
 {
@@ -1021,8 +1070,8 @@ int ObLogDelUpd::print_table_infos(const ObString &prefix,
 }
 
 int ObLogDelUpd::print_assigns(const ObAssignments &assigns,
-                               char *buf, 
-                               int64_t &buf_len, 
+                               char *buf,
+                               int64_t &buf_len,
                                int64_t &pos,
                                ExplainType type)
 {
@@ -1403,6 +1452,7 @@ int ObLogDelUpd::check_fts_docid_expr(const ObColumnRefRawExpr *expr, const uint
   need_column_ref_expr = false;
   if (!expr->is_virtual_generated_column()) {
   } else {
+    bool has_valid_index = false;
     if (OB_ISNULL(get_plan()) || OB_ISNULL(schema_guard = get_plan()->get_optimizer_context().get_sql_schema_guard())) {
       ret = OB_ERR_UNEXPECTED;
       LOG_WARN("unexpected error, schema guard or get_plan() is nullptr", K(ret), KP(get_plan()), KP(schema_guard));
@@ -1411,17 +1461,10 @@ int ObLogDelUpd::check_fts_docid_expr(const ObColumnRefRawExpr *expr, const uint
     } else if (OB_ISNULL(table_schema)) {
       ret = OB_ERR_UNEXPECTED;
       LOG_WARN("unexpected error, table schema is nullptr", K(ret), K(table_id));
-    } else if (OB_FAIL(table_schema->get_simple_index_infos(simple_index_infos))) {
-      LOG_WARN("get simple_index_infos failed", K(ret));
+    } else if (OB_FAIL(ObFtsIndexBuilderUtil::check_has_valid_fts_or_multivalue_index(*table_schema, *schema_guard, has_valid_index))) {
+      LOG_WARN("failed to check has valid fts or multivalue index", K(ret));
     } else {
-      for (int64_t i = 0; i < simple_index_infos.count(); ++i) {
-        ObAuxTableMetaInfo &index_info = simple_index_infos.at(i);
-        if (is_doc_rowkey_aux(index_info.index_type_) || is_fts_index_aux(index_info.index_type_) ||
-            is_fts_doc_word_aux(index_info.index_type_) || is_multivalue_index_aux(index_info.index_type_)) {
-          need_column_ref_expr = true;
-          break;
-        }
-      }
+      need_column_ref_expr = has_valid_index;
     }
   }
   return ret;
@@ -1487,6 +1530,21 @@ int ObLogDelUpd::replace_dml_info_exprs(
           }
         }
         // just skip, nothing to do.
+      } else if (expr->is_column_ref_expr() && static_cast<ObColumnRefRawExpr *>(expr)->is_hybrid_embedded_vec_column()) {
+        const ObTableSchema *table_schema = NULL;
+        if (OB_FAIL(schema_guard->get_table_schema(MTL_ID(), index_dml_info->ref_table_id_, table_schema))) {
+          LOG_WARN("failed to get table schema", K(ret));
+        } else if (OB_NOT_NULL(table_schema)) {
+          uint64_t embedded_vec_tid = OB_INVALID_ID;
+          if (OB_FAIL(ObVectorIndexUtil::check_hybrid_embedded_vec_cid_table_readable(schema_guard, *table_schema, static_cast<ObColumnRefRawExpr *>(expr)->get_column_id(), embedded_vec_tid))) {
+            LOG_WARN("failed to check_hybrid_embedded_table_readable", K(ret));
+          } else if (OB_INVALID_ID == embedded_vec_tid) {
+            if (OB_FAIL(replace_expr_action(replacer, index_dml_info->column_old_values_exprs_.at(i)))) {
+              LOG_WARN("fail to replace expr", K(ret), K(i), K(index_dml_info->column_old_values_exprs_));
+            }
+          }
+        }
+        // just skip, nothing to do.
       } else if (OB_FAIL(replace_expr_action(replacer, index_dml_info->column_old_values_exprs_.at(i)))) {
         LOG_WARN("fail to replace expr", K(ret), K(i), K(index_dml_info->column_old_values_exprs_));
       }
@@ -1509,7 +1567,7 @@ int ObLogDelUpd::print_used_hint(PlanText &plan_text)
   } else  {
     const ObHint *hint = get_plan()->get_log_plan_hint().get_normal_hint(T_USE_DISTRIBUTED_DML);
     if (NULL != hint) {
-      bool match_hint = is_multi_part_dml() ? 
+      bool match_hint = is_multi_part_dml() ?
                         hint->is_enable_hint() : hint->is_disable_hint();
       if (match_hint && OB_FAIL(hint->print_hint(plan_text))) {
         LOG_WARN("failed to print use multi part dml hint", K(ret));

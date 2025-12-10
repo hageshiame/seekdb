@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_RESV
@@ -116,7 +120,7 @@ int ObUpdateResolver::resolve(const ParseNode &parse_tree)
   }
 
   if (OB_SUCC(ret) && !has_tg) {
-    // 解析级联更新的列
+    // Parse cascading update columns
     if (OB_FAIL(resolve_additional_assignments(tables_assign,
                                                T_UPDATE_SCOPE))) {
       LOG_WARN("fail to resolve_additional_assignments", K(ret));
@@ -311,10 +315,10 @@ int ObUpdateResolver::check_safe_update_mode(ObUpdateStmt *update_stmt)
   } else if (OB_FAIL(params_.session_info_->get_sql_safe_updates(is_sql_safe_updates))) {
      LOG_WARN("failed to get is safe update mode", K(ret));
   } else if (is_sql_safe_updates) {
-    /*mysql安全模式下更新表值，需要满足下面两个条件中的其中一个:
-    * 1.含有limit；
-    * 2.含有where条件，其能够抽取query range ==> 由于抽取query range只能在optimizer阶段才能够抽取,因此这里只
-    *   检查是否存在where条件；
+    /*Update table values in mysql safe mode, needs to meet one of the following two conditions:
+    * 1.contains limit;
+    * 2.contains where condition, which can extract query range ==> Since extracting query range can only be done during the optimizer phase, therefore here we only
+    *   check if there exists a where condition;
     */
     if (!update_stmt->has_limit() && update_stmt->get_condition_exprs().empty()) {
       ret = OB_ERR_SAFE_UPDATE_MODE_NEED_WHERE_OR_LIMIT;

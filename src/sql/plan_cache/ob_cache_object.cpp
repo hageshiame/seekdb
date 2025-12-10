@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_PC
@@ -116,7 +120,7 @@ int ObPlanCacheObject::get_base_table_version(const uint64_t table_id, int64_t &
   ARRAY_FOREACH(dependency_tables_, i) {
     const ObSchemaObjVersion &obj_version = dependency_tables_.at(i);
     if (obj_version.object_id_ == table_id) {
-      //所有的dependency table的table_id应该是唯一的，其实判断table id就够了，这里再判断下table type，冗余性的检查下
+      // All dependency table's table_id should be unique, actually judging the table id is enough, here we judge the table type again for redundant checks
       if (obj_version.is_base_table() || ObDependencyTableType::DEPENDENCY_VIEW == obj_version.get_type()) {
         table_version = obj_version.version_;
       } else {
@@ -280,8 +284,8 @@ int ObPlanCacheObject::pre_calculation(const bool is_ignore_stmt,
   // TODO [zongmei.zzm]
   // create table t (a int primary key) partition by hash(a) partitions 2;
   // select * from t where a = '1' + 1
-  // 新引擎类型推导会在a上加隐式cast: select * from t where cast (a as double) = ?
-  // 结果就该sql的query range在新引擎下无法抽取，而老引擎是可以抽取query range的
+  // New engine type inference will add implicit cast: select * from t where cast (a as double) = ?
+  // The result is that the query range of this sql cannot be extracted under the new engine, while the old engine can extract the query range
   if (OB_ISNULL(phy_plan_ctx) || OB_ISNULL(session)) {
     ret = OB_ERR_UNEXPECTED;
     LOG_WARN("invalid session or phy plan ctx", K(ret), K(phy_plan_ctx), K(session));

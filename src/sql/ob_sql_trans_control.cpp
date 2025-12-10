@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_EXE
@@ -731,10 +735,7 @@ int ObSqlTransControl::stmt_setup_snapshot_(ObSQLSessionInfo *session,
     }
     // per-opt: set read elr for DML stmt
     if (OB_SUCC(ret) && local_single_ls_plan && !plan->is_plain_select() && txs->get_tx_elr_util().is_can_tenant_elr()) {
-      if (tx_desc.get_cluster_version() >= CLUSTER_VERSION_4_3_5_1) {
-        // for compatible reason, support it when upgraded to 4.3.5.1
-        snapshot.try_set_read_elr();
-      }
+      snapshot.try_set_read_elr();
     }
     if (OB_SUCC(ret) && !local_single_ls_plan) {
       ret = txs->get_read_snapshot(tx_desc,
@@ -826,8 +827,7 @@ int ObSqlTransControl::can_do_plain_insert(ObSQLSessionInfo *session,
   } else if (plan->is_plain_insert()) {
     can_plain_insert = true;
   } else if (session->enable_insertup_replace_gts_opt() && plan->get_insertup_can_do_gts_opt()) {
-    if ((GET_MIN_CLUSTER_VERSION() >= CLUSTER_VERSION_4_3_5_0)
-        && session->is_user_session()) {
+    if (session->is_user_session()) {
       can_plain_insert = true;
     }
   }
@@ -1420,10 +1420,10 @@ static int get_org_cluster_id_(ObSQLSessionInfo *session, int64_t &org_cluster_i
   } else if (OB_INVALID_ORG_CLUSTER_ID == org_cluster_id ||
              OB_INVALID_CLUSTER_ID == org_cluster_id) {
     org_cluster_id = ObServerConfig::get_instance().cluster_id;
-    // 如果没设置ob_org_cluster_id（0为非法值，认为没有设置），则设为当前集群的cluster_id。
-    // 如果配置项中没设置cluster_id，则ObServerConfig::get_instance().cluster_id会拿到默认值-1。
-    // 配置项中没设置cluster_id的话observer是起不来的，因此这里org_cluster_id不会为-1。
-    // 保险起见，这里判断org_cluster_id为0或者-1都将其设为ObServerConfig::get_instance().cluster_id。
+    // If ob_org_cluster_id is not set (0 is an invalid value, considered as not set), then set it to the cluster_id of the current cluster.
+    // If the configuration item does not set cluster_id, then ObServerConfig::get_instance().cluster_id will get the default value -1.
+    // If cluster_id is not set in the configuration, observer cannot start, therefore org_cluster_id will not be -1.
+    // For safety, here we set org_cluster_id to ObServerConfig::get_instance().cluster_id if it is 0 or -1.
     if (org_cluster_id < OB_MIN_CLUSTER_ID
         || org_cluster_id > OB_MAX_CLUSTER_ID) {
       ret = OB_ERR_UNEXPECTED;

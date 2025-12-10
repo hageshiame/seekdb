@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_EXE
@@ -162,11 +166,11 @@ int ObJob::print_status(char *buf, int64_t buf_len, int64_t &pos,
         }
         if (OB_FAIL(ret)) {
         } else if (ignore_normal_state && is_normal_state) {
-          // 正常状态的task，忽略，不打印
+          // Normal state task, ignore, do not print
         } else if (print_count > 0 && OB_FAIL(J_COMMA())) {
           LOG_WARN("fail to print comma", K(ret), K(i), K(*task_info));
         } else {
-          // ObTaskInfo默认的to_string函数打出来的字符串太长，这里简化一下
+          // The string output by the default to_string function of ObTaskInfo is too long, here we simplify it
           const ObTaskLocation &task_loc = task_info->get_task_location();
           BUF_PRINTF("task_info:{");
           J_KV("loc", task_loc.get_server());

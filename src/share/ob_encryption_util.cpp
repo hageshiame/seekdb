@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SHARE
@@ -126,11 +130,11 @@ void ObBlockCipher::create_key(const unsigned char *key, int key_length, char *r
 {
   const int key_size= get_key_length(opmode);
   char *rkey_end = NULL;
-  char *ptr = NULL;                                   /* 真正的key的起始位置 */
+  char *ptr = NULL;                                   /* the actual start position of the key */
   char *sptr = NULL;
   char *key_end= ((char *)key) + key_length;
   rkey_end= rkey + key_size;
-  memset(rkey, 0, key_size);          /* 初始化key */
+  memset(rkey, 0, key_size);          /* initialize key */
   for (ptr= rkey, sptr= (char *)key; sptr < key_end; ptr++, sptr++)
   {
     if (ptr == rkey_end)
@@ -393,8 +397,7 @@ bool ObBackupEncryptionMode::is_valid(const EncryptionMode &mode)
 {
   return mode >= NONE && mode < MAX_MODE;
 }
-
-//TODO(yaoying.yyy):暂时只支持tde，后续需要更新
+//TODO(yaoying.yyy): temporarily only supports tde, subsequent updates are needed
 bool ObBackupEncryptionMode::is_valid_for_log_archive(const EncryptionMode &mode)
 {
   return (NONE == mode || TRANSPARENT_ENCRYPTION == mode);

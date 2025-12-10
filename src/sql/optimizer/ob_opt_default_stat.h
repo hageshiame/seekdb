@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef Oceanbase_SQL_OPTIMIZER_DEFAULT_STAT_H_
@@ -50,33 +54,32 @@ const double OB_DEFAULT_HALF_OPEN_RANGE_SEL = 0.1;
 const double OB_DEFAULT_CLOSED_RANGE_SEL = 0.05;
 
 /**
- *@brief  等值表达式如("A = b")的默认选择率
+ *@brief  Default selection rate for equivalent expressions like ("A = b")
  */
 const double DEFAULT_EQ_SEL = 0.005;
 
 /**
- *@brief　非等值表达式(如"A < b")的默认选择率
+ *@brief Non-equality expression (e.g., "A < b") default selectivity
  */
 const double DEFAULT_INEQ_SEL = 1.0 / 3.0;
 
 /**
- *@brief　空间表达式的默认选择率: 1 / OB_GEO_S2REGION_OPTION_MAX_CELL
+ *@brief　Default selection rate for spatial expressions: 1 / OB_GEO_S2REGION_OPTION_MAX_CELL
  */
 const double DEFAULT_SPATIAL_SEL = 0.25;
 
 /**
- *@brief　猜都没办法猜的默认选择率：一半一半
+ *@brief　Can't guess default selection rate: half and half
  */
 const double DEFAULT_SEL = 0.5;
-
-// [agg(expr) <|>|btw cosnt]的默认选择率
+// [agg(expr) <|>|btw const] the default selectivity
 const double DEFAULT_AGG_RANGE = 0.05;
-// [aggr(expr) = const]的默认选择率
+// [aggr(expr) = const] default selectivity
 const double DEFAULT_AGG_EQ = 0.01;
-// like 的默认选择率
+// like's default selection rate
 const double DEFAULT_LIKE_SEL = 0.05;
 const double DEFAULT_ANTI_JOIN_SEL = 0.01;
-// 范围谓词越界部分选择率，参考 SQLserver
+// Range predicate out-of-bound selection rate, reference SQLserver
 const double DEFAULT_OUT_OF_BOUNDS_SEL = 0.3;
 const double DEFAULT_INEQ_JOIN_SEL = 0.05;
 

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -81,9 +85,9 @@ int ObExprCoalesce::calc_result_typeN(ObExprResType &type,
                                  ob_is_uint_tc(types[i].get_type()));
           if ((is_arg_integer_type && is_expr_integer_type) ||
               ObNullType == types[i].get_type()) {
-            // 参数是int/uint tc时不能将calc type设置为结果的类型
+            // Parameter is int/uint tc when cannot set calc type to the result's type
             // eg: select coalesce(null, col_tinyint, col_mediumint) from t1;
-            // 由于merge type对于null的处理，会多次类型推导时，结果类型发生变化
+            // Due to the merge type's handling of null, the result type may change when multiple type inferences occur
             types[i].set_calc_meta(types[i].get_obj_meta());
             types[i].set_calc_accuracy(types[i].get_accuracy());
           } else {
@@ -114,7 +118,7 @@ int calc_coalesce_expr(const ObExpr &expr, ObEvalCtx &ctx, ObDatum &res_datum)
     } else if (OB_FAIL(pl::ObPLDataType::datum_is_null(child_res, is_udt_type, v))) {
       LOG_WARN("failed to check datum null", K(ret), K(child_res), K(is_udt_type));
     } else if (!v) {
-      // TODO: @shaoge coalesce的结果可以不用预分配内存，直接使用某个子节点的结果
+      // TODO: @shaoge coalesce result can be used directly without pre-allocating memory, using the result of a certain child node
       res_datum.set_datum(*child_res);
       break;
     }

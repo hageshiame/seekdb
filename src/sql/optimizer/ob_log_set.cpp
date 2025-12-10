@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_OPT
@@ -86,8 +90,8 @@ int ObLogSet::compute_const_exprs()
              OB_FAIL(append(output_const_exprs_, right_child->get_output_const_exprs()))) {
     LOG_WARN("failed to append exprs", K(ret));
   } else if (ObSelectStmt::UNION == get_set_op()) {
-    //union, left/right 均为 const 且值相等添加 const, 暂不维护
-    //union 可能有多于两个分支
+    //union, left/right are both const and have equal values add const, temporarily not maintained
+    //union may have more than two branches
   } else {
     /*do nothing*/
   }
@@ -242,9 +246,9 @@ int ObLogSet::compute_op_ordering()
   reset_op_ordering();
   if (MERGE_SET == set_algo_ && is_set_distinct()) {
     ObSEArray<OrderItem, 8> ordering;;
-    //查询项和索引key可能不是一一对应, 这时需要放入映射后的exprs到ordering
+    // Query items and index keys may not be one-to-one, this time you need to put the mapped exprs into ordering
     //only merge union generate sorted output
-    ObArray<ObRawExpr*> mapped_exprs; //按照map array的顺序调整后得到的
+    ObArray<ObRawExpr*> mapped_exprs; // adjusted according to the order of the map array
     ObSEArray<ObRawExpr *, 8> select_exprs;
     ObLogicalOperator *left_child = NULL;
     if (OB_ISNULL(left_child = get_child(ObLogicalOperator::first_child))) {
@@ -566,16 +570,6 @@ int ObLogSet::allocate_granule_pre(AllocGIContext &ctx)
      */
     ctx.set_in_partition_wise_state(this);
     LOG_TRACE("in find partition wise state", K(ctx));
-  } else if (DistAlgo::DIST_SET_PARTITION_WISE == set_dist_algo_
-             && CLUSTER_VERSION_4_3_5_2 > GET_MIN_CLUSTER_VERSION()) {
-    // BLOCK GI for set partition is not supported before version 4352 
-    if (!ctx.is_in_partition_wise_state() &&
-        !ctx.is_in_pw_affinity_state()) {
-      ctx.set_in_partition_wise_state(this);
-      if (OB_FAIL(ctx.set_pw_affinity_state())) {
-        LOG_WARN("set affinity state failed", K(ret), K(ctx));
-      }
-    }
   } else if (ctx.is_in_partition_wise_state()) {
     /**
      *       (partition wise join below)

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OB_LLVM_TYPE_H
@@ -116,10 +120,9 @@ typedef ::llvm::DILocation ObDILocation;
 
   //return ret;
 /*}*/
-
-//在code gen过程中，如果使用ir struct传递Obj, 需要增加GEP操作,
-//ir代码会不好看，另一方面也会增加一定开销
-//该思路参考论文<Compiling Database Queries into Machine Code>3.2节
+// During the code gen process, if using ir struct to pass Obj, need to add GEP operation,
+// ir code will not look good, on the other hand it will also increase certain overhead
+// This idea references the paper <Compiling Database Queries into Machine Code> Section 3.2
 class ObIRObj {
 public:
   const static int OBJ_IDX_TYPE = 0;
@@ -136,9 +139,9 @@ public:
   {}
 
   void reset();
-  //在执行期, 接口type表示该column在schema中类型,
-  //row 中Obj类型可能与type不一样, 比如Obj可能为T_NULL,
-  //而column的type可能为其他类型, 因此在接口中显示给定type
+  // At execution time, the interface type indicates the type of this column in the schema,
+  // row Obj type may be different from type, for example, Obj may be T_NULL,
+  // while the type of column may be other types, therefore display the given type in the interface
 
   void set_type(ObLLVMContext &ctx,
                 const ::oceanbase::common::ObObjType type) {
@@ -168,7 +171,7 @@ public:
                                 value,
                                 is_sign));
   }
-  //从ObObj的ir对象中获取其成员
+  // Get its member from the ir object of ObObj
   static ObIRValuePtr get_ir_value_element(core::JitContext &jc,
                                            const ObIRValuePtr obj,
                                            int64_t idx);

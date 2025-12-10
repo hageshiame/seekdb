@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef SRC_OBSERVER_VIRTUAL_TABLE_OB_ALL_VIRTUAL_TABLET_POINTER_STATUS_H_
@@ -62,11 +66,11 @@ public:
   virtual int inner_get_next_row(common::ObNewRow *&row);
   virtual void reset();
 private:
-  // 过滤得到需要处理的租户
+  // Filter to get the tenants that need processing
   virtual bool is_need_process(uint64_t tenant_id) override;
-  // 处理当前迭代的租户
+  // Process the tenant of the current iteration
   virtual int process_curr_tenant(common::ObNewRow *&row) override;
-  // 释放上一个租户的资源
+  // Release the resources of the previous tenant
   virtual void release_last_tenant() override;
   int get_next_tablet_pointer(
       ObTabletMapKey &tablet_key,
@@ -82,7 +86,7 @@ private:
   char address_[ADDR_STR_LEN];
   char pointer_[STR_LEN];
   char old_chain_[STR_LEN];
-  /* 跨租户访问的资源必须由ObMultiTenantOperator来处理释放*/
+  /* The resources accessed across tenants must be handled and released by ObMultiTenantOperator */
   storage::ObTenantTabletPtrWithInMemObjIterator *tablet_iter_;
   void *iter_buf_;
 private:

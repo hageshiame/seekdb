@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_REWRITE
@@ -1334,9 +1338,8 @@ int ObTransformGroupByPushdown::check_collation_validity(const ObDMLStmt &stmt, 
   }
   return ret;
 }
-
-// 根据 group, aggregation exprs 决定 group by 可以 push 到哪些 view 上
-// 如果最后计算出来所有的 table 都要放到一个 view 里面，那说明没办法做 push down
+// According to group, aggregation exprs decide which views group by can be pushed to
+// If all the tables calculated at the end need to be put into one view, that means push down cannot be done
 int ObTransformGroupByPushdown::compute_push_down_param(ObSelectStmt *stmt,
                                                         ObIArray<PushDownParam> &params,
                                                         const ObGroupByPlacementHint *hint,
@@ -1558,8 +1561,8 @@ int ObTransformGroupByPushdown::merge_cross_join_tables_by_joined_tables(ObSelec
 }
 
 // 3. merge tables according to joined tables
-// outer join 不具备结合律，给定一个 joined_table，如果有多个 basic table 被压到了一个 view 里面
-// 那么我们只能把整个 joined table 压到一个 view 里面
+// outer join does not have associativity, given a joined_table, if there are multiple basic tables compressed into one view
+// Then we can only put the entire joined table into one view
 // TODO can improve. (a join b) left join (c join d)
 // (a, b) can be put into the same view
 int ObTransformGroupByPushdown::merge_tables_by_joined_tables(ObSelectStmt *stmt,
@@ -1725,11 +1728,11 @@ int ObTransformGroupByPushdown::get_null_side_tables(ObDMLStmt &stmt,
 
 /**
  * @brief ObTransformGroupByPushdown::is_filterable_join
- * 如果一个 Join 条件对一侧的过滤性非常的强，那么我们应该先做 join，再做 group by
- * 判定的标准
- *   1. Join 条件有一侧是表 A 的 column
- *   2. A 的 column 是某个索引的第一列
- *   3. A 上有 group by 任务
+ * If a Join condition is very filtering on one side, then we should do the join first, then the group by
+ * The determination criteria
+ *   1. The Join condition has one side as column of table A
+ *   2. Column of A is the first column of some index
+ *   3. There is a group by task on A
  * @return
  */
 int ObTransformGroupByPushdown::is_filterable_join(ObSelectStmt *stmt,
@@ -2641,9 +2644,9 @@ int ObTransformGroupByPushdown::push_down_groupby_into_cross_join(
 }
 
 /**
- * 1. 构建 STMT 做 eager aggregation
- * 2. 用 eager aggregation 的结果来推导原来 aggregation 的结果。替换掉原始 aggregation 的引用。
- * 3. 用 generated table 替换原来的 table
+ * 1. Build STMT for eager aggregation
+ * 2. Use the result of eager aggregation to derive the result of the original aggregation. Replace the reference to the original aggregation.
+ * 3. Replace the original table with the generated table
 **/
 int ObTransformGroupByPushdown::do_double_eager_rewrite(ObSelectStmt *stmt,
                                                              ObIArray<uint64_t> &flatten_joined_tables,
@@ -3379,9 +3382,6 @@ int ObTransformGroupByPushdown::check_cut_ratio(ObLogicalOperator *op,
       OB_ISNULL(push_down_ctx)) {
     ret = OB_ERR_UNEXPECTED;
     LOG_WARN("unexpected null", K(ret));
-  } else if (!op->get_stmt()->get_query_ctx()->check_opt_compat_version(
-                          COMPAT_VERSION_4_2_5, COMPAT_VERSION_4_3_0, COMPAT_VERSION_4_3_5)) {
-    // do nothing
   } else if (OB_FAIL(invalid_stmts.prepare_allocate(push_down_ctx->new_stmt_ids_.count()))) {
     LOG_WARN("failed to prepare array", K(ret));
   } else if (OB_FAIL(check_all_cut_ratio(op, push_down_ctx, false, invalid_stmts))) {

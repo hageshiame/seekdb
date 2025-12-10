@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 #define USING_LOG_PREFIX STORAGE
 
@@ -169,16 +173,16 @@ int ObDirectLoadConflictCheck::handle_get_next_row_finish(
   }
   if (OB_SUCC(ret)) {
     if (nullptr != origin_row_ && cmp_ret == 0) {
-      // 有冲突
+      // There is a conflict
       if (OB_FAIL(param_.dml_row_handler_->handle_update_row(param_.tablet_id_, *origin_row_, *load_row, result_row))) {
         LOG_WARN("fail to handle update row", KR(ret), KP(origin_row_), KP(load_row));
       } else if (result_row == origin_row_) {
-        // 不吐出origin_row_
+        // Do not output origin_row_
         result_row = nullptr;
       }
       origin_row_ = nullptr;
     } else {
-      // 无冲突
+      // No conflict
       result_row = load_row;
       if (OB_FAIL(param_.dml_row_handler_->handle_insert_row(param_.tablet_id_, *result_row))) {
         LOG_WARN("fail to handle insert row", KR(ret), KP(result_row));

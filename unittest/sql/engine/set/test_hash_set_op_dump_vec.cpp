@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL
@@ -244,7 +248,7 @@ public:
     }
     pos1 = 6000000;
     for (int i = 0; i  < 3; ++i) {
-      ObExpr *expr = static_cast<ObExpr *>(exec_ctx_.get_allocator().alloc(sizeof(ObExpr)));//新建expr， 设置expr对应的datum， 在对应位置放置datum
+      ObExpr *expr = static_cast<ObExpr *>(exec_ctx_.get_allocator().alloc(sizeof(ObExpr)));//create expr, set the datum corresponding to expr, place the datum in the corresponding position
       if (OB_FAIL(spec.set_exprs_.push_back(expr))) {
         return ret;
       }
@@ -274,7 +278,7 @@ public:
     } else if (OB_FAIL(spec.hash_funcs_.init(spec.set_exprs_.count()))) {
       LOG_WARN("failed to compare function", K(ret));
     } else {
-      // 初始化compare func和hash func
+      // Initialize compare func and hash func
       ObOrderDirection order_direction = default_asc_direction();
       bool is_ascending = is_ascending_direction(order_direction);
       ObSortFieldCollation field_collation(0,
@@ -378,7 +382,7 @@ public:
     }
     pos1 = 7000000;
     for (int i = 0; i  < 3; ++i) {
-      ObExpr *expr = static_cast<ObExpr *>(alloc_.alloc(sizeof(ObExpr)));//新建expr， 设置expr对应的datum， 在对应位置放置datum
+      ObExpr *expr = static_cast<ObExpr *>(alloc_.alloc(sizeof(ObExpr)));//create expr, set the datum corresponding to expr, place the datum in the corresponding position
       if (OB_FAIL(spec.set_exprs_.push_back(expr))) {
         return ret;
       }
@@ -406,7 +410,7 @@ public:
       LOG_WARN("failed to compare function", K(ret));
     } else {
       LOG_WARN("init funcs");
-      // 初始化compare func和hash func
+      // Initialize compare func and hash func
       ObOrderDirection order_direction = default_asc_direction();
       bool is_ascending = is_ascending_direction(order_direction);
       ObSortFieldCollation field_collation(0,
@@ -480,7 +484,7 @@ public:
     }
     pos1 = 6000000;
     for (int i = 0; i  < 3; ++i) {
-      ObExpr *expr = static_cast<ObExpr *>(exec_ctx_.get_allocator().alloc(sizeof(ObExpr)));//新建expr， 设置expr对应的datum， 在对应位置放置datum
+      ObExpr *expr = static_cast<ObExpr *>(exec_ctx_.get_allocator().alloc(sizeof(ObExpr)));//create expr, set the datum corresponding to expr, place the datum in the corresponding position
       if (OB_FAIL(spec.distinct_exprs_.push_back(expr))) {
         return ret;
       }
@@ -510,7 +514,7 @@ public:
     } else if (OB_FAIL(spec.hash_funcs_.init(spec.distinct_exprs_.count()))) {
       LOG_WARN("failed to compare function", K(ret));
     } else {
-      // 初始化compare func和hash func
+      // Initialize compare func and hash func
       ObOrderDirection order_direction = default_asc_direction();
       bool is_ascending = is_ascending_direction(order_direction);
       ObSortFieldCollation field_collation(0,
@@ -613,7 +617,7 @@ public:
     }
     pos1 = 7000000;
     for (int i = 0; i  < 3; ++i) {
-      ObExpr *expr = static_cast<ObExpr *>(alloc_.alloc(sizeof(ObExpr)));//新建expr， 设置expr对应的datum， 在对应位置放置datum
+      ObExpr *expr = static_cast<ObExpr *>(alloc_.alloc(sizeof(ObExpr)));//create expr, set the datum corresponding to expr, place the datum in the corresponding position
       if (OB_FAIL(spec.distinct_exprs_.push_back(expr))) {
         return ret;
       }
@@ -639,7 +643,7 @@ public:
       LOG_WARN("failed to compare function", K(ret));
     } else {
       LOG_WARN("init funcs");
-      // 初始化compare func和hash func
+      // Initialize compare func and hash func
       ObOrderDirection order_direction = default_asc_direction();
       bool is_ascending = is_ascending_direction(order_direction);
       ObSortFieldCollation field_collation(0,
@@ -716,8 +720,7 @@ int ObHashSetDumpTest::SetPlan::setup_plan(ObOperator *set_op)
   right_spec.id_ = 1;
   set_op_spec.id_ = 2;
   //LOG_WARN("value:", K(left_spec), K(right_spec));
-
-  //set_op_->set_column_count(SetDataGenerator::CELL_CNT * 2); 没有的参数
+  //set_op_->set_column_count(SetDataGenerator::CELL_CNT * 2); no parameters
 
   left_spec.plan_=&plan_;
   right_spec.plan_=&plan_;
@@ -747,8 +750,7 @@ int ObHashSetDumpTest::SetPlan::setup_plan(ObOperator *set_op)
   } else if (OB_FAIL(set_op_spec.set_children_pointer(spec_children_ptr, (is_distinct ? 1 : 2)))) {
     LOG_WARN("failed to set spec children for set op", K(ret));
   }
-
-  //set_op_->set_distinct(true);  没有的参数
+  //set_op_->set_distinct(true);  no parameter
 
   // setup context
   ObString tenant_name("test");
@@ -1007,7 +1009,6 @@ int ObHashSetDumpTest::init_tenant_mgr()
   EXPECT_EQ(cluster_version, common::ObClusterVersion::get_instance().get_cluster_version());
   int64_t tenant_id = OB_SYS_TENANT_ID;
   self.set_ip_addr("127.0.0.1", 8086);
-  ret = ObTenantConfigMgr::get_instance().add_tenant_config(tenant_id);
   EXPECT_EQ(OB_SUCCESS, ret);
   ret = getter.add_tenant(tenant_id,
                           4L * 1024L * 1024L * 1024L,

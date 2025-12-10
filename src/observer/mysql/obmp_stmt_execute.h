@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_OBSERVER_MYSQL_OBMP_STMT_EXECUTE_H_
@@ -344,7 +348,7 @@ private:
   virtual int before_process();
   virtual int after_process(int error_code);
   int response_query_header(sql::ObSQLSessionInfo &session, pl::ObDbmsCursorInfo &cursor);
-  //重载response，在response中不去调用flush_buffer(true)；flush_buffer(true)在需要回包时显示调用
+  // Overload response, do not call flush_buffer(true) in response; flush_buffer(true) should be explicitly called when a response packet is needed to be sent
 
 
   // copy or convert string, resove %extra_buf_len before result string.
@@ -370,7 +374,7 @@ protected:
   int64_t arraybinding_size_;
   int64_t arraybinding_rowcnt_;
 
-  ObPSCursorType ps_cursor_type_;   // cursor read only 类型的语句
+  ObPSCursorType ps_cursor_type_;   // cursor read only type statement
 
   int64_t single_process_timestamp_;
   int64_t exec_start_timestamp_;

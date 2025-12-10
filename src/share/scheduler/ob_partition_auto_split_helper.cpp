@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX STORAGE
@@ -516,7 +520,6 @@ int ObServerAutoSplitScheduler::check_tablet_creation_limit(const int64_t inc_ta
   int ret = OB_SUCCESS;
   real_split_size = OB_INVALID_SIZE;
   const uint64_t tenant_id = MTL_ID();
-  ObUnitInfoGetter::ObTenantConfig unit;
   ObTenantMetaMemMgr *t3m = MTL(ObTenantMetaMemMgr*);
   int64_t tablet_cnt_per_gb = ObServerAutoSplitScheduler::TABLET_CNT_PER_GB; // default value
   if (OB_UNLIKELY(inc_tablet_cnt < 0 || safe_ratio > 1 || safe_ratio <= 0 || split_size <= 0)) {
@@ -532,21 +535,14 @@ int ObServerAutoSplitScheduler::check_tablet_creation_limit(const int64_t inc_ta
     }
   }
 
-  if (FAILEDx(GCTX.omt_->get_tenant_unit(tenant_id, unit))) {
-    if (OB_TENANT_NOT_IN_SERVER != ret) {
-      LOG_WARN("failed to get tenant unit", K(ret), K(tenant_id));
-    } else {
-      // during restart, tenant unit not ready, skip check
-      ret = OB_SUCCESS;
-    }
-  } else {
-    const double memory_limit = unit.config_.memory_size();
-    const int64_t max_tablet_cnt = static_cast<int64_t>(memory_limit / (1 << 30) * tablet_cnt_per_gb * safe_ratio);
+  if (OB_SUCC(ret)) {
+    const double hard_memory_limit = lib::get_hard_memory_limit();
+    const int64_t max_tablet_cnt = static_cast<int64_t>(hard_memory_limit / (1 << 30) * tablet_cnt_per_gb * safe_ratio);
     const int64_t cur_tablet_cnt = t3m->get_total_tablet_cnt();
     double cur_ratio = 0.0;
     if (OB_UNLIKELY(cur_tablet_cnt + inc_tablet_cnt > max_tablet_cnt)) {
       ret = OB_TOO_MANY_PARTITIONS_ERROR;
-      LOG_WARN("too many partitions of tenant", K(ret), K(tenant_id), K(memory_limit), K(tablet_cnt_per_gb),
+      LOG_WARN("too many partitions of tenant", K(ret), K(tenant_id), K(hard_memory_limit), K(tablet_cnt_per_gb),
           K(max_tablet_cnt), K(cur_tablet_cnt), K(inc_tablet_cnt));
     } else if (OB_UNLIKELY(max_tablet_cnt <= 0)) {
       ret = OB_ERR_UNEXPECTED;
@@ -1922,7 +1918,7 @@ int ObSplitSampler::query_ranges(const uint64_t tenant_id,
 }
 
 /*
-  如果是重建自动分区全局索引非分区表，part_column_cnt为潜在的分区键
+  If it is a rebuild of an auto-partitioned global index on a non-partitioned table, part_column_cnt is the potential partition key
 */
 int ObSplitSampler::fill_query_range_bounder(
     const PartitionMeta& part_meta,

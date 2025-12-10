@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_COMMON_OB_OBJ_FUNCS_
@@ -695,8 +699,8 @@ DEF_DOUBLE_FUNCS(ObUDoubleType, udouble, double, double);
         /* defense code*/                                                                   \
         scale = 64;                                                                         \
       }                                                                                     \
-      /* bit 类型最大长度是 64，所以其最多只需要占用 8bytes 空间 */                                \
-      /* bit_bytes 向上取整 */                                                                \
+      /* bit type maximum length is 64, so it only needs to occupy 8 bytes space */                                \
+      /* bit_bytes round up */                                                                \
       const uint8_t bit_bytes = (scale + 8 - 1) / 8;                                         \
       return ObBase64Encoder::encode(reinterpret_cast<const uint8_t*>(&v), bit_bytes, buffer, length, pos); \
     } else {                                                                                 \
@@ -727,7 +731,7 @@ DEF_BIT_FUNCS(ObBitType, bit, uint64_t);
 ////////////////////
 //ObEnumType=32
 //ObSetType=33
-//TODO(yts):print函数并不准确
+//TODO(yts):print function is not accurate
 DEF_NUMERIC_FUNCS(ObEnumType, enum, uint64_t, "%lu", "'%lu'", uint64_t);
 DEF_NUMERIC_FUNCS(ObSetType, set, uint64_t, "%lu", "'%lu'", uint64_t);
 
@@ -1932,8 +1936,7 @@ inline int obj_print_json<ObJsonType>(const ObObj &obj, char *buf, int64_t buf_l
     UNUSED(obj);                                            \
     return serialization::encode_length_otimestamp_tz_type(); \
   }
-
-// obj_crc64_v2为了与老版本兼容，进行了特殊处理， 具体原因见struct ObOTimestampDataOld
+// obj_crc64_v2 for compatibility with the old version, special processing was done, specific reasons see struct ObOTimestampDataOld
 #define DEF_ORACLE_TIMESTAMP_CS_FUNCS(OBJTYPE)                                    \
   template <>                                                           \
   inline int64_t obj_crc64<OBJTYPE>(const ObObj &obj, const int64_t current)   \

@@ -1,16 +1,20 @@
 // owner: zjf225077
 // owner group: log
 
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define private public
@@ -134,8 +138,7 @@ TEST_F(TestObSimpleLogApplyFunc, apply)
   EXPECT_EQ(OB_SUCCESS, ap_sv.switch_to_leader(ls_id, 1));
   const int64_t idx_1 = (leader_idx + 1) % get_node_cnt();
   const int64_t idx_2 = (leader_idx + 2) % get_node_cnt();
-
-  //旧主少数派写日志
+  // Old master minority writes log
   block_net(leader_idx, idx_1);
   block_net(leader_idx, idx_2);
   do {
@@ -169,23 +172,21 @@ TEST_F(TestObSimpleLogApplyFunc, apply)
   share::SCN min_scn;
   EXPECT_EQ(OB_SUCCESS, ap_sv.get_max_applied_scn(ls_id, min_scn));
   EXPECT_EQ(OB_SUCCESS, ap_sv.switch_to_follower(ls_id));
-
-  //切主, truncate旧主日志,预期所有cb都调用on_failure
+  // Switch master, truncate old master log, expect all cb to call on_failure
   sleep(15);
   while (!is_apply_done)
   {
     ap_sv.is_apply_done(ls_id, is_apply_done, unused_apply_end_lsn);
     usleep(100);
   }
-
-  //切回旧主写日志,预期所有cb都调用on_success
+  // Switch back to the old main writer log, expect all cb to call on_success
   unblock_net(leader_idx, idx_1);
   unblock_net(leader_idx, idx_2);
   int64_t new_leader_idx = 0;
   PalfHandleImplGuard new_leader;
   EXPECT_EQ(OB_SUCCESS, get_leader(id, new_leader, new_leader_idx));
   EXPECT_NE(new_leader_idx, leader_idx);
-  //等待membership同步
+  // Wait for membership synchronization
   sleep(2);
   leader.reset();
   CLOG_LOG(INFO, "new leader", K(new_leader_idx), K(leader_idx));

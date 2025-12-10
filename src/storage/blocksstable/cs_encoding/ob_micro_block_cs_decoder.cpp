@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX STORAGE
@@ -1245,7 +1249,7 @@ int ObMicroBlockCSDecoder::filter_pushdown_filter(
   int ret = OB_SUCCESS;
   if (filter->is_filter_black_node()) {
     sql::ObBlackFilterExecutor *black_filter = static_cast<sql::ObBlackFilterExecutor *>(filter);
-    // TODO 暂时不考虑vectorize
+    // TODO temporarily do not consider vectorize
     if (OB_FAIL(filter_pushdown_filter(parent, black_filter, pd_filter_info, result_bitmap))) {
       LOG_WARN("fail to filter pushdown black filter", KR(ret));
     }
@@ -1254,7 +1258,7 @@ int ObMicroBlockCSDecoder::filter_pushdown_filter(
     if (OB_FAIL(filter_pushdown_filter(parent, white_filter, pd_filter_info, result_bitmap))) {
       LOG_WARN("fail to filter pushdown white filter", KR(ret));
     }
-  } else if (filter->is_filter_node()) { // TODO @donglou.zl 直接下压白盒子树
+  } else if (filter->is_filter_node()) { // TODO @donglou.zl directly push down the white box tree
     sql::ObPushdownFilterExecutor **children = filter->get_childs();
     for (int64_t i = 0; OB_SUCC(ret) && (i < filter->get_child_count()); ++i) {
       if (OB_ISNULL(children[i])) {

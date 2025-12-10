@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_STRORAGE_MEMTABLE_OB_MT_HASH_
@@ -292,7 +296,7 @@ private:
   static const int64_t MY_NORMAL_BLOCK_SIZE = common::OB_MALLOC_NORMAL_BLOCK_SIZE;
   static const int64_t MY_BIG_BLOCK_SIZE = common::OB_MALLOC_BIG_BLOCK_SIZE - 64;
 public:
-  // SMALL_CAPABILITY 52万，TOTAL_CAPABILITY 343亿
+  // SMALL_CAPABILITY 520,000, TOTAL_CAPABILITY 3.43 billion
   static const int64_t SMALL_CAPABILITY = ObMtArrayBase<MY_NORMAL_BLOCK_SIZE>::ARRAY_CAPABILITY;
   static const int64_t TOTAL_CAPABILITY = ObMtArrayBase<MY_BIG_BLOCK_SIZE>::ARRAY_CAPABILITY + SMALL_CAPABILITY;
 private:

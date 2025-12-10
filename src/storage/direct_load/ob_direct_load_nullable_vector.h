@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2025 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #pragma once
@@ -54,7 +58,7 @@ public:
   void reuse(const int64_t batch_size) override
   {
     data_vector_.reuse(batch_size);
-    // shallow_copy可能会修改nulls_
+    // shallow_copy may modify nulls_
     if (nulls_ != vec_nulls_) {
       set_vector(vec_nulls_, 0 /*flag*/);
     } else {
@@ -288,14 +292,14 @@ private:
     const int64_t null_cnt =
       base->has_null() ? base->get_nulls()->accumulate_bit_cnt(offset, offset + size) : 0;
     if (0 == null_cnt) {
-      // 全是notnull
+      // all are notnull
       is_all_null_ = false;
     } else if (size == null_cnt) {
-      // 全是null
+      // all are null
       base_->get_nulls()->set_all(batch_idx, batch_idx + size);
       base_->set_has_null(true);
     } else {
-      // 部分null
+      // part null
       sql::ObBitVector *dest_nulls = base_->get_nulls();
       sql::ObBitVector *src_nulls = base->get_nulls();
       for (int64_t src_idx = offset, dest_idx = batch_idx; src_idx < offset + size;
@@ -355,7 +359,7 @@ private:
       base_->set_has_null(base_->has_null() || null_cnt > 0);
       is_all_null_ = is_all_null_ && size == null_cnt;
     } else {
-      // 全是notnull
+      // all are notnull
       is_all_null_ = false;
     }
   }

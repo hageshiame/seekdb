@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_DTL
@@ -97,13 +101,13 @@ int ObDtlBcastService::send_message(ObDtlLinkedBuffer *&bcast_buf, bool drain)
 {
   int ret = OB_SUCCESS;
   /**
-   * 一个broadcast组被接收端在同一台机器的发送channel共享。
-   * 假设三个发送channel共享此bcast service。一轮send消息，三个channel一定是在
-   * 发送同样的一个消息，如果是不同的消息则要报错。
-   * 前面两个channel send消息的时候，一定是计数的，并不真正的发送数据。
-   * 第三个channel发送数据的时候才会真正的发送数据。
-   * 发送的动作以后三个channel都会收到异步回包。
-   * 异步回报的对channel造成的状态更改会在channel下一次send的动作的时候得到生效。
+   * A broadcast group is shared by the sending channels on the same machine.
+   * Assuming three sending channels share this bcast service. In one round of send messages, the three channels must be
+   * sending the same message; if they are different messages, an error should be reported.
+   * When the first two channels send messages, they are counting and do not actually send data.
+   * Data is only sent when the third channel sends it.
+   * The action of sending will result in asynchronous responses from all three channels.
+   * State changes caused by asynchronous responses to a channel will take effect at the next send action of the channel.
    */
   ObCurTraceId::TraceId *cur_trace_id = NULL;
   if (OB_ISNULL(cur_trace_id = ObCurTraceId::get_trace_id()) || active_chs_count_ < 0) {
@@ -115,7 +119,7 @@ int ObDtlBcastService::send_message(ObDtlLinkedBuffer *&bcast_buf, bool drain)
     // a new buffer come into this broadcast group.
     bcast_buf_ = bcast_buf;
     send_count_ = bcast_ch_count_ - 1;
-    // 这里每次发送msg都会--，所以每次都需要重置active_chs_count_
+    // Here each time msg is sent, active_chs_count_ will be decremented, so it needs to be reset each time
     active_chs_count_ = bcast_ch_count_;
     bcast_buf = nullptr;
     if (drain) {
@@ -157,21 +161,13 @@ int ObDtlBcastService::send_message(ObDtlLinkedBuffer *&bcast_buf, bool drain)
           LOG_WARN("start message process fail", K(ret));
         }
       }
-      bool send_by_tenant = GET_MIN_CLUSTER_VERSION() >= CLUSTER_VERSION_4_3_5_0;
       if (OB_SUCC(ret)) {
-        if (send_by_tenant
-            && OB_FAIL(DTL.get_rpc_proxy()
+        if (OB_FAIL(DTL.get_rpc_proxy()
                        .to(server_addr_)
                        .group_id(share::OBCG_DTL)
                        .by(tenant_id_)
                        .timeout(timeout_us)
                        .ap_send_bc_message(args, &cb))) {
-          LOG_WARN("failed to seed message", K(ret));
-        } else if (!send_by_tenant
-                   && OB_FAIL(DTL.get_rpc_proxy()
-                                 .to(server_addr_)
-                                 .timeout(timeout_us)
-                                 .ap_send_bc_message(args, &cb))) {
           LOG_WARN("failed to seed message", K(ret));
         } else {
           // all rpc channel in this service has send this msg. this buffer will be release in agent.

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SERVER
@@ -189,7 +193,7 @@ int ObMPConnect::init_process_single_stmt(const ObMultiStmtItem &multi_stmt_item
   const ObString &sql = multi_stmt_item.get_sql();
   ObVirtualTableIteratorFactory vt_iter_factory(*gctx_.vt_iter_creator_);
   ObSchemaGetterGuard schema_guard;
-  // init_connect可以执行query和dml语句，必须加上req_timeinfo_guard
+  // init_connect can execute query and dml statements, must add req_timeinfo_guard
   observer::ObReqTimeGuard req_timeinfo_guard;
   //Do not change the order of SqlCtx and Allocator. ObSqlCtx uses the resultset's allocator to
   //allocate memory for ObSqlCtx::base_constraints_. The allocator must be deconstructed after sqlctx. 
@@ -207,7 +211,7 @@ int ObMPConnect::init_process_single_stmt(const ObMultiStmtItem &multi_stmt_item
   } else {
     //set session log_level.Must use ObThreadLogLevelUtils::clear() in pair
     ObThreadLogLevelUtils::init(session.get_log_id_level_map());
-    ctx.retry_times_ = 0; // 这里是建立连接的时候的初始化sql的执行，不重试
+    ctx.retry_times_ = 0; // This is the initialization SQL execution when establishing a connection, no retry
     ctx.schema_guard_ = &schema_guard;
     HEAP_VAR(ObMySQLResultSet, result, session, allocator) {
       result.set_has_more_result(has_more_result);
@@ -231,10 +235,9 @@ int ObMPConnect::init_process_single_stmt(const ObMultiStmtItem &multi_stmt_item
       }
       ObThreadLogLevelUtils::clear();
     }
-
-    //对于tracelog的处理，不影响正常逻辑，错误码无须赋值给ret
+    //For the handling of tracelog, it does not affect the normal logic, and the error code does not need to be assigned to ret
     int tmp_ret = OB_SUCCESS;
-    tmp_ret = do_after_process(session, false); // 不是异步回包
+    tmp_ret = do_after_process(session, false); // not asynchronous response
     UNUSED(tmp_ret);
   }
   return ret;
@@ -519,9 +522,8 @@ int ObMPConnect::load_privilege_info(ObSQLSessionInfo &session)
         ret = OB_ERR_INVALID_TENANT_NAME;
         LOG_WARN("invalid tenant name. “$” is not allowed in tenant name.", K(ret), K_(tenant_name));
       }
-
-      //在oracle租户下需要转换db_name和user_name,处理双引号和大小写
-      //在mysql租户下不会作任何处理,只简单拷贝下~
+      //Under the oracle tenant, db_name and user_name need to be converted, handling double quotes and case sensitivity
+      //Under the mysql tenant, no processing will be done, only a simple copy will be made~
       if (OB_SUCC(ret)) {
         if (db_name_.length() > OB_MAX_DATABASE_NAME_LENGTH ||
             user_name_.length() > OB_MAX_USER_NAME_LENGTH) {
@@ -560,7 +562,7 @@ int ObMPConnect::load_privilege_info(ObSQLSessionInfo &session)
         login_info.client_ip_ = client_ip_;
         SSL *ssl_st = SQL_REQ_OP.get_sql_ssl_st(req_);
         const ObUserInfo *user_info = NULL;
-        // 当 oracle 模式下，用户登录没有指定 schema_name 时，将其默认设置为对应的 user_name
+        // When in oracle mode, if the user login does not specify a schema_name, set it to the corresponding user_name by default
         if (OB_SUCC(ret) && ORACLE_MODE == session.get_compatibility_mode()  && db_name_.empty()) {
           login_info.db_ = user_name_;
         } else if (!db_name_.empty()) {
@@ -713,7 +715,7 @@ int ObMPConnect::load_privilege_info(ObSQLSessionInfo &session)
                                       tenant_id, schema_guard))) {
               LOG_WARN("get schema guard failed", K(ret), K(tmp_ret), K(tenant_id));
             } else if (OB_SUCCESS == inner_ret) {
-              //schema刷新成功，并且内部执行也没有出错，尝试重新登录
+              //Schema refresh successful, and no errors occurred during internal execution, attempt to re-login
               if (OB_FAIL(schema_guard.check_user_access(login_info, session_priv,
                     enable_role_id_array, ssl_st, user_info))) {
                 LOG_WARN("User access denied", K(login_info), K(ret));
@@ -831,7 +833,7 @@ int ObMPConnect::load_privilege_info(ObSQLSessionInfo &session)
               } else if (OB_SUCCESS != (tmp_ret = schema_guard.get_database_id(effective_tenant_id, session.get_database_name(), db_id))) {
                 LOG_WARN("failed to get database id", K(ret), K(tmp_ret));
               } else {
-                // 只有成功刷到schema时才重置错误码
+                // Only reset the error code when schema is successfully refreshed
                 ret = OB_SUCCESS;
               }
             }
@@ -1086,8 +1088,7 @@ int ObMPConnect::get_last_failed_login_info(
       ret = OB_ERR_UNEXPECTED;
       LOG_WARN("more than one row returned", K(ret));
     }
-
-    //清理result
+    //clean result
     /*
     int temp_ret = OB_SUCCESS;
     if (OB_SUCCESS != (temp_ret = result->close())) {
@@ -1452,8 +1453,7 @@ int ObMPConnect::get_client_create_time(int64_t &client_create_time) const
   }
   return ret;
 }
-
-//proxy连接方式时获取client->proxy的连接创建时间
+//proxy connection method when obtaining the client->proxy connection creation time
 int ObMPConnect::get_proxy_sess_create_time(int64_t &sess_create_time) const
 {
   int ret = OB_SUCCESS;
@@ -2045,7 +2045,7 @@ int ObMPConnect::convert_oracle_object_name(const uint64_t tenant_id, ObString &
   int ret = OB_SUCCESS;
   lib::Worker::CompatMode compat_mode = lib::Worker::CompatMode::MYSQL;
   if (object_name.empty()) {
-    //这里传进来的obj_name是可能为空的,所以不赋错误码
+    //Here the obj_name passed in may be empty, so no error code is assigned
     LOG_DEBUG("object name is null when try to convert it");
   } else if (OB_FAIL(ObCompatModeGetter::get_tenant_mode(tenant_id, compat_mode))) {
     LOG_WARN("fail to get tenant mode in convert_oracle_object_name", K(ret));
@@ -2053,8 +2053,8 @@ int ObMPConnect::convert_oracle_object_name(const uint64_t tenant_id, ObString &
     if (object_name.length() > 1 &&
         '\"' == object_name[0]   &&
         '\"' == object_name[object_name.length() - 1]) {
-      //如果object_name是带上了双引号,则不作任何转换
-      //如果只有"",则名字设置为空
+      //If object_name is enclosed in double quotes, then no conversion is made
+      //If it is only "", then the name is set to empty
       if (2 != object_name.length()) {
         object_name.assign_ptr(object_name.ptr() + 1, object_name.length() - 2);
       } else {
@@ -2084,11 +2084,11 @@ int ObMPConnect::set_proxy_version(ObSMConnection &conn)
       is_found = true;
     }
   }
-  int64_t min_len = 5;//传过来的合法version字符串最短的为“1.1.1”，长度至少为5
+  int64_t min_len = 5;//The shortest valid version string passed over is "1.1.1", with a length of at least 5
   if (!is_found || OB_ISNULL(proxy_version_str) || length < min_len) {
     conn.proxy_version_ = 0;
   } else {
-    const int64_t VERSION_ITEM = 3;//版本号只需要取前三位就行，比如“1.7.6.1” 只需要取“1.7.6” 就能决定；
+    const int64_t VERSION_ITEM = 3;//The version number only needs to take the first three digits, for example, "1.7.6.1" only needs to take "1.7.6" to determine;
     ObArenaAllocator allocator(ObModIds::OB_SQL_EXPR);
     char *buff = static_cast<char *>(allocator.alloc(length + 1));
     if (OB_ISNULL(buff)) {
@@ -2130,11 +2130,11 @@ int ObMPConnect::set_client_version(ObSMConnection &conn)
       is_found = true;
     }
   }
-  int64_t min_len = 5;//传过来的合法version字符串最短的为“1.1.1”，长度至少为5
+  int64_t min_len = 5;//The shortest valid version string passed over is "1.1.1", with a length of at least 5
   if (!is_found || OB_ISNULL(client_version_str) || length < min_len) {
     conn.client_version_ = 0;
   } else {
-    const int64_t VERSION_ITEM = 3;//版本号只需要取前三位就行，比如“1.7.6.1” 只需要取“1.7.6” 就能决定；
+    const int64_t VERSION_ITEM = 3;//The version number only needs the first three digits, for example, "1.7.6.1" only needs to take "1.7.6" to determine;
     char buff[OB_MAX_VERSION_LENGTH];
     memset(buff, 0, OB_MAX_VERSION_LENGTH);
     int64_t cur_item = 0;

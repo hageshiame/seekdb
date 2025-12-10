@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SERVER
@@ -97,9 +101,15 @@ ObInnerSQLConnection::TimeoutGuard::~TimeoutGuard()
     LOG_ERROR("get timeout failed", KR(ret), K(query_timeout), K(trx_timeout));
   } else {
     if (query_timeout != query_timeout_ || trx_timeout != trx_timeout_) {
+      #ifdef OB_BUILD_EMBED_MODE
+      if (conn_.get_session().is_inner() && OB_FAIL(conn_.set_session_timeout(query_timeout_, trx_timeout_))) {
+        LOG_ERROR("set session timeout failed", K(ret));
+      }
+      #else
       if (OB_FAIL(conn_.set_session_timeout(query_timeout_, trx_timeout_))) {
         LOG_ERROR("set session timeout failed", K(ret));
       }
+      #endif
     }
   }
 }
@@ -275,7 +285,7 @@ void ObInnerSQLConnection::unref()
         LOG_WARN("revert connection failed", K(ret));
       }
     } else {
-      // see 
+      // see
       // extern_session_ = NULL;
     }
   }
@@ -652,8 +662,7 @@ int ObInnerSQLConnection::process_record(sql::ObResultSet &result_set,
                                          ? EXECUTE_PS_EXECUTE :
                                            (is_from_pl ? EXECUTE_PL_EXECUTE : EXECUTE_INNER),
                                   session, sql_ctx.is_sensitive_);
-
-  // 临时allocator 申请的内存，需要在这里 置 NULL
+  // memory allocated by temporary allocator needs to be set to NULL here
   {
     audit_record.params_value_ = NULL;
     audit_record.params_value_len_ = 0;
@@ -711,7 +720,7 @@ int ObInnerSQLConnection::process_audit_record(sql::ObResultSet &result_set,
     audit_record.is_executor_rpc_ = false;
     audit_record.is_inner_sql_ = !is_from_pl;
     audit_record.is_hit_plan_cache_ = result_set.get_is_from_plan_cache();
-    audit_record.is_multi_stmt_ = false; //是否是multi sql
+    audit_record.is_multi_stmt_ = false; // whether it is multi sql
     audit_record.is_perf_event_closed_ = !lib::is_diagnose_info_enabled();
 
     ObIArray<ObTableRowCount> *table_row_count_list = NULL;
@@ -768,7 +777,7 @@ int ObInnerSQLConnection::do_query(sqlclient::ObIExecutor &executor, ObInnerSQLR
   WITH_CONTEXT(res.mem_context_) {
     // are there no restrictions on internal SQL such as refresh schema?
     // MEM_TRACKER_GUARD(CURRENT_CONTEXT);
-    // restore有自己的inner_sql_connection，sql_modifier不为null
+    // restore has its own inner_sql_connection, sql_modifier is not null
     bool is_restore = NULL != sql_modifier_;
     res.sql_ctx().is_restore_ = is_restore;
     get_session().set_process_query_time(ObTimeUtility::current_time());
@@ -815,7 +824,7 @@ int ObInnerSQLConnection::query(sqlclient::ObIExecutor &executor,
   exec_timestamp.exec_type_ = sql::InnerSql;
   const ObGlobalContext &gctx = ObServer::get_instance().get_gctx();
   int64_t start_time = ObTimeUtility::current_time();
-  get_session().set_query_start_time(start_time); //FIXME 暂时写成这样
+  get_session().set_query_start_time(start_time); //FIXME temporarily written like this
   get_session().set_trans_type(transaction::ObTxClass::SYS);
   int64_t abs_timeout_us = 0;
   int64_t execution_id = 0;
@@ -940,11 +949,11 @@ int ObInnerSQLConnection::query(sqlclient::ObIExecutor &executor,
             LOG_INFO("[OK] inner sql execute success after retry!", K(retry_cnt), K(total_time_cost_us));
           }
           get_session().set_session_in_retry(need_retry, ret_code);
-          //监控项统计开始
+          //Monitoring item statistics start
           execute_start_timestamp_ = (res.get_execute_start_ts() > 0)
                                       ? res.get_execute_start_ts()
                                       : ObTimeUtility::current_time();
-          //监控项统计结束
+          //Monitoring item statistics end
           execute_end_timestamp_ = (res.get_execute_end_ts() > 0)
                                     ? res.get_execute_end_ts()
                                     : ObTimeUtility::current_time();
@@ -2153,12 +2162,12 @@ int ObInnerSQLConnection::get_session_variable(const ObString &name, int64_t &va
     ret = OB_NOT_INIT;
     LOG_WARN("not init", K(ret));
   } else if (0 == name.case_compare("tx_isolation")) {
-    // 隔离级别是一个varchar值
+    // Isolation level is a varchar value
     ObObj obj;
     if (OB_FAIL(get_session().get_sys_variable_by_name(name, obj))) {
       LOG_WARN("get tx_isolation system variable value fail", K(ret), K(name));
     } else {
-      // varchar转换为int
+      // varchar conversion to int
       val = transaction::ObTransIsolation::get_level(obj.get_string());
     }
   } else {
@@ -2179,7 +2188,7 @@ int ObInnerSQLConnection::set_session_variable(const ObString &name, int64_t val
     }
     (void)get_session().set_check_sys_variable(0 != val);
   } else if (0 == name.case_compare("tx_isolation")) {
-    // 隔离级别是一个string
+    // Isolation level is a string
     ObObj obj;
     obj.set_varchar(transaction::ObTransIsolation::get_name(val));
     obj.set_collation_type(ObCharset::get_system_collation());
@@ -2404,7 +2413,9 @@ ObInnerSqlWaitGuard::~ObInnerSqlWaitGuard()
         ObLocalDiagnosticInfo::setup_diagnostic_info(prev_di_);
       } else {
         ObLocalDiagnosticInfo::reset_diagnostic_info();
-        LOG_WARN_RET(OB_ERR_UNEXPECTED, "prev di ptr is nullptr", K(prev_di_));
+        if (REACH_TIME_INTERVAL(5L * 1000L * 1000L)) {
+          LOG_WARN_RET(OB_ERR_UNEXPECTED, "prev di ptr is nullptr", K(prev_di_));
+        }
       }
     }
 

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -21,19 +25,19 @@ using namespace oceanbase::common;
 using namespace oceanbase::sql;
 
 /*
- * 本文件说明：
- * 为了提高效率，在反序列化流程上 ObPxNewRow 做了一些比较 trick 的事情
+ * This file describes:
+ * To improve efficiency, ObPxNewRow does some rather trick things in the deserialization process
  *
- * 一般流程：
+ * General process:
  *  obj -> netbuf -> transport -> netbuf -> obj -> use it
  *      sender           |            receiver
  *
- * ObPxNewRow 流程：
+ * ObPxNewRow process:
  *  obj -> netbuf -> transport -> netbuf -> copy netbuf to local buf -> obj -> use it
  *      sender           |            receiver
  *
- * 为什么要 copy netbuf to local buf 呢？因为 process(DtlMsg) 结束后 DtlMsg 还需要保持住，
- * 不能随着 process() 结束、netbuf 释放而释放
+ * Why copy netbuf to local buf? Because after process(DtlMsg) ends, DtlMsg still needs to be kept,
+ * cannot be released with the end of process() and the release of netbuf
  */
 
 void ObPxNewRow::set_eof_row()
@@ -87,7 +91,7 @@ OB_DEF_DESERIALIZE(ObPxNewRow)
       ret = OB_SERIALIZE_ERROR;
       LOG_WARN("invalid serialization data", K(pos), K(data_len), K_(row_cell_count), K(ret));
     } else {
-      // 延迟到 get_row 阶段读取 row 的 cells
+      // Delay reading row's cells until the get_row stage
       des_row_buf_ = (char*)buf + pos;
       des_row_buf_size_ = data_len - pos;
       pos += des_row_buf_size_;
@@ -95,12 +99,10 @@ OB_DEF_DESERIALIZE(ObPxNewRow)
   }
   return ret;
 }
-
-// 用于将 row 从 DTL 内存中拷贝到 get_next_row 上下文中对外吐出
-// 如果不拷贝，则 DTL process 调用结束后， row 的内存就会被释放,
-// get_next_row 中获得的将是非法内存引用
-
-// 将远端传来的 row 反序列出来，构造成 ObNewRow 结构
+// Used to copy row from DTL memory to get_next_row context for output
+// If not copied, the memory of row will be released after the DTL process call ends,
+// get_next_row will obtain an illegal memory reference
+// Deserialize the row received from the remote end and construct it into an ObNewRow structure
 
 int ObReceiveRowReader::add_buffer(dtl::ObDtlLinkedBuffer &buf, bool &transferred)
 {
@@ -398,8 +400,7 @@ int ObReceiveRowReader::get_next_row(const ObIArray<ObExpr*> &exprs,
 
   return ret;
 }
-
-// todo: shanting2.0 实现向量化接口，format为continuous。
+// todo: shanting2.0 implement vectorized interface, format as continuous.
 int ObReceiveRowReader::attach_rows(const common::ObIArray<ObExpr*> &exprs,
                                     const ObIArray<ObExpr*> &dynamic_const_exprs,
                                     ObEvalCtx &eval_ctx,

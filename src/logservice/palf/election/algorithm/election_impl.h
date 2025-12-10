@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef LOGSERVICE_PALF_ELECTION_ALGORITHM_OB_ELECTION_IMPL_H
@@ -67,8 +71,8 @@ public:
   virtual int change_leader_to(const common::ObAddr &dest_addr) override final;
   virtual int temporarily_downgrade_protocol_priority(const int64_t time_us, const char *reason) override final;
   /**
-   * @description: 返回选举对象当前的角色和epoch
-   * @param {ObRole} &role 当前的角色，LEADER always
+   * @description: Return the current role and epoch of the election object
+   * @param {ObRole} &role Current role, LEADER always
    * @param {int64_t} &epoch 1 always
    * @return {int} OB_SUCCESS always
    * @Date: 2025-07-16 19:57:06
@@ -83,8 +87,8 @@ public:
     return ret;
   }
   /**
-   * @description: 获取当前的leader及其epoch
-   * @param {common::ObAddr} 自己的addr
+   * @description: Get the current leader and its epoch
+   * @param {common::ObAddr} own addr
    * @param {int64_t} 1 always
    * @return {int} OB_SUCCESS always
    * @Date: 2025-07-16 19:56:06

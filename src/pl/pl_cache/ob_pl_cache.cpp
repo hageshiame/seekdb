@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2022 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX PL_CACHE
@@ -740,9 +744,9 @@ int ObPLObjectValue::match_dep_schema(const ObPLCacheCtx &pc_ctx,
   } else if (schema_array.count() != stored_schema_objs_.count()) {
     is_same = false;
   } else {
-    // oracle模式临时表实际上就是实表, 只需比较schema信息即可;
-    // mysql模式临时表不能用于trigger, sql语句的表依赖信息也不会加到存储过程依赖列表中
-    // 因此, 移除临时表比较sessid相关逻辑 
+    // oracle mode temporary table is actually a real table, just need to compare schema information;
+    // MySQL mode temporary tables cannot be used in triggers, and table dependency information for SQL statements will not be added to the stored procedure dependency list
+    // Therefore, remove the logic related to comparing sessid in the temporary table
     for (int64_t i = 0; OB_SUCC(ret) && is_same && i < schema_array.count(); i++) {
       if (OB_ISNULL(stored_schema_objs_.at(i))) {
         ret = OB_INVALID_ARGUMENT;

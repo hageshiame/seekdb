@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_OPT
@@ -60,13 +64,13 @@ int ObTablePartitionInfo::init_table_location(ObSqlSchemaGuard &schema_guard,
       LOG_WARN("fail to init table location", K(ret));
     }
   }
-  //判断并设置是否为复制表
+  // Judge and set whether it is a copy table
   if (OB_SUCC(ret)) {
     const ObTableSchema *table_schema = NULL;
     if (OB_FAIL(schema_guard.get_table_schema(table_id, ref_table_id, &stmt, table_schema))) {
       LOG_WARN("fail to get table schema", K(ref_table_id), K(ret));
     } else if (table_schema->is_duplicate_table()) {
-      //如果复制表本身有改动, 只能选择leader, 不再设置duplicate table属性
+      // If the replication table itself has been modified, only leader can be selected, do not set duplicate table attribute
       candi_table_loc_.set_duplicate_type(is_dml_table ? ObDuplicateType::DUPLICATE_IN_DML :
                                                                ObDuplicateType::DUPLICATE);
     }
@@ -99,8 +103,7 @@ int ObTablePartitionInfo::calculate_phy_table_location_info(
   }
   return ret;
 }
-
-// 全部选择主，并且将direction设上
+// Select all as leader, and set direction
 int ObTablePartitionInfo::calc_phy_table_loc_and_select_leader(ObExecContext &exec_ctx,
                                                                const ParamStore &params,
                                                                const common::ObDataTypeCastParams &dtc_params)
@@ -116,11 +119,11 @@ int ObTablePartitionInfo::calc_phy_table_loc_and_select_leader(ObExecContext &ex
     LOG_WARN("fail to all select leader", K(ret), K(candi_table_loc_));
     // 
     //
-    // 考虑没有 leader 的场景下，all_select_leader 一定会失败
-    // 导致 optimize 失败。optimize 失败后，不会进入执行期，进而
-    // 导致没有任何可用的 retry 信息被记录下来。
+    // Consider the scenario without a leader, all_select_leader will definitely fail
+    // Cause optimize failure. Optimize failure will not enter the execution phase, consequently
+    // Causes no available retry information to be recorded.
     //
-    // 所以：将当前info 加入到 exec ctx 中，这样才有机会重试刷新
+    // So: add the current info to the exec ctx, so there is a chance to retry refreshing
     //
     ObCandiTableLoc candi_table_loc;
     ObTaskExecutorCtx *task_exec_ctx = GET_TASK_EXECUTOR_CTX(exec_ctx);

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SQL_OB_CREATE_OUTLINE_STMT_H_
@@ -57,12 +61,12 @@ public:
   TO_STRING_KV(K_(create_outline_arg),
                K_(outline_stmt));
 private:
-  obrpc::ObCreateOutlineArg create_outline_arg_; //这个是需要在执行的过程中填充的，
-  common::ObString sql_id_; //给定sql_id的情况
-  common::ObString format_sql_id_; //给定sql_id的情况
-  common::ObString hint_; //给定的hint是什么
+  obrpc::ObCreateOutlineArg create_outline_arg_; // this is to be filled during execution,
+  common::ObString sql_id_; // given sql_idofcase
+  common::ObString format_sql_id_; // Given sql_id situation
+  common::ObString hint_; // What is the given hint
   int64_t max_concurrent_;
-  ObStmt *outline_stmt_;//the stmt for outline, 通过这个值是否为null来判断是那种情况
+  ObStmt *outline_stmt_;//the stmt for outline, determine the situation by whether this value is null or not
   DISALLOW_COPY_AND_ASSIGN(ObCreateOutlineStmt);
 };
 }//namespace sql

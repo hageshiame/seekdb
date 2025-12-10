@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_ENGINE_PX_OB_PX_SCHUDULER_H_
@@ -102,7 +106,7 @@ struct ObTempTableP2PInfo
   ObSEArray<ObDfo *, 4> dfos_;
   TO_STRING_KV(K(temp_access_ops_), K(dfos_));
 };
-// 这些信息是调度时候需要用的变量，暂时统一叫做CoordInfo
+// These information are variables used during scheduling, temporarily called CoordInfo
 class ObPxCoordInfo
 {
 public:
@@ -161,7 +165,7 @@ public:
   ObDfoMgr dfo_mgr_;
   ObPieceMsgCtxMgr piece_msg_ctx_mgr_;
   obrpc::ObPxRpcProxy rpc_proxy_;
-  bool all_threads_finish_; // QC 已经明确知道所有 task 都已经执行完成并释放了资源
+  bool all_threads_finish_; // QC has already clearly known that all tasks have been executed and resources have been released
   int first_error_code_;
   dtl::ObDtlChannelLoop &msg_loop_;
   ObInterruptibleTaskID &interrupt_id_;
@@ -226,8 +230,7 @@ public:
   int on_process_end(ObExecContext &ctx);
 
   void set_scheduler(ObDfoSchedulerBasic *scheduler) { scheduler_ = scheduler; }
-
-  // root dfo 的调度特殊路径
+  // root dfo's special scheduling path
   int on_dfo_pair_thread_inited(ObExecContext &ctx, ObDfo &child, ObDfo &parent);
   static int mark_rpc_filter(ObExecContext &ctx,
                              ObJoinFilterDataCtx &bf_ctx,

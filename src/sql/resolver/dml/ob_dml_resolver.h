@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SQL_RESOLVER_DML_OB_DML_RESOLVER_H_
@@ -217,6 +221,7 @@ public:
   int create_unnest_table_item(TableItem *&table_item, ObItemType item_type, ObString table_name);
   int rb_iterate_table_add_column(TableItem *&table_item, ColumnItem *&col_item, int64_t col_id = 1);
   int unnest_table_add_column(TableItem *&table_item, ColumnItem *&col_item, ObString col_name);
+  int resolve_hybrid_search_item(const ParseNode &parse_tree, TableItem *&table_item);
 
   int fill_same_column_to_using(JoinedTable* &joined_table);
   int get_columns_from_table_item(const TableItem *table_item, common::ObIArray<common::ObString> &column_names);
@@ -277,13 +282,13 @@ public:
   int transfer_to_inner_joined(const ParseNode &parse_node, JoinedTable *&joined_table);
   virtual int check_special_join_table(const TableItem &join_table, bool is_left_child, ObItemType join_type);
   /**
-   * 为一个 `JoinedTable` 分配内存
-   * @param joined_table 新的`JoinedTable`
+   * Allocate memory for a `JoinedTable`
+   * @param joined_table new `JoinedTable`
    */
   int alloc_joined_table_item(JoinedTable *&joined_table);
 
   /**
-   * 创建一个 joined table item
+   * Create a joined table item
    */
   int create_joined_table_item(const ObJoinType joined_type,
                                const TableItem *left_table,
@@ -487,6 +492,13 @@ protected:
     const ObTableSchema *table_schema,
     bool need_dist_algo_expr,
     ObRawExpr *&expr,
+    ObDMLStmt *stmt = NULL);
+  int fill_embedded_vec_expr_param(
+    const uint64_t table_id,
+    const uint64_t index_tid,
+    const uint64_t column_id,
+    const ObTableSchema *table_schema,
+    ObRawExpr *&vec_id_expr,
     ObDMLStmt *stmt = NULL);
   virtual int resolve_subquery_info(const common::ObIArray<ObSubQueryInfo> &subquery_info);
   virtual int resolve_inlist_info(common::ObIArray<ObInListInfo> &inlist_infos);
@@ -789,6 +801,7 @@ protected:
                                     const ObIArray<ObRawExprResType> &res_types,
                                     TableItem &table_item);
   int resolve_match_against_expr(ObMatchFunRawExpr &expr);
+  int resolve_es_match_expr(ObMatchFunRawExpr &expr);
 private:
   int resolve_function_table_column_item_udf(const TableItem &table_item,
                                              common::ObIArray<ColumnItem> &col_items);
@@ -894,6 +907,7 @@ private:
                               ObWindowDistHint::WinDistOption &dist_option,
                               bool &is_valid);
   int resolve_table_dynamic_sampling_hint(const ParseNode &hint_node, ObOptHint *&opt_hint);
+  int get_ddl_schema_in_insert_into_select_clause(const ObTableSchema *&ddl_table_schema);
 public:
   static int resolve_direct_load_hint(const ParseNode &hint_node, ObDirectLoadHint &hint);
   //////////end of functions for sql hint/////////////
@@ -938,9 +952,11 @@ private:
                          ObIArray<ObColumnRefRawExpr*> &values_desc,
                          ObRawExpr *&expr);
   int build_row_for_empty_values(ObIArray<ObRawExpr*> &values_vector);
+  int check_match_against_expr(ObIArray<ObMatchFunRawExpr*> &match_exprs, const ObStmtScope scope, bool &is_match);
   int resolve_match_against_exprs(ObRawExpr *&expr,
                                   ObIArray<ObMatchFunRawExpr*> &match_exprs,
                                   const ObStmtScope scope);
+  int resolve_match_against_expr_with_match_phrase_mode(ObRawExpr *&expr, ObMatchFunRawExpr *&cur_match_expr, const ObStmtScope scope);
   int resolve_match_index(const ColumnReferenceSet &match_column_set,
                           const ObTableSchema &table_schema,
                           ObMatchFunRawExpr &match_against);
@@ -973,7 +989,9 @@ private:
                                       common::ObIAllocator &allocator);
   int set_basic_info_for_mocked_table(ObTableSchema &table_schema,
                                       common::ObString table_location,
-                                      const ObExternalFileFormat &format);
+                                      const ObExternalFileFormat &format,
+                                      common::ObString sub_path = "",
+                                      bool using_location_object = false);
   int sample_external_file_name(common::ObIAllocator &allocator,
                                 ObTableSchema &table_schema,
                                 common::ObString &sampled_file_name);
@@ -997,10 +1015,10 @@ protected:
       K_(table_item),
       K_(column_name)
     );
-    ObRawExpr* dependent_expr_; //生成列的真实表达式
-    ObDMLStmt* stmt_; //生成列所在的stmt
-    TableItem* table_item_; //生成列所属表
-    common::ObString column_name_;  //生成列的名称
+    ObRawExpr* dependent_expr_; // real expression of the generated column
+    ObDMLStmt* stmt_; // the stmt where the generated column resides
+    TableItem* table_item_; // generate columnbelongs to table
+    common::ObString column_name_;  // generate column name
   };
   int add_parent_gen_col_exprs(const ObArray<GenColumnExprInfo> &gen_col_exprs);
 
@@ -1018,6 +1036,10 @@ protected:
       const ObDMLStmt &stmt, 
       bool &is_ddl,
       ObIndexType &index_type);
+  int check_need_fill_embedded_vec_expr_param(const ObDMLStmt &stmt,
+                                              const ObColumnSchemaV2 &column_schema,
+                                              bool &need_fill);
+
 protected:
   ObStmtScope current_scope_;
   int32_t current_level_;
@@ -1038,12 +1060,12 @@ protected:
   bool has_oracle_join_;
 
   /*
-   * 在with clause的解析中，我们不能将解析的表添加到影响此plan是否需要进入trans_service
-   * 的global_dependency_table中去。
-   * 例如：
+   * In the parsing of the with clause, we cannot add the parsed table to the global_dependency_table
+   * that affects whether this plan needs to enter trans_service.
+   * For example:
    * with cte (select * from t1) select 1 from dual;
-   * 如果加入了，上面这句将会进入trans_service，而之后则会报错，因为其实它检测到相关table的
-   * partition location为空。
+   * If added, the above statement will enter trans_service, and an error will be reported later because it actually detects that the related table's
+   * partition location is empty.
    * */
   bool with_clause_without_record_;
   bool is_prepare_stage_;

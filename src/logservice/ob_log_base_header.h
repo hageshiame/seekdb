@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_LOGSERVICE_OB_LOG_BASE_HEADER_
@@ -22,15 +26,15 @@ namespace oceanbase
 {
 namespace logservice
 {
-// ObReplayBarrierType为follower回放日志时的barrier类型, 分为以下三类
+// ObReplayBarrierType is the barrier type for follower log replay, divided into the following three categories
 // 1. STRICT_BARRIER:
-//    此日志能回放的前提条件为比此日志的log ts小的日志都已回放完,
-//    并且在此日志的回放完成之前, 比此日志的log ts大的日志都不会回放.
+//    The prerequisite condition for replaying this log is that all logs with a log ts smaller than this log have already been replayed,
+//    And before the replay of this log is complete, logs with a log ts greater than this log will not be replayed.
 // 2. PRE_BARRIER:
-//    此日志能回放的前提条件为比此日志的log ts小的日志都已回放完,
-//    但此日志的回放完成之前, 比此日志的log ts大的日志可以回放.
+//    The prerequisite condition for replaying this log is that all logs with a log ts smaller than this log have already been replayed,
+//    But the replay of this log can be completed before logs with a log ts greater than this log are replayed.
 // 3. NO_NEED_BARRIER:
-//    此日志无任何特殊回放条件, 也不会对其他日志的回放有任何影响
+//    This log has no special replay conditions and will not affect the replay of any other logs
 enum ObReplayBarrierType
 {
   INVALID_BARRIER = 0,

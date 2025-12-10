@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 #include "ob_log_external_storage_utils.h"
 #include "share/ob_device_manager.h"                          // ObDeviceManager
@@ -35,7 +39,7 @@ int get_and_init_io_device(const ObString &uri,
   opt.key_ = "storage_info";
   opt.value_.value_str = storage_info.ptr();
   share::ObBackupStorageInfo tmp_storage_info;
-  // TODO(zjf225077): 删除这一套ObLogExternalStorageIOTaskHandleAdapter，统一使用ObBackupIoAdapter
+  // TODO(zjf225077): Remove this set of ObLogExternalStorageIOTaskHandleAdapter, and unify the use of ObBackupIoAdapter
   ObStorageIdMod storage_id_mod(storage_id, ObStorageUsedMod::STORAGE_USED_CLOG);
   if (OB_FAIL(tmp_storage_info.set(uri.ptr(), storage_info.ptr()))) {
     CLOG_LOG(WARN, "set ObBackupStorageInfo failed", K(uri), KP(io_device));

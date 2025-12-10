@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SHARE
@@ -813,14 +817,13 @@ bool ObTenantLogArchiveStatus::is_compatible_valid(COMPATIBLE compatible)
 {
   return compatible >= COMPATIBLE::NONE && compatible < COMPATIBLE::MAX;
 }
-
-// 备份状态机
+// backup state machine
 // STOP->STOP
 // BEGINNING -> BEGINNING\DOING\STOPPING\INERRUPTED
 // DOING -> DOING\STOPPING\INERRUPTED
 // STOPPING -> STOPPIONG\STOP
 // INTERRUPTED -> INERRUPTED\STOPPING
-// 备份备份状态机
+// backup state machine
 // DOING->PAUSED\STOP
 // PAUSED->DOING
 int ObTenantLogArchiveStatus::update(const ObTenantLogArchiveStatus &new_status)
@@ -1051,13 +1054,6 @@ void ObLogArchiveBackupInfo::reset()
 bool ObLogArchiveBackupInfo::is_valid() const
 {
   return status_.is_valid();
-}
-
-//TODO(yaoying.yyy): S3 is alse oss?
-bool ObLogArchiveBackupInfo::is_oss() const
-{
-  ObString dest(backup_dest_);
-  return dest.prefix_match(OB_OSS_PREFIX);
 }
 
 bool ObLogArchiveBackupInfo::is_same(const ObLogArchiveBackupInfo &other) const
@@ -1316,9 +1312,6 @@ int ObBackupDest::parse_backup_dest_str_(const char *backup_dest, const bool onl
   } else if (OB_FAIL(get_storage_type_from_path(bakup_dest_str, type))) {
     LOG_WARN("failed to get storage type", K(ret));
   } else {
-    // oss://backup_dir/?host=xxx.com&access_id=111&access_key=222
-    // oss://backup_dir/?host=xxx.com&role_arn=xxx&external_id=xxx
-    // oss://backup_dir/?host=xxx.com&role_arn=xxx (external_id is optional)
     // file:///root_backup_dir"
     while (backup_dest[pos] != '\0') {
       if ('?' == backup_dest[pos]) {
@@ -1498,7 +1491,6 @@ int ObBackupDest::set_without_decryption(const common::ObString &backup_dest) {
   return ret;
 }
 
-// oss://backup_dir/?host=xxx.com -> root_path=oss://backup_dir  endpoint=host=xxx.com
 // file:///root_backup_dir" -> root_path=file:///root_backup_dir
 int ObBackupDest::set_storage_path(const common::ObString &storage_path_str) 
 {

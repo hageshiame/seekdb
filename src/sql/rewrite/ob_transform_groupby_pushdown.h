@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OB_TRANSFORM_GROUPBY_PUSHDOWN_H
@@ -128,7 +132,7 @@ private:
       ret = OB_ERR_UNEXPECTED;
       LOG_WARN("unexpected null", K(ret));
     } else {
-      support_cross_join = stmt->get_query_ctx()->check_opt_compat_version(COMPAT_VERSION_4_3_5_BP2);
+      support_cross_join = true;
     }
     return ret;
   }
@@ -385,9 +389,8 @@ private:
     }
     return num;
   }
-
-  // TODO 这个函数在更新的版本中已经存在于ObTransformUtils里面了，但是这个版本还没有
-  // 所以先自己写一个，合并的时候再处理
+  // TODO This function already exists in ObTransformUtils in the updated version, but not in this version
+  // So first write one yourself, handle it when merging
   int create_aggr_expr(ObTransformerCtx *ctx, ObItemType type,
                        ObAggFunRawExpr *&agg_expr, ObRawExpr *child_expr);
 

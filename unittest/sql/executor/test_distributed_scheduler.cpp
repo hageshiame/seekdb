@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include <gtest/gtest.h>
@@ -188,20 +192,19 @@ int ObDistributedSchedulerTest::create_plan_tree(ObExecContext &ctx)
   col2.column_name_ = ObString::make_string("b");
   //EXPECT_EQ(OB_SUCCESS, single_range_columns.push_back(col2));
   ref_col2.add_flag(IS_COLUMN);
-
-  // 构造 (a = ?)
+  // construct (a = ?)
   ObObj index1;
   index1.set_unknown(0);
   ObConstRawExpr const_col1(index1, T_QUESTIONMARK);
   const_col1.add_flag(IS_STATIC_PARAM);
-  ObOpRawExpr condition1(&ref_col1, &const_col1, T_OP_EQ); // a = ?构造完毕
-  // 构造 (b > ?)
+  ObOpRawExpr condition1(&ref_col1, &const_col1, T_OP_EQ); // a = ? construction completed
+  // construct (b > ?)
   ObObj index2;
   index2.set_unknown(1);
   ObConstRawExpr const_col2(index2, T_QUESTIONMARK);
   const_col2.add_flag(IS_STATIC_PARAM);
-  ObOpRawExpr condition2(&ref_col2, &const_col2, T_OP_GT); // b > ?构造完毕
-  ObOpRawExpr condition3(&condition1, &condition2, T_OP_AND); // a = ? and b > ?构造完毕
+  ObOpRawExpr condition2(&ref_col2, &const_col2, T_OP_GT); // b > ? construction completed
+  ObOpRawExpr condition3(&condition1, &condition2, T_OP_AND); // a = ? and b > ? construction completed
 
   ObArray<ColumnItem> scan_range_columns;
   EXPECT_EQ(OB_SUCCESS, scan_range_columns.push_back(col2));
@@ -321,8 +324,7 @@ int ObDistributedSchedulerTest::exception_test()
 TEST_F(ObDistributedSchedulerTest, basic_test)
 {
   int ret = OB_SUCCESS;
-
-  //启动模拟收包队列
+  // Start simulation packet receiving queue
   ObMockPacketQueueThread::get_instance()->start();
 
   int64_t remain_time_us = 1000 * 1000;

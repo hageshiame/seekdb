@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_EXE
@@ -107,10 +111,10 @@ int ObRemoteScheduler::execute_with_plan(ObExecContext &ctx, ObPhysicalPlan *phy
       local_job_executor.set_job(*root_job);
       remote_job_executor.set_task_executor(remote_task_executor);
       remote_job_executor.set_job(*remote_job);
-      // 说明：本函数阻塞地将RemoteJob发送到远端，发送成功后本函数返回
-      // 最终控制权会进入到LocalJob中的ObDirectReceive中,
-      // 它通过get_stream_handler()来获得当前handler
-      // 然后阻塞等待在handler上收取返回结果
+      // Description: This function blocks sending RemoteJob to the remote, and returns after successful transmission
+      // Final control will enter ObDirectReceive in LocalJob,
+      // It obtains the current handler through get_stream_handler()
+      // Then block waiting to receive the result on handler
       if (OB_FAIL(remote_job_executor.execute(ctx))) {
         LOG_WARN("fail execute remote job", K(ret));
       } else if (OB_FAIL(local_job_executor.execute(ctx))) {
@@ -120,7 +124,7 @@ int ObRemoteScheduler::execute_with_plan(ObExecContext &ctx, ObPhysicalPlan *phy
   }
 
   if (OB_FAIL(ret)) {
-    // 出错了，打印job的状态，包括它的位置，rpc是否已经发出去等等
+    // An error occurred, print the job status, including its position, whether the rpc has been sent, etc.
     int print_ret = OB_SUCCESS;
     const static int64_t MAX_JC_STATUS_BUF_LEN = 4096;
     char jc_status_buf[MAX_JC_STATUS_BUF_LEN];
@@ -216,7 +220,7 @@ int ObRemoteScheduler::execute_with_sql(ObExecContext &ctx, ObPhysicalPlan *phy_
     LOG_ERROR("unexpected null ptr",
               K(ret), K(session), K(plan_ctx), K(handler), K(rpc), K(retry_info));
   } else if (FALSE_IT(handler->set_use_remote_protocol_v2())) {
-    //使用新的remote sync execute协议
+    // Use the new remote sync execute protocol
   } else if (OB_FAIL(handler->reset_and_init_result())) {
     LOG_WARN("fail to reset and init result", K(ret));
   } else if (OB_FAIL(build_remote_task(ctx, task, phy_plan->get_dependency_table()))) {
@@ -264,9 +268,9 @@ int ObRemoteScheduler::execute_with_sql(ObExecContext &ctx, ObPhysicalPlan *phy_
                                                             ctx);
     NG_TRACE_EXT(remote_task_completed, OB_ID(ret), ret,
                  OB_ID(runner_svr), task.get_runner_svr(), OB_ID(task), task);
-    // 说明：本函数返回后，最终控制权会进入到ObDirectReceive中,
-    // 它通过get_stream_handler()来获得当前handler
-    // 然后阻塞等待在handler上收取返回结果
+    // Description: After this function returns, the final control will enter ObDirectReceive,
+    // It obtains the current handler through get_stream_handler()
+    // Then block waiting to receive the result on handler
   }
   return ret;
 }

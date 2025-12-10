@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -365,6 +369,9 @@
 #include "sql/engine/expr/ob_expr_spiv_dim.h"
 #include "sql/engine/expr/ob_expr_spiv_value.h"
 #include "sql/engine/expr/ob_expr_vector.h"
+#include "sql/engine/expr/ob_expr_semantic_distance.h"
+#include "sql/engine/expr/ob_expr_vec_chunk.h"
+#include "sql/engine/expr/ob_expr_embedded_vec.h"
 #include "sql/engine/expr/ob_expr_inner_table_option_printer.h"
 #include "sql/engine/expr/ob_expr_rb_build_empty.h"
 #include "sql/engine/expr/ob_expr_rb_is_empty.h"
@@ -433,7 +440,13 @@
 #include "sql/engine/expr/ob_expr_current_catalog.h"
 #include "sql/engine/expr/ob_expr_check_catalog_access.h"
 #include "sql/engine/expr/ob_expr_oracle_to_char.h"
-
+#include "sql/engine/expr/ob_expr_semantic_distance.h"
+#include "sql/engine/expr/ob_expr_ai/ob_expr_ai_complete.h"
+#include "sql/engine/expr/ob_expr_ai/ob_expr_ai_embed.h"
+#include "sql/engine/expr/ob_expr_ai/ob_expr_ai_rerank.h"
+#include "sql/engine/expr/ob_expr_ai/ob_expr_ai_prompt.h"
+#include "sql/engine/expr/ob_expr_vector_similarity.h"
+#include "sql/engine/expr/ob_expr_check_location_access.h"
 
 
 #include "sql/engine/expr/ob_expr_lock_func.h"
@@ -461,10 +474,9 @@ static AllocFunc                                                                
       }                                             \
     }();                                            \
   } while(0)
-
-// 当要开发两个功能完全一致的表达式时（例如mid和substr两个表达式）可以使用这个宏
-// OriOp是已有的表达式，现在想要开发NewOp且二者功能完全一致，使用该宏就可以避免重复代码
-// 但是要求OriOp已经先注册了
+// When developing two functionally identical expressions (e.g., mid and substr expressions) you can use this macro
+// OriOp is the existing expression, now we want to develop NewOp with the same functionality, using this macro can avoid duplicate code
+// But require OriOp has already registered
 #define REG_SAME_OP(OriOpType, NewOpType, NewOpName, idx_mysql)        \
   do {                                                                 \
     [&]() {                                                            \
@@ -496,8 +508,7 @@ static AllocFunc                                                                
       }                                             \
     }();                                            \
   } while(0)
-
-// 用于Oracle模式下注册相同功能的表达式
+// Used for registering the same function expression in Oracle mode
 #define REG_SAME_OP_ORCL(OriOpType, NewOpType, NewOpName, idx_oracle)      \
   do {                                                                     \
     [&]() {                                                                \
@@ -569,10 +580,10 @@ void ObExprOperatorFactory::register_expr_operators()
   int64_t i = 0;
   int64_t j = 0;
   /*
-  --REG_OP用于mysql租户注册，REG_OP_ORCL用于oracle租户系统函数注册
-  --如果同一函数既要在mysql租户下使用也需在oracle使用，且已实现兼容
-  --请使用REG_OP()以及REG_OP_ORCL()分别注册
-  为了格式，请在函数末尾oracle系统函数集中区域注册
+  --REG_OP is used for mysql tenant registration, REG_OP_ORCL is used for oracle tenant system function registration
+  --If the same function needs to be used under both mysql tenant and oracle, and compatibility has been implemented
+  --Please use REG_OP() and REG_OP_ORCL() respectively for registration
+  For formatting, please register in the oracle system function section at the end of the function
   */
   [&]() {
     REG_OP(ObExprAdd);
@@ -1033,6 +1044,8 @@ void ObExprOperatorFactory::register_expr_operators()
     REG_OP(ObExprVecScn);
     REG_OP(ObExprVecKey);
     REG_OP(ObExprVecData);
+    REG_OP(ObExprVecChunk);
+    REG_OP(ObExprEmbeddedVec);
     REG_OP(ObExprSpivDim);
     REG_OP(ObExprSpivValue);
     REG_OP(ObExprVectorL2Distance);
@@ -1043,6 +1056,12 @@ void ObExprOperatorFactory::register_expr_operators()
     REG_OP(ObExprVectorDims);
     REG_OP(ObExprVectorNorm);
     REG_OP(ObExprVectorDistance);
+    REG_OP(ObExprSemanticDistance);
+    REG_OP(ObExprSemanticVectorDistance);
+    REG_OP(ObExprVectorL2Similarity);
+    REG_OP(ObExprVectorCosineSimilarity);
+    REG_OP(ObExprVectorIPSimilarity);
+    REG_OP(ObExprVectorSimilarity);
     REG_OP(ObExprInnerTableOptionPrinter);
     REG_OP(ObExprInnerTableSequenceGetter);
     REG_OP(ObExprRbBuildEmpty);
@@ -1136,6 +1155,11 @@ void ObExprOperatorFactory::register_expr_operators()
     REG_OP(ObExprCheckCatalogAccess);
     REG_OP(ObExprInnerInfoColsColumnKeyPrinter);
     REG_OP(ObExprVectorL2Squared);
+    REG_OP(ObExprAIComplete);
+    REG_OP(ObExprAIEmbed);
+    REG_OP(ObExprAIRerank);
+    REG_OP(ObExprAIPrompt);
+    REG_OP(ObExprCheckLocationAccess);
   }();
 }
 
@@ -1272,12 +1296,16 @@ void ObExprOperatorFactory::get_function_alias_name(const ObString &origin_name,
       alias_name = ObString::make_string(N_VEC_TYPE);
     } else if (0 == origin_name.case_compare("VEC_VECTOR")) {
       alias_name = ObString::make_string(N_VEC_VECTOR);
+    } else if (0 == origin_name.case_compare("EMBEDDED_VEC")) {
+      alias_name = ObString::make_string(N_EMBEDDED_VEC);
     } else if (0 == origin_name.case_compare("VEC_SCN")) {
       alias_name = ObString::make_string(N_VEC_SCN);
     } else if (0 == origin_name.case_compare("VEC_KEY")) {
       alias_name = ObString::make_string(N_VEC_KEY);
     } else if (0 == origin_name.case_compare("VEC_DATA")) {
       alias_name = ObString::make_string(N_VEC_DATA);
+    } else if (0 == origin_name.case_compare("VEC_CHUNK")) {
+      alias_name = ObString::make_string(N_VEC_CHUNK);
     } else if (0 == origin_name.case_compare("SPIV_DIM")) {
       alias_name = ObString::make_string(N_SPIV_DIM); 
     } else if (0 == origin_name.case_compare("SPIV_VALUE")) {
@@ -1306,6 +1334,8 @@ void ObExprOperatorFactory::get_function_alias_name(const ObString &origin_name,
     } else if (0 == origin_name.case_compare("centroid")) {
       // centroid is synonym for st_centroid
       alias_name = ObString::make_string(N_ST_CENTROID);
+    } else if (0 == origin_name.case_compare("semantic_distance")) {
+      alias_name = ObString::make_string(N_SEMANTIC_DISTANCE);
     } else {
       //do nothing
     }

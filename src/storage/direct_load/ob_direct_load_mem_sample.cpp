@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 #define USING_LOG_PREFIX STORAGE
 
@@ -94,8 +98,7 @@ int ObDirectLoadMemSample::do_work()
     LOG_WARN("fail to init context", KR(ret));
   } else if (OB_FAIL(context_ptr->mem_chunk_array_.assign(chunks))) {
     LOG_WARN("fail to assgin chunks", KR(ret));
-
-    //出错以后释放chunks
+    // Release chunks after an error
     context_ptr->mem_chunk_array_.reset();
     for (int64_t i = 0; i < chunks.count(); i ++) {
       ChunkType *chunk = chunks.at(i);
@@ -152,7 +155,7 @@ int ObDirectLoadMemSample::do_sample()
         }
       }
       if (OB_SUCC(ret)) {
-        while (mem_ctx_->running_dump_task_cnt_ > 0 && OB_LIKELY(!mem_ctx_->has_error_)) { //等待所有的merge做完
+        while (mem_ctx_->running_dump_task_cnt_ > 0 && OB_LIKELY(!mem_ctx_->has_error_)) { // wait for all merges to complete
           usleep(100000);
         }
       }
@@ -174,7 +177,7 @@ int ObDirectLoadMemSample::do_sample()
     }
   }
   if (OB_UNLIKELY(ret != OB_SUCCESS || mem_ctx_->has_error_)) {
-    mem_ctx_->mem_dump_queue_.push(nullptr); //出错了，让dump结束，避免卡死
+    mem_ctx_->mem_dump_queue_.push(nullptr); // An error occurred, let the dump end to avoid deadlock
   }
   return ret;
 }

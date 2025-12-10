@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef _OB_FAKE_CTE_TABLE_OP_H
@@ -42,8 +46,7 @@ public:
       K_(is_bulk_search), K_(is_union_distinct));
 
   virtual ~ObFakeCTETableSpec() {}
-
-  //数组下标指的是output_里面的下标，数组内容是在cte表中原始列的偏移位置
+  // Array index refers to the index inside output_, array content is the offset position of the original column in the cte table
   common::ObFixedArray<int64_t, common::ObIAllocator> column_involved_offset_;
   common::ObFixedArray<ObExpr *, common::ObIAllocator> column_involved_exprs_;
   //for breadth search first
@@ -83,7 +86,7 @@ public:
                   int64_t cnt, const common::ObIArray<int64_t> &chosen_datums,
                   char *buf, const int64_t size, const int64_t row_size,
                   const uint32_t row_extend_size);
-  //从src_row中拷贝chosen_index中包含的cell到dst_row中
+  // Copy cells included in chosen_index from src_row to dst_row
   int deep_copy_row(const ObChunkDatumStore::StoredRow *src_row,
                     const ObChunkDatumStore::StoredRow *&dst_row,
                     const common::ObIArray<int64_t> &chosen_index,

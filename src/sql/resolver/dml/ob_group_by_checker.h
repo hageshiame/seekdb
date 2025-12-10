@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SRC_SQL_RESOLVER_DML_OB_GROUP_BY_CHECKER_H_
@@ -82,8 +86,8 @@ private:
   bool only_need_contraints_;
   const ParamStore *param_store_;
 private:
-  // Top select stmt 是指当前调用group by checker的select_stmt，不是select_stmt的level
-  // 其他select_stmt会每进入一层，递增一层，同时检查结束退出，会递减一层
+  // Top select stmt refers to the current select_stmt calling the group by checker, not the level of the select_stmt
+  // Other select_stmt will increment by one level each time it enters a layer, and decrement by one level when checking for exit and exiting
   bool is_top_select_stmt() { return 0 == level_; }
   void set_skip_expr(ObRawExpr *expr) { skip_expr_ = expr; }
   void set_query_ctx(ObQueryCtx *query_ctx) { query_ctx_ = query_ctx; }
@@ -110,8 +114,8 @@ public:
                             bool only_need_constraints);
   static int check_analytic_function(const ParamStore *param_store,
                                      ObSelectStmt *ref_stmt,
-                                     common::ObIArray<ObRawExpr *> &arg_exp_arr,        //等价于查询项中表达式
-                                     common::ObIArray<ObRawExpr *> &partition_exp_arr); //等价于group by项
+                                     common::ObIArray<ObRawExpr *> &arg_exp_arr,        // equivalent to expressions in the query items
+                                     common::ObIArray<ObRawExpr *> &partition_exp_arr); // equivalent to group by items
 };
 
 }

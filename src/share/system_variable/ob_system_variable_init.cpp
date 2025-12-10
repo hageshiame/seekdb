@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SHARE
@@ -26,15 +30,15 @@ static ObArenaAllocator ObSysVarAllocator(ObModIds::OB_COMMON_SYS_VAR_DEFAULT_VA
 static ObObj ObSysVarBaseValues[ObSysVarFactory::ALL_SYS_VARS_COUNT];
 static ObArenaAllocator ObBaseSysVarAllocator(ObModIds::OB_COMMON_SYS_VAR_DEFAULT_VALUE);
 static int64_t ObSysVarsIdToArrayIdx[ObSysVarFactory::OB_MAX_SYS_VAR_ID];
-// VarsInit中需要判断当前最大的SysVars对应的id，是否大于OB_MAX_SYS_VAR_ID
-// 如果大于OB_MAX_SYS_VAR_ID表示存在无效的SysVarsId
+// VarsInit needs to determine if the id of the current largest SysVars is greater than OB_MAX_SYS_VAR_ID
+// If greater than OB_MAX_SYS_VAR_ID indicates the existence of an invalid SysVarsId
 static bool HasInvalidSysVar = false;
 
 static struct VarsInit{
   VarsInit(){
-    // 保存当前系统变量的最大的id
+    // Save the maximum id of the current system variables
     int64_t cur_max_var_id = 0;
-    // ObSysVarsIdToArrayIdx数组默认初始值为-1，-1表示无效索引
+    // The default initial value of the ObSysVarsIdToArrayIdx array is -1, -1 indicates an invalid index
     memset(ObSysVarsIdToArrayIdx, -1, sizeof(ObSysVarsIdToArrayIdx));
     [&] (){
       ObSysVars[0].default_value_ = "1" ;
@@ -3306,7 +3310,7 @@ static struct VarsInit{
     }();
 
     [&] (){
-      ObSysVars[234].default_value_ = "4.3.5.3" ;
+      ObSysVars[234].default_value_ = "1.0.0.0" ;
       ObSysVars[234].info_ = "enabling a series of optimizer features based on an OceanBase release number" ;
       ObSysVars[234].name_ = "optimizer_features_enable" ;
       ObSysVars[234].data_type_ = ObVarcharType ;

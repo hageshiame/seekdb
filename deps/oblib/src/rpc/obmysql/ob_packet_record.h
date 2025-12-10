@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef _OB_MYSQL_OB_PACKET_RECORD_H_
@@ -25,8 +29,8 @@ namespace obmysql
 
 struct ResRecordFlags {
   uint8_t is_send_: 1; // 0-send, 1-receive
-  uint8_t processed_: 1; // 请求处理结束，发送包后将会标记该位。
-  uint8_t reservered_: 8; // 其余位用于特殊标记
+  uint8_t processed_: 1; // Request processing finished, this bit will be marked after sending the packet.
+  uint8_t reservered_: 8; // The remaining bits are used for special markers
 };
 
 struct Obp20Header {
@@ -65,9 +69,9 @@ struct Obp20Header {
 struct ObpMysqHeader {
   union {
     uint32_t len_;
-    uint32_t pkt_num_; // 表示row packet/feild packet的数量。
+    uint32_t pkt_num_; // indicates the number of row packets/field packets.
   } mysql_header_;
-  uint32_t rec_; // 表示目前收到多少byte的mysql包。
+  uint32_t rec_; // indicates how many bytes of the mysql packet have been received.
   uint32_t com_len_; // compress head len
   uint8_t seq_;
   uint8_t type_;

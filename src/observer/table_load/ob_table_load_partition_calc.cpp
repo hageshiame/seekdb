@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SERVER
@@ -71,18 +75,18 @@ int ObTableLoadPartitionCalc::init(const ObTableLoadParam &param,
       LOG_WARN("fail to get table schema", KR(ret), K(tenant_id), K(table_id));
     } else {
       const bool is_partitioned = table_schema->is_partitioned_table();
-      if (!is_partitioned) {  // 非分区表
+      if (!is_partitioned) {  // non-partitioned table
         if (OB_FAIL(table_schema->get_tablet_and_object_id(partition_id_.tablet_id_,
                                                           partition_id_.partition_id_))) {
           LOG_WARN("fail to get tablet and object", KR(ret));
         }
-      } else {  // 分区表
-        // 初始化table_location_
+      } else {  // partition table
+        // Initialize table_location_
         if (OB_FAIL(
               table_location_.init_partition_ids_by_rowkey2(exec_ctx_, *session_info, schema_guard_, table_id))) {
           LOG_WARN("fail to init table location", KR(ret));
         }
-        // 获取part_key_obj_index_
+        // get part_key_obj_index_
         else if (OB_FAIL(init_part_key_index(table_schema, allocator_))) {
           LOG_WARN("fail to get rowkey index", KR(ret));
         } else if (ObDirectLoadLevel::PARTITION == param.load_level_) {

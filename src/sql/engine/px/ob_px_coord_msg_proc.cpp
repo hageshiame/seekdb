@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -16,9 +20,8 @@
 
 using namespace oceanbase::common;
 using namespace oceanbase::sql;
-
-// ObDhWholeeMsgProc 仅用于本 cpp 文件，所以可以放在这里
-// 专用于处理 datahub whole 消息的逻辑
+// ObDhWholeeMsgProc is only used in this cpp file, so it can be placed here
+// Dedicated to processing datahub whole messages logic
 template <typename WholeMsg>
 class ObDhWholeeMsgProc
 {
@@ -59,22 +62,21 @@ int ObPxSubCoordMsgProc::on_receive_data_ch_msg(
 {
   int ret = OB_SUCCESS;
   // FIXME:
-  // 如果 dfo 里有两个 receive，他们调用获取 channel 的时机不确定，
-  // 那么它们可能拿到错误的 channel（搞反了）
-  // 为了避免这种情况，采取共享内存的方式，由 receive op 自己去判断 channel 是否属于自己
+  // If there are two receives in dfo, the timing of their calls to get the channel is uncertain,
+  // Then they might get the wrong channel (got it backwards)
+  // To avoid this situation, a shared memory approach is taken, where the receive op itself determines whether the channel belongs to it
   if (OB_FAIL(sqc_ctx_.receive_data_ch_provider_.add_msg(pkt))) {
     LOG_WARN("fail set receive channel msg to ch provider", K(ret));
   }
   return ret;
 }
-
-// NOTE：QC、Task 都可以中断 SQC，如果 SQC 处于收消息流程中，会调用本方法
-// 如果 SQC 已经离开了收消息流程，则不会触发本方法。
+// NOTE: QC, Task can both interrupt SQC, if SQC is in the message receiving process, this method will be called
+// If SQC has already left the message receiving process, this method will not be triggered.
 int ObPxSubCoordMsgProc::on_interrupted(const ObInterruptCode &ic) const
 {
   int ret = OB_SUCCESS;
   sqc_ctx_.interrupted_ = true;
-  // 抛出错误码到主处理路程，结束 SQC
+  // Throw error code to main processing routine, end SQC
   ret = ic.code_;
   LOG_TRACE("sqc received a interrupt and throw out of msg proc", K(ic));
   return ret;

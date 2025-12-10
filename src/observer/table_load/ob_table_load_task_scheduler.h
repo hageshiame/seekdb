@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #pragma once
@@ -45,7 +49,7 @@ private:
 class ObTableLoadTaskThreadPoolScheduler final : public ObITableLoadTaskScheduler
 {
   static const int64_t DEFAULT_TIMEOUT_US = 10LL * 1000 * 1000; // 10s
-  // 运行状态
+  // Running status
   static const int STATE_ZERO = 0;
   static const int STATE_STARTING = 1;
   static const int STATE_RUNNING = 2;
@@ -76,9 +80,9 @@ private:
   {
     return state_ == STATE_RUNNING;
   }
-  // 启动成功才会调用
+  // Will be called only if startup is successful
   void before_running();
-  // 启动失败也可能调用
+  // Startup failure may also call
   void after_running();
   void clear_all_task();
 private:
@@ -101,7 +105,7 @@ private:
     int64_t worker_id_;
     common::ObThreadCond cond_;
     bool need_signal_;
-    common::LightyQueue task_queue_; // 多线程安全
+    common::LightyQueue task_queue_; // thread-safe
   };
   int execute_worker_tasks(WorkerContext &worker_ctx);
 private:

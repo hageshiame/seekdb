@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SRC_SHARE_SCHEMA_OB_TRIGGER_INFO_H_
@@ -662,10 +666,10 @@ protected:
   ObPackageInfo package_body_info_;
   uint64_t sql_mode_;
   common::ObString priv_user_;
-  OrderType order_type_;                    // trigger指定的排序方式
-  common::ObString ref_trg_db_name_;              // 排序方式中指定的trigger的db name
-  common::ObString ref_trg_name_;                 // 排序方式中指定的trigger的name
-  int64_t action_order_;                          // 该值在rs端计算,从系统表里面读出来的值是有意义的
+  OrderType order_type_;                    // sorting method specified by trigger
+  common::ObString ref_trg_db_name_;              // db name of the trigger specified in the sorting method
+  common::ObString ref_trg_name_;                 // The name of the trigger specified in the sorting method
+  int64_t action_order_;                          // This value is calculated on the rs side, and the value read from the system table is meaningful.
   union {
     uint64_t analyze_flag_;
     struct {

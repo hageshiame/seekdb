@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OBDEV_SRC_SQL_ENGINE_CONNECTOR_OB_JNI_CONNECTOR_H_
@@ -28,95 +32,95 @@ class ObJniConnector {
 public:
   enum OdpsType {
     /**
-     * 8字节有符号整型
+     * 8-byte signed integer
      */
     BIGINT,
     /**
-     * 双精度浮点
+     * double precision floating point
      */
     DOUBLE,
     /**
-     * 布尔型
+     * Boolean
      */
     BOOLEAN,
     /**
-     * 日期类型
+     * Date type
      */
     DATETIME,
     /**
-     * 字符串类型
+     * string type
      */
     STRING,
     /**
-     * 精确小数类型
+     * precise decimal type
      */
     DECIMAL,
     /**
-     * MAP类型
+     * MAP type
      */
     MAP,
     /**
-     * ARRAY类型
+     * ARRAY type
      */
     ARRAY,
     /**
-     * 空
+     * empty
      */
     VOID,
     /**
-     * 1字节有符号整型
+     * 1 byte signed integer
      */
     TINYINT,
     /**
-     * 2字节有符号整型
+     * 2-byte signed integer
      */
     SMALLINT,
     /**
-     * 4字节有符号整型
+     * 4-byte signed integer
      */
     INT,
     /**
-     * 单精度浮点
+     * single precision float
      */
     FLOAT,
     /**
-     * 固定长度字符串
+     * Fixed length string
      */
     CHAR,
     /**
-     * 可变长度字符串
+     * variable length string
      */
     VARCHAR,
     /**
-     * 时间类型
+     * Time type
      */
     DATE,
     /**
-     * 时间戳
+     * timestamp
      */
     TIMESTAMP,
     /**
-     * 字节数组
+     * byte array
      */
     BINARY,
     /**
-     * 日期间隔
+     * Date interval
      */
     INTERVAL_DAY_TIME,
     /**
-     * 年份间隔
+     * Year interval
      */
     INTERVAL_YEAR_MONTH,
     /**
-     * 结构体
+     * structure
      */
     STRUCT,
     /**
-     * JSON类型
+     * JSON type
      */
     JSON,
     /**
-     * 时区无关的时间戳
+     * Time zone agnostic timestamp
      */
     TIMESTAMP_NTZ,
     /**

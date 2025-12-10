@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef _OB_SQL_EXPR_COLUMN_CONV_H_
@@ -41,10 +45,9 @@ protected:
   common::ObIAllocator &alloc_;
   common::ObFixedArray<common::ObString, common::ObIAllocator> str_values_;
 };
-
-//fast column convert是OExprColumnConvert后缀表达式去后缀计算的一种优化
-//fast colummn convert的取值只来自于param store的常量，或者current row中的某一列
-//而不能是一个表达式的计算结果
+// fast column convert is a type of optimization that removes postfix calculation from ObExprColumnConvert postfix expression
+// fast column convert's value only comes from the constants of param store, or a column in the current row
+// and cannot be the result of an expression calculation
 class ObFastColumnConvExpr : public ObBaseExprColumnConv, public ObFastExprOperator
 {
 public:
@@ -61,7 +64,7 @@ public:
   { return ob_write_string(alloc_, column_info, column_info_); }
   OB_INLINE bool has_column_info() const { return !column_info_.empty(); }
   OB_INLINE const ObString &get_column_info() const { return column_info_; }
-  /// 打印表达式
+  /// Print expression
   VIRTUAL_TO_STRING_KV(K_(column_type),
                        K_(value_item),
                        K_(column_info));

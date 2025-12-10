@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2023 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SERVER
@@ -38,9 +42,8 @@ int ObTableAggCalculator::init() {
   }
   return ret;
 }
-
-// 在min/max字符串类型时，需要不断的替换最大值/最小值，导致中间内存耗费很多
-// 因此使用中间临时内存，临时内存足够大时，可以复用，不够大时，先释放后重新申请
+// When the type is min/max string, it requires continuous replacement of the maximum/minimum values, leading to significant memory consumption in between
+// Therefore, use intermediate temporary memory, which can be reused if it is large enough, or released and reallocated if it is not
 int ObTableAggCalculator::deep_copy_value(int64_t idx, const ObObj &src, ObObj &dst)
 {
   int ret = OB_SUCCESS;

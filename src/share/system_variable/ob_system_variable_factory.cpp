@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_SESSION
@@ -3103,15 +3107,15 @@ ObSysVarClassType ObSysVarFactory::find_sys_var_id_by_name(const ObString &sys_v
     LOG_ERROR("invalid lower index", K(ret), K(sys_var_name), K(lower_idx),
               LITERAL_K(ObSysVarFactory::ALL_SYS_VARS_COUNT), K(lbt()));
   } else if (OB_UNLIKELY(ObSysVarFactory::ALL_SYS_VARS_COUNT == lower_idx)) {
-    // std::lower_bound返回ObSysVarFactory::SYS_VAR_NAMES_SORTED_BY_NAME +
-    // ObSysVarFactory::ALL_SYS_VARS_COUNT的地址，即是找不到，而不是出错
+    // std::lower_bound returns ObSysVarFactory::SYS_VAR_NAMES_SORTED_BY_NAME +
+    // The address of ObSysVarFactory::ALL_SYS_VARS_COUNT, which is not found rather than an error
     ret = OB_SEARCH_NOT_FOUND;
   } else if (0 != sys_var_name.case_compare(
       ObSysVarFactory::SYS_VAR_NAMES_SORTED_BY_NAME[lower_idx])) {
-    // 找不到
+    // not found
     ret = OB_SEARCH_NOT_FOUND;
   } else {
-    sys_var_id = ObSysVarFactory::SYS_VAR_IDS_SORTED_BY_NAME[lower_idx]; // 找到了
+    sys_var_id = ObSysVarFactory::SYS_VAR_IDS_SORTED_BY_NAME[lower_idx]; // found
   }
   if (OB_UNLIKELY(OB_SEARCH_NOT_FOUND == ret)) {
     if (is_from_sys_table) {
@@ -3137,7 +3141,7 @@ int ObSysVarFactory::calc_sys_var_store_idx(ObSysVarClassType sys_var_id, int64_
     ret = OB_INVALID_ARGUMENT;
     LOG_ERROR("invalid sys var id", K(ret), K(var_id));
   } else {
-    // 直接利用ObSysVarsIdToArrayIdx 索引数组查询到对应的store idx
+    // Directly use ObSysVarsIdToArrayIdx index array to query the corresponding store idx
     real_idx = ObSysVarsToIdxMap::get_store_idx(var_id);
     if (real_idx < 0) {
       ret = OB_SYS_VARS_MAYBE_DIFF_VERSION;

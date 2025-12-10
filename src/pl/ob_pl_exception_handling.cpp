@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX PL
@@ -22,7 +26,7 @@ namespace pl
 {
 
 _RLOCAL(_Unwind_Exception*, tl_eptr);
-ObPLException pre_reserved_e(OB_ALLOCATE_MEMORY_FAILED); //预留的exception空间，防止出现没内存的时候抛不出来exception
+ObPLException pre_reserved_e(OB_ALLOCATE_MEMORY_FAILED); // reserved exception space to prevent exceptions from not being thrown when there is no memory
 
 void ObPLEH::eh_debug_int64(const char *name_ptr, int64_t name_len, int64_t object)
 {
@@ -376,7 +380,7 @@ bool ObPLEH::handleActionValue(int64_t *resultAction,
         precedence = cur_pre;
         *resultAction = i + 1;
         ret = true;
-       break; //这里其实不应break，应该寻找precedence最高的，但是我们在前面CG阶段已经把condition已经按precedence排过序了，这里可以break提升效率
+       break; //Here actually should not break, it should find the one with the highest precedence, but we have already sorted the conditions by precedence in the previous CG phase, so we can break here to improve efficiency
       } else { /*do nothing*/ }
     }
 

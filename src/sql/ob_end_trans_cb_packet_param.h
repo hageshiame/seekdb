@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef __OB_SQL_END_TRANS_CB_PACKET_PARAM_H__
@@ -22,8 +26,8 @@ namespace sql
 {
 
 /*
- * 用于将ResultSet中必要的参数传递给EndTransCallback
- * 以避免传ResultSet到Callback中，带来引用计数的问题
+ * Used to pass necessary parameters from ResultSet to EndTransCallback
+ * to avoid passing ResultSet to Callback, which brings reference counting issues
  */
 class ObResultSet;
 class ObSQLSessionInfo;
@@ -62,13 +66,11 @@ public:
                                       uint64_t last_insert_id_to_client,
                                       bool is_partition_hit,
                                       const ObCurTraceId::TraceId &trace_id);
-
-  // 判断是否设置过本对象
-  // 因为本对象会存储在session中，所以需要自己管理状态
-  // 每次Callback用完后需要reset
+  // Determine if this object has been set
+  // Because this object will be stored in the session, so it needs to manage its state itself
+  // Each Callback needs to be reset after use
   bool is_valid() const { return is_valid_; }
-
-  // 获取各个参数
+  // Get each parameter
   const char *get_message() const { return message_; }
   int64_t get_affected_rows() const { return affected_rows_; }
   uint64_t get_last_insert_id_to_client() const { return last_insert_id_to_client_; }
@@ -83,7 +85,7 @@ public:
                K_(is_valid));
 
 private:
-  // TODO: (rongxuan.lc) 此处可以优化，变成只传一个数字，具体message_在发包时生成
+  // TODO: (rongxuan.lc) This place can be optimized, change to passing only one number, specific message_ is generated when sending the packet
   char message_[common::MSG_SIZE];// null terminated message string
   int64_t affected_rows_;// number of rows affected by INSERT/UPDATE/DELETE
   uint64_t last_insert_id_to_client_;

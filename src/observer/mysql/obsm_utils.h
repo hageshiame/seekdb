@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef _OBSM_UTILS_H_
@@ -37,15 +41,15 @@ class ObField;
 class ObSMUtils {
 public:
   /**
-   * 序列化一个cell到buf + pos的位置。
+   * Serialize a cell to the position of buf + pos.
    *
-   * @param [in] obj 需要序列化的cell
-   * @param [in] buf 输出的buf
-   * @param [in] len buf的大小
-   * @param [in,out] pos 写入buf的位置
+   * @param [in] obj The cell to be serialized
+   * @param [in] buf The output buffer
+   * @param [in] len The size of the buffer
+   * @param [in,out] pos The position in the buffer to write
    * @param [in] cell index for binary protocol
    *
-   * @return 成功返回OB_SUCCESS， 失败返回oceanbase error code
+   * @return Returns OB_SUCCESS on success, or an oceanbase error code on failure
    */
   static int cell_str(
       char *buf, const int64_t len,

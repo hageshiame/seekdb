@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SERVER
@@ -595,7 +599,7 @@ int ObTableLoadInstance::start_direct_load(const ObTableLoadParam &param,
     table_ctx_ = table_ctx;
   }
   if (OB_FAIL(ret)) {
-    // table_ctx没有初始化成功不能赋值给table_ctx_
+    // table_ctx was not initialized successfully and cannot be assigned to table_ctx_
     if (nullptr != table_ctx) {
       ObTableLoadService::put_ctx(table_ctx);
       table_ctx = nullptr;
@@ -861,7 +865,7 @@ int ObTableLoadInstance::write_trans(TransCtx &trans_ctx, int32_t session_id,
     ret = OB_INVALID_ARGUMENT;
     LOG_WARN("invalid args", KR(ret), K(session_id), K(obj_rows.count()));
   } else {
-    // TODO(suzhi.yt): java客户端调用的时候, 对于相同session_id可能会并发
+    // TODO(suzhi.yt): java client call when, for the same session_id may be concurrent
     uint64_t &next_sequence_no = trans_ctx.next_sequence_no_array_[session_id - 1];
     ObTableLoadCoordinator coordinator(table_ctx_);
     if (OB_FAIL(coordinator.init())) {

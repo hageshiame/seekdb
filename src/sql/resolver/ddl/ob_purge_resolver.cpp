@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_RESV
@@ -147,9 +151,9 @@ int ObPurgeDatabaseResolver::resolve(const ParseNode &parser_tree)
     ret = OB_ERR_UNEXPECTED;
     LOG_WARN("session_info is null", K(ret));
   } else if (OB_UNLIKELY(is_external_catalog_id(session_info_->get_current_default_catalog()))) {
-    // 这里之所以需要额外拦截，是因为 pruge database 没有走 resolve ParseNode 逻辑，直接赋值了
-    // 所以在 resolve 处的拦截无效
-    // 如果将来需要支持 pruge database catalog.db 这种语法，那就需要走 resolve ParseNode 逻辑，那么此时这里的拦截可以删除
+    // Here we need to intercept additionally because pruge database did not go through resolve ParseNode logic, it was directly assigned
+    // So the interception at resolve is invalid
+    // If we need to support pruge database catalog.db this syntax in the future, then we need to follow the resolve ParseNode logic, so the interception here can be removed
     ret = OB_NOT_SUPPORTED;
     LOG_USER_ERROR(OB_NOT_SUPPORTED, "purge database in catalog is");
   }

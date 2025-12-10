@@ -1,12 +1,17 @@
-/** * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_PARSER
@@ -332,7 +337,7 @@ int ObFastParserBase::parser_insert_str(common::ObIAllocator &allocator,
           row_count++;
           bool trimed_succ = false;
           if (first_str_buf == nullptr) {
-            first_str_buf_len = first_str.length() + 1; // copy函数要求的最后边必须有一位填'\0'
+            first_str_buf_len = first_str.length() + 1; // copy function requires that there must be one position at the end filled with '\0'
             if (OB_ISNULL(first_str_buf = static_cast<char*>(allocator.alloc(first_str_buf_len)))) {
               ret = OB_ALLOCATE_MEMORY_FAILED;
               LOG_WARN("fail to alloc memory", K(ret), K(first_str_buf_len));
@@ -471,7 +476,7 @@ int ObFastParserBase::process_insert_or_replace(const char *str, const int64_t s
     if (OB_FAIL(process_hint())) {
       LOG_WARN("failed to process hint", K(ret), K(raw_sql_.to_string()), K_(raw_sql_.cur_pos));
     } else if (found_insert_status_ == NOT_FOUND_INSERT_TOKEN) {
-      // 说明是insert token
+      // Description is insert token
       found_insert_status_ = FOUND_INSERT_TOKEN_ONCE;
     } else if (found_insert_status_ == FOUND_INSERT_TOKEN_ONCE) {
       found_insert_status_ = INVALID_TOKEN_STATUS;
@@ -2481,7 +2486,7 @@ int ObFastParserMysql::process_identifier(bool is_number_begin)
       // check whether is 'values' token
       case 'v':
       case 'V':
-        // 是不是values;
+        // Are these values;
         OZ (process_values("alues"));
         break;
 

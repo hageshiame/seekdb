@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2024 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SERVER
@@ -198,7 +202,7 @@ int ObTableLSExecuteP::LSExecuteIter::init_batch_ctx(uint64_t table_id,
                           batch_ctx.tb_ctx_))) {
     LOG_WARN("fail to init table context", K(ret));
   }  else {
-    // 构造batch_service需要的入参
+    // Construct the parameters required for batch_service
     batch_ctx.trans_param_ = &outer_exectute_process_.trans_param_;
     batch_ctx.consistency_level_ = outer_exectute_process_.arg_.consistency_level_;
     batch_ctx.table_id_ = table_id;
@@ -1047,7 +1051,7 @@ int ObTableLSExecuteP::old_try_process()
   bool need_all_prop = ls_op.need_all_prop_bitmap();
   table_id_ = table_id;  // init move response need
   ObTableLSOpResult *cb_result = nullptr;
-  observer::ObReqTimeGuard req_timeinfo_guard; // 引用cache资源必须加ObReqTimeGuard
+  observer::ObReqTimeGuard req_timeinfo_guard; // Reference cache resources must add ObReqTimeGuard
   bool is_hkv = ObTableEntityType::ET_HKV == arg_.entity_type_; 
   if (OB_FAIL(create_cb_result())) {
     LOG_WARN("fail to create cb result", K(ret));

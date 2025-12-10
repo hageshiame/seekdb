@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "ob_simple_log_cluster_testbase.h"
@@ -178,8 +182,8 @@ int ObSimpleLogClusterTestBase::start()
     io_unit_config.min_iops_ = 10000000;
     io_unit_config.weight_ = 10000000;
     tio_manager_->update_basic_io_unit_config(io_unit_config);
-    // 如果需要新增arb server，将其作为memberlist最后一项
-    // TODO by runlin, 这个是暂时的解决方法，以后可以走加减成员的流程
+    // If you need to add a new arb server, add it as the last item in memberlist
+    // TODO by runlin, this is a temporary solution, it can follow the process of adding or removing members in the future
     const int64_t arb_idx = member_cnt_ - 1;
     int64_t node_id = node_idx_base_;
     for (int i = 0; OB_SUCC(ret) && i < node_cnt_; i++) {

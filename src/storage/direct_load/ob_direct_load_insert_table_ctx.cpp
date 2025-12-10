@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 #define USING_LOG_PREFIX STORAGE
 
@@ -189,9 +193,9 @@ int ObDirectLoadInsertTabletContext::get_row_info(ObDirectLoadInsertTableRowInfo
   } else {
     row_info.row_flag_.set_flag(
       is_delete ? ObDmlFlag::DF_DELETE : ObDmlFlag::DF_INSERT,
-      // 只有增量inc_replace模式下的主表insert行需要DF_TYPE_INSERT_DELETE
-      // * 目前这里没有细分增量inc和增量inc_replace
-      // * 增量inc_replace带索引或lob会退化成增量inc
+      // Only the main table insert rows in inc_replace mode need DF_TYPE_INSERT_DELETE
+      // * Currently there is no distinction between increment inc and increment inc_replace
+      // * Incremental inc_replace with index or lob will degrade to incremental inc
       (!param_->is_incremental_ || is_delete) ? DF_TYPE_NORMAL : DF_TYPE_INSERT_DELETE);
     row_info.mvcc_row_flag_.set_compacted_multi_version_row(true);
     row_info.mvcc_row_flag_.set_first_multi_version_row(true);
@@ -223,9 +227,9 @@ int ObDirectLoadInsertTabletContext::init_datum_row(ObDatumRow &datum_row, const
       datum_row.trans_id_ = param_->trans_param_.tx_id_;
       datum_row.row_flag_.set_flag(
         is_delete ? ObDmlFlag::DF_DELETE : ObDmlFlag::DF_INSERT,
-        // 只有增量inc_replace模式下的主表insert行需要DF_TYPE_INSERT_DELETE
-        // * 目前这里没有细分增量inc和增量inc_replace
-        // * 增量inc_replace带索引或lob会退化成增量inc
+        // Only the main table insert rows in inc_replace mode need DF_TYPE_INSERT_DELETE
+        // * Currently there is no distinction between increment inc and increment inc_replace
+        // * Incremental inc_replace with index or lob will degrade to incremental inc
         (!param_->is_incremental_ || is_delete) ? DF_TYPE_NORMAL : DF_TYPE_INSERT_DELETE);
       datum_row.mvcc_row_flag_.set_compacted_multi_version_row(true);
       datum_row.mvcc_row_flag_.set_first_multi_version_row(true);

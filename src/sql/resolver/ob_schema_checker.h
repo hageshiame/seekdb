@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SQL_RESOLVER_SCHEMA_CHECKER2_
@@ -172,8 +176,8 @@ public:
   int get_user_info(const uint64_t tenant_id,
                     const uint64_t user_id,
                     const share::schema::ObUserInfo *&user_info);
-  // 先尝试获取tbl_name的schema，不存在则将tbl_name看作synonym name,获取同义词
-  // 代表的表的schema
+  // First try to get the schema of tbl_name, if it does not exist, treat tbl_name as a synonym name, and get the synonym
+  // The schema of the represented table
   int get_table_schema_with_synonym(const uint64_t tenant_id,
                                     const common::ObString &tbl_db_name,
                                     const common::ObString &tbl_name,
@@ -341,6 +345,10 @@ public:
                        uint64_t &directory_id);
 
   int remove_tmp_cte_schemas(const ObString& cte_table_name);
+  // location
+  int get_location_id(const uint64_t tenant_id,
+                      const common::ObString &location_name,
+                      uint64_t &location_id);
 private:
 
   int get_table_schema_inner(const uint64_t tenant_id, uint64_t table_id,
@@ -356,10 +364,10 @@ private:
   bool is_inited_;
   share::schema::ObSchemaGetterGuard *schema_mgr_;
   ObSqlSchemaGuard *sql_schema_mgr_;
-  // cte tmp schema，用于递归的cte服务，生命周期仅在本次查询有效
+  // cte tmp schema, used for recursive cte service, lifecycle is only valid for this query
   common::ObArray<share::schema::ObTableSchema*,
                   common::ModulePageAllocator, true> tmp_cte_schemas_;
-  // 记录checker的额外信息，例如安全员的操作等
+  // Record additional information of checker, such as the operator's actions etc.
   int flag_;
   // disallow copy
   DISALLOW_COPY_AND_ASSIGN(ObSchemaChecker);

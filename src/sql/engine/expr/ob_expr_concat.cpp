@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -123,7 +127,7 @@ int ObExprConcat::calc(common::ObObj &result,
     max_length = is_oracle_mode ? OB_MAX_ORACLE_VARCHAR_LENGTH : OB_MAX_VARCHAR_LENGTH;
   }
   if (OB_UNLIKELY(this_len + other_len > max_length)) {
-    //FIXME: 合并后的字符串长度超过了最大限制，结果设置为NULL
+    //FIXME: The length of the merged string exceeds the maximum limit, the result is set to NULL
     result.set_null();
     ret = OB_SIZE_OVERFLOW;
   } else if (OB_UNLIKELY(this_len <= 0)) {
@@ -160,8 +164,7 @@ int ObExprConcat::calc_result_typeN(ObExprResType &type,
   }
 
   CK (OB_NOT_NULL(type_ctx.get_session()));
-
-  //类型 + 字符集推导
+  // Type + character set inference
   bool has_text = false;
   for (int64_t i = 0; !has_text && i < param_num; ++i) {
     if (ObTinyTextType != types[i].get_type() && types[i].is_lob()) {
@@ -182,8 +185,7 @@ int ObExprConcat::calc_result_typeN(ObExprResType &type,
     types[i].set_calc_collation_type(type.get_collation_type());
     types[i].set_calc_collation_level(type.get_collation_level());
   }
-
-  //结果的长度推导
+  // Length derivation of the result
   if (OB_SUCC(ret)) {
     ObLength max_len = 0;
     for (int64_t i = 0; i < param_num; ++i) {

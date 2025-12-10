@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -58,11 +62,10 @@ int ObExprBool::calc_result_type1(ObExprResType &type,
 #define CHECK_IS_TRUE_FUNC_NAME(type)                               \
   int calc_bool_expr_for_##type(const ObExpr &expr, ObEvalCtx &ctx, \
       ObDatum &res_datum)
-
-// ObObjEvaluator::is_true()里面，如果输入obj是null，结果是false
-// 但是我们这里需要设置为null
+// ObObjEvaluator::is_true() inside, if input obj is null, result is false
+// But we need to set it to null here
 // eg: expr1 and null -> null
-// 如果bool expr设置为false，上面结果会变成false
+// If bool expr is set to false, the above result will become false
 #define EVAL_ARG()                                      \
   int ret = OB_SUCCESS;                                 \
   ObDatum *child_datum = NULL;                          \
@@ -86,7 +89,7 @@ CHECK_IS_TRUE_FUNC_NAME(float_type)
 {
   EVAL_ARG()
   {
-    // 不考虑浮点数和0比较的问题, see ObObj::is_zero()
+    // Do not consider the problem of comparing floating-point numbers with 0, see ObObj::is_zero()
     int32_t res = (0 == child_datum->get_float()) ? 0 : 1;
     res_datum.set_int32(res);
   }
@@ -97,7 +100,7 @@ CHECK_IS_TRUE_FUNC_NAME(double_type)
 {
   EVAL_ARG()
   {
-    // 不考虑浮点数和0比较的问题, see ObObj::is_zero()
+    // Do not consider the problem of comparing floating-point numbers with 0, see ObObj::is_zero()
     int32_t res = (0 == child_datum->get_double()) ? 0 : 1;
     res_datum.set_int32(res);
   }

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef SHARE_STORAGE_MULTI_DATA_SOURCE_COMPILE_MAPPER_H
@@ -19,9 +23,8 @@
 #include "deps/oblib/src/common/meta_programming/ob_type_traits.h"
 #include "deps/oblib/src/common/meta_programming/ob_meta_compare.h"
 #include "deps/oblib/src/common/meta_programming/ob_meta_copy.h"
-
-// 这个文件负责生成两个编译期的映射关系，一个是从Helper类型和BufferCtx类型到ID的映射，以及反向映射
-// 另一个是从Data类型到多版本标志的映射，不需要反向映射
+// This file is responsible for generating two compile-time mapping relationships, one from the Helper type and BufferCtx type to ID, as well as the reverse mapping
+// Another is the mapping from Data type to multi-version flags, no reverse mapping needed
 namespace oceanbase
 {
 namespace storage
@@ -34,8 +37,7 @@ class __TypeMapper {};
 
 template <int ID>
 class __IDMapper {};
-
-// 调用以下宏生成编译期的 TYPE <-> ID 映射关系
+// Call the following macro to generate compile-time TYPE <-> ID mapping relationship
 #define REGISTER_TYPE_ID(HELPER, CTX, ID) \
 template <>\
 class __TypeMapper<HELPER> {\
@@ -55,8 +57,7 @@ REGISTER_TYPE_ID(helper_type, buffer_ctx_type, ID)
 #include "mds_register.h"
 #undef _GENERATE_MDS_FRAME_CODE_FOR_TRANSACTION_
 #undef NEED_GENERATE_MDS_FRAME_CODE_FOR_TRANSACTION
-
-// 通过以下宏在编译期获取这些信息
+// Obtain this information at compile time through the following macros
 template <typename Tuple, int IDX>
 struct TupleIdxType {
   typedef typename std::decay<decltype(std::declval<Tuple>().template element<IDX>())>::type type;

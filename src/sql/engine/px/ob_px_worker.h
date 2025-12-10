@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef __OB_SQL_ENGINE_PX_WORKER_RUNNABLE_H__
@@ -31,8 +35,7 @@ class ObPxWorkerRunnable
 public:
   virtual int run(ObPxRpcInitTaskArgs &arg) = 0;
 };
-
-// 使用 RPC 工作线程作为 Px Worker 的执行容器
+// Use RPC worker thread as the execution container for Px Worker
 class ObPxRpcWorker: public ObPxWorkerRunnable
 {
 public:
@@ -52,8 +55,7 @@ private:
   DISABLE_WARNING_GCC_POP
   ObPxRpcInitTaskResponse resp_;
 };
-
-// 使用协程作为 Px Worker 的执行容器
+// Use coroutine as Px Worker execution container
 class ObPxCoroWorker : public ObPxWorkerRunnable
 {
 public:
@@ -77,8 +79,7 @@ private:
   uint64_t task_co_id_;
   DISALLOW_COPY_AND_ASSIGN(ObPxCoroWorker);
 };
-
-// Px Worker 的执行容器
+// Px Worker's execution container
 class ObPxThreadWorker : public ObPxWorkerRunnable
 {
 public:
@@ -108,8 +109,7 @@ public:
 private:
   const observer::ObGlobalContext &gctx_;
 };
-
-// Worker 工厂，封装 Worker 的分配，便于管理资源
+// Worker factory, encapsulating Worker allocation, for easy resource management
 class ObPxRpcWorkerFactory
 {
 public:

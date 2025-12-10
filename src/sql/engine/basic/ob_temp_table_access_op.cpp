@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -336,7 +340,7 @@ int ObTempTableAccessOp::locate_next_interm_result(bool &is_end)
   int64_t result_id = 0;
   is_end = false;
   if (can_rescan_) {
-    //rescan从context的缓存中拿result id
+    // rescan fetches result id from context's cache
     if (cur_idx_ >= interm_result_ids_.count()) {
       is_end = true;
     } else {
@@ -347,7 +351,7 @@ int ObTempTableAccessOp::locate_next_interm_result(bool &is_end)
       }
     }
   } else if (!MY_SPEC.is_distributed_) {
-    //本地结果集从exec ctx中拿result id，并且缓存下来
+    // Local result set gets result id from exec ctx and caches it down
     if (is_started_) {
       is_end = true;
     } else if (OB_FAIL(get_local_interm_result_id(result_id))) {
@@ -358,7 +362,7 @@ int ObTempTableAccessOp::locate_next_interm_result(bool &is_end)
       LOG_WARN("failed to push back result id", K(ret));
     }
   } else {
-    //分布式结果集从任务池抢占result id，并且缓存下来
+    // Distributed result set grabs result id from the task pool and caches it down
     int64_t index = 0;
     if (OB_FAIL(MY_INPUT.check_finish(is_end, index))) {
       LOG_WARN("failed to check finish.", K(ret));

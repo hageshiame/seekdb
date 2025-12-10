@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_LOCK_TC_REF_H_
@@ -63,7 +67,7 @@ public:
     }
     return xref_(p, cnt);
   }
-  // 不传出slot_id的只会关注自己的槽
+  // Not passing slot_id will only focus on its own slot
   int32_t inc_ref(int32_t* p) {
     int32_t ref_cnt = REF_LIMIT;
     int64_t start = ref_count_per_thread_ * (get_itid() % MAX_CPU_NUM);
@@ -94,7 +98,7 @@ public:
     }
     return ref_cnt;
   }
-  // 传出slot_id的会尝试所有的SLOT
+  // The slot_id passed out will attempt all the SLOT
   int32_t inc_ref(int32_t* p, int64_t &slot_id) {
     int32_t ref_cnt = REF_LIMIT;
     int64_t start = ref_count_per_thread_ * (get_itid() % MAX_CPU_NUM);

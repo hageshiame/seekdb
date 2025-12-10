@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -443,12 +447,12 @@ int ObExprObjAccess::ExtraInfo::calc(ObObj &result,
       ret = OB_ERR_UNEXPECTED;
       LOG_WARN("get attribute failed", K(ret), K(attr_addr));
     } else if (for_write_ || res_type.is_ext()) {
-      // 当对collection元素赋值的时候，强制设置collection的first和last为invalid
-      // 在获取first，last的时候，会根据这个标记进行更新。
-      // 主要是因为collection有删除操作的时候，而又赋值了，需要一个地方给出提示
-      // 这儿就是一个标记，需要明确的，这可能会导致first last暂时不准确。但get_first会自动更新
-      // 所有需要使用first，last的地方应该调用get_first这样的函数，而不能直接使用first的值
-      // assoc array 不需要处理，因为在accociative_index里面更新了first，last
+      // When assigning a value to collection elements, force set the first and last of the collection to invalid
+      // When obtaining first, last, it will be updated based on this flag.
+      // Mainly because there are delete operations on the collection, and it is reassigned, a place needs to provide a hint
+      // Here is a marker, which needs to be clear, this may cause first last to be temporarily inaccurate. But get_first will automatically update
+      // All places that need to use first, last should call functions like get_first, and should not use the value of first directly
+      // assoc array does not need to be processed, because first, last were updated in accociative_index
       if (for_write_ && OB_INVALID_INDEX != coll_idx_) {
         if (0 != param_array.at(coll_idx_)) {
           pl::ObPLCollection *coll = reinterpret_cast<pl::ObPLCollection*>(param_array.at(coll_idx_));

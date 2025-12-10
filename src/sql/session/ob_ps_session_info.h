@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef _OB_PS_SESSION_INFO_H
@@ -31,11 +35,11 @@ public:
   /*
     sizeof(oceanbase::obmysql::EMySQLFieldType)=4
     sizeof(oceanbase::sql::ObPsSessionInfo)=688
-    ObPsSessionInfo由SmallBlockAllocator负责分配内存，小块大小为4K，所以需要调整ParamsType的定义使得size
-    尽可能小，且用4K块切割后没有太多浪费。4096-688*5=656，每个4K块会浪费这么多内存。也就是每5个ps浪费656字节，
-    可以接受。
-    2DArray中存储block的一维数组为SEArray，其Local数组的大小是可调的。一方面，MySQL最大允许绑定变量个数为
-    65535，如果要避免二维数组中block数组的内存分配，需要65535*4/4K=64个小块即可。所以SEArray大小设置为64.
+    ObPsSessionInfo is responsible for memory allocation by SmallBlockAllocator, with a small block size of 4K, so we need to adjust the definition of ParamsType to make the size
+    as small as possible, and after cutting with 4K blocks, there should not be too much waste. 4096-688*5=656, each 4K block will waste this much memory. That is, every 5 ps wastes 656 bytes,
+    which can be accepted.
+    The one-dimensional array storing blocks in 2DArray is SEArray, and the size of its Local array is adjustable. On one hand, the maximum number of bind variables allowed by MySQL is
+    65535, if we want to avoid memory allocation for the block array in the two-dimensional array, 65535*4/4K=64 small blocks are needed. Therefore, the size of SEArray is set to 64.
    */
   typedef common::ObSegmentArray<oceanbase::obmysql::EMySQLFieldType, OB_SESSION_SMALL_BLOCK_SIZE,
                             common::ObWrapperAllocator,

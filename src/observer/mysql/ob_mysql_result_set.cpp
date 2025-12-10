@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SERVER
@@ -40,7 +44,7 @@ int ObMySQLResultSet::to_mysql_field(const ObField &field, ObMySQLField &mfield)
     mfield.length_ = field.length_;
     ObScale decimals = mfield.accuracy_.get_scale();
     ObPrecision pre = mfield.accuracy_.get_precision();
-    // TIMESTAMP、UNSIGNED通过map直接映射
+    // TIMESTAMP, UNSIGNED are directly mapped through map
     if (0 == field.type_name_.case_compare("SYS_REFCURSOR")) {
       mfield.type_ = MYSQL_TYPE_CURSOR;
     } else {
@@ -116,7 +120,7 @@ int ObMySQLResultSet::to_oracle_field(const ObField &field, ObMySQLField &mfield
     mfield.length_ = field.length_;
     ObScale decimals = mfield.accuracy_.get_scale();
     ObPrecision pre = mfield.accuracy_.get_precision();
-    // TIMESTAMP、UNSIGNED通过map直接映射
+    // TIMESTAMP, UNSIGNED are directly mapped through map
     if (0 == field.type_name_.case_compare("SYS_REFCURSOR")) {
       mfield.type_ = MYSQL_TYPE_CURSOR;
     } else {

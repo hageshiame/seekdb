@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OB_UDF_CTX_MGR_H_
@@ -23,11 +27,11 @@ namespace sql
 class ObExprDllUdf;
 
 /*
- * 通过expr的id作为执行期，expr获得属于自己的执行ctx的key。
- * 目前，相同列会指向同一个raw expr，相同的聚合（例如sum）会指向
- * 同一个raw expr，但是对于普通表达式没有做。
- * ATTENTION: 如果后续要做相同普通表达式共用同一个expr的优化，udf的expr必须
- * 保证不能共用expr。
+ * Use expr's id as the execution period, expr obtains the key for its own execution ctx.
+ * Currently, the same column points to the same raw expr, the same aggregation (e.g., sum) points to
+ * the same raw expr, but this is not done for ordinary expressions.
+ * ATTENTION: If optimization for sharing the same expr among ordinary expressions is done later, udf's expr must
+ * ensure that expr cannot be shared.
  *
  * */
 class ObUdfCtxMgr

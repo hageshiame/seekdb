@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "ob_base_log_writer.h"
@@ -78,7 +82,7 @@ int ObBaseLogWriter::init(
     thread_name_ = thread_name;
     if (OB_SUCC(ret)) {
       is_inited_ = true;
-      LOG_STDOUT("successfully init ObBaseLogWriter\n");
+      LOG_STDOUT("successfully init log writer\n");
     }
   }
 
@@ -268,7 +272,7 @@ void ObBaseLogWriter::flush_log()
   while (!has_stopped_) {
     IGNORE_RETURN lib::Thread::update_loop_ts(ObTimeUtility::fast_current_time());
     pthread_mutex_lock(&thread_mutex_);
-    // 每个线程执行16次再重新抢占, 对cpu cache hit有利
+    // Each thread executes 16 times before re-preempting, which is beneficial for CPU cache hit
     for (int64_t i = 0; i < 16; i++) {
       do_flush_log();
     }

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #pragma once
@@ -88,18 +92,18 @@ public:
   ObTableLoadParam param_;
   ObTableLoadDDLParam ddl_param_;
   ObTableLoadSchema schema_; // origin table load schema
-  ObTableLoadCoordinatorCtx *coordinator_ctx_; // 只在控制节点构造
-  ObTableLoadStoreCtx *store_ctx_; // 只在数据节点构造
+  ObTableLoadCoordinatorCtx *coordinator_ctx_; // Only constructed on the control node
+  ObTableLoadStoreCtx *store_ctx_; // Only constructed on data nodes
   sql::ObLoadDataGID gid_;
   sql::ObLoadDataStat *job_stat_;
   sql::ObSQLSessionInfo *session_info_;
   sql::ObExecContext *exec_ctx_;
   sql::ObFreeSessionCtx free_session_ctx_;
 private:
-  // 只在初始化的时候使用, 线程不安全
+  // Only used during initialization, thread unsafe
   common::ObArenaAllocator allocator_;
-  ObTableLoadObjectAllocator<ObTableLoadTask> task_allocator_; // 多线程安全
-  ObTableLoadObjectAllocator<ObTableLoadTransCtx> trans_ctx_allocator_; // 多线程安全
+  ObTableLoadObjectAllocator<ObTableLoadTask> task_allocator_; // thread-safe
+  ObTableLoadObjectAllocator<ObTableLoadTransCtx> trans_ctx_allocator_; // thread-safe
   int64_t ref_count_ CACHE_ALIGNED;
   volatile bool is_in_map_;
   bool is_assigned_resource_;

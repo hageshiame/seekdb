@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_EXE
@@ -75,7 +79,7 @@ int ObTaskSpliter::find_scan_ops(ObIArray<const ObTableScanSpec*> &scan_ops, con
 template <bool NEW_ENG>
 int ObTaskSpliter::find_scan_ops_inner(ObIArray<const ENG_OP::TSC *> &scan_ops, const ENG_OP::Root &op)
 {
-  // 后序遍历，保证scan_ops.at(0)为最左下的叶子节点
+  // Post-order traversal, ensuring scan_ops.at(0) is the leftmost leaf node
   int ret = OB_SUCCESS;
   if (!IS_RECEIVE(op.get_type())) {
     for (int32_t i = 0; OB_SUCC(ret) && i < op.get_child_num(); ++i) {
@@ -91,7 +95,7 @@ int ObTaskSpliter::find_scan_ops_inner(ObIArray<const ENG_OP::TSC *> &scan_ops, 
   if (OB_FAIL(ret)) {
   } else if (op.is_table_scan() && op.get_type() != PHY_FAKE_CTE_TABLE) {
     if (static_cast<const ENG_OP::TSC &>(op).use_dist_das()) {
-      //do nothing,使用DAS执行TSC，DAS会处理DAS相关信息，不需要调度器感知TSC
+      //do nothing, use DAS to execute TSC, DAS will handle DAS-related information, no need for the scheduler to be aware of TSC
     } else if (OB_FAIL(scan_ops.push_back(static_cast<const ENG_OP::TSC *>(&op)))) {
       LOG_WARN("fail to push back table scan op", K(ret));
     }

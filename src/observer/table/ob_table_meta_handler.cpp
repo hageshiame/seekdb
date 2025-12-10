@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2025 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 
@@ -283,7 +287,7 @@ int ObHTableRegionLocatorHandler::try_compress(ObTableMetaResponse &response)
       ["127.0.0.3", 2883]
     ],
     "partitions": [
-      // 表1001的3个分区，每个分区3副本
+      // 3 partitions of table 1001, each partition with 3 replicas
       [0, 50001, "rowkey_1", 0, 1], // leader
       [0, 50001, "rowkey_1", 1, 0], // follower
       [0, 50001, "rowkey_1", 2, 0], // follower
@@ -294,7 +298,7 @@ int ObHTableRegionLocatorHandler::try_compress(ObTableMetaResponse &response)
       [0, 50003, "rowkey_3", 1, 0],
       [0, 50003, "rowkey_3", 2, 0],
 
-      // 表1002的3个分区，每个分区3副本
+      // 3 partitions of table 1002, each partition with 3 replicas
       [1, 50004, "rowkey_1", 0, 1],
       [1, 50004, "rowkey_1", 1, 0],
       [1, 50004, "rowkey_1", 2, 0],

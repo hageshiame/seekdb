@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SRC_PL_SYS_PACKAGE_OB_DBMS_SQL_H_
@@ -30,16 +34,16 @@ typedef common::ParamStore ParamStore;
 class ObDbmsInfo
 {
   /*
-   * 这个结构抽出来的初衷是，
-   * 调研 oracle 表现，dbms_sql 的 param 信息，并不会强绑定在 dbms_cursor 上
-   * 即使 dbms_cursor 重新 open , 或者 close，
-   * 只要没有通过 parse, bind_value, column_value 等手段修改 param 的信息，
-   * param 的值就不会变
+   * The initial purpose of extracting this structure was to
+   * investigate Oracle's behavior, and the dbms_sql param information is not strongly bound to dbms_cursor
+   * Even if dbms_cursor is reopened or closed,
+   * as long as the param information is not modified through methods like parse, bind_value, column_value,
+   * the value of param will not change
    * 
-   * 之前放在 dbms_cursor 里， 依赖 cursor.entity 的内存管理，
-   * cursor 在 reopen 和 close 的时候都会清理自己的内存，导致 param 的值不预期，
+   * Previously placed inside dbms_cursor, relying on cursor.entity's memory management,
+   * cursor would clean up its own memory when reopening and closing, leading to unexpected values for param,
    * 
-   * 重构之后，dbmsinfo 有了区别于 cursor 的内存管理方式，避免了这一类问题的出现
+   * After refactoring, dbmsinfo has a separate memory management approach from cursor, avoiding such issues
    */
 public:
   ObDbmsInfo(common::ObIAllocator &alloc)
@@ -96,10 +100,10 @@ protected:
     TO_STRING_KV(K(param_name_), K(param_value_));
   public:
     /*
-     * 考虑到BIND_ARRAY接口，后面需要做如下修改：
-     * 1. param_value_需要扩展为数组;
-     * 2. 记录上下界，默认为0、size - 1;
-     * 3. 记录当前迭代位置，供expand_next_params接口使用;
+     * Considering the BIND_ARRAY interface, the following modifications are needed:
+     * 1. param_value_ needs to be expanded to an array;
+     * 2. Record the lower and upper bounds, defaulting to 0 and size - 1;
+     * 3. Record the current iteration position for use by the expand_next_params interface;
      */
     common::ObString param_name_;
     common::ObObjParam param_value_;
@@ -196,7 +200,7 @@ public:
   int64_t search_array(const ObString &name, ObIArray<ObString> &array);
 
 private:
-  // affected_rows_ 在每次 open 都会被重置
+  // affected_rows_ will be reset every time open is called
   int64_t affected_rows_;
 };
 

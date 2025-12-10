@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "logservice/palf/log_io_task_cb_utils.h"
@@ -313,7 +317,7 @@ TEST_F(TestLogSlidingWindow, test_submit_log)
     EXPECT_EQ(OB_SUCCESS, log_sw_.submit_log(buf, buf_len, ref_scn, lsn, scn));
   }
   PALF_LOG(INFO, "current lsn", K(lsn), K(buf_len));
-  // 8M已填充7M，无法继续submit 2M log
+  // 8M filled with 7M, unable to continue submit 2M log
   EXPECT_EQ(OB_EAGAIN, log_sw_.submit_log(buf, buf_len, ref_scn, lsn, scn));
 }
 
@@ -515,9 +519,9 @@ TEST_F(TestLogSlidingWindow, test_receive_log)
   EXPECT_EQ(OB_SUCCESS, log_sw_.receive_log(src_server, push_log_type, prev_lsn, prev_log_proposal_id, lsn, data_buf_, group_entry_size, true, truncate_log_info));
   // test <log_id, lsn> not match case
   PALF_LOG(INFO, "begin tese <log_id, lsn> not match case");
-  // 改大flush lsn
+  // Increase flush lsn
   log_sw_.max_flushed_end_lsn_.val_ += 100;
-  // 增大log_id，构造prev log空洞
+  // Increase log_id, construct prev log hole
   log_id += 100;
   uint64_t new_val = max_scn.get_val_for_logservice() - 10;
   max_scn.convert_for_logservice(new_val);

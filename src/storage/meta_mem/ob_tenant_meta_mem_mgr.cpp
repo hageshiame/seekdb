@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 
@@ -789,7 +793,7 @@ int ObTenantMetaMemMgr::push_tablet_into_gc_queue(ObTablet *tablet)
     LOG_ERROR("push invalid tablet into gc queue", K(ret), KPC(tablet));
   } else if (!tablet->is_valid()) {
     // If a tablet is invalid, it is not expensive to recycle it. Recycle it directly, to avoid asynchronous
-    // tablet gc queue backlog。
+    // tablet gc queue backlog.
     LOG_INFO("release an invalid tablet", KP(tablet));
     release_tablet(tablet, false/*return tablet buffer ptr after release*/);
   } else {
@@ -2428,20 +2432,20 @@ int ObTenantMetaMemMgr::ObT3MResourceLimitCalculatorHandler::
   const int64_t config_mem_percentage = tenant_config.is_valid() ?
                                           tenant_config->_storage_meta_memory_limit_percentage :
                                           OB_DEFAULT_META_OBJ_PERCENTAGE_LIMIT;
-  const int64_t tenant_mem = lib::get_tenant_memory_limit(MTL_ID());
+  const int64_t hard_memory_limit = lib::get_hard_memory_limit();
   // Calculate config constraint : (tenant_mem / 1GB) * config_tablet_per_gb
-  const int64_t config_constraint = tenant_mem / (1.0 * 1024 * 1024 * 1024 /* 1GB */) * config_tablet_per_gb;
+  const int64_t config_constraint = hard_memory_limit / (1.0 * 1024 * 1024 * 1024 /* 1GB */) * config_tablet_per_gb;
   // Calculate memory constraint : (tenant_mem * config_mem_percentage) / 200MB * 20000
-  const int64_t memory_constraint = tenant_mem * (config_mem_percentage / 100.0) /
+  const int64_t memory_constraint = hard_memory_limit * (config_mem_percentage / 100.0) /
                                     (200.0 * 1024 * 1024 /* 200MB */) *
                                     DEFAULT_TABLET_CNT_PER_GB;
   // Set into constraint value
   if (OB_FAIL(constraint_value.set_type_value(CONFIGURATION_CONSTRAINT, config_constraint))) {
     LOG_WARN("set type value failed", K(ret), K(CONFIGURATION_CONSTRAINT),
-             K(config_tablet_per_gb), K(tenant_mem), K(config_constraint));
+             K(config_tablet_per_gb), K(hard_memory_limit), K(config_constraint));
   } else if (OB_FAIL(constraint_value.set_type_value(MEMORY_CONSTRAINT, memory_constraint))) {
     LOG_WARN("set type value failed", K(ret), K(MEMORY_CONSTRAINT),
-             K(config_mem_percentage), K(tenant_mem), K(memory_constraint));
+             K(config_mem_percentage), K(hard_memory_limit), K(memory_constraint));
   }
   return ret;
 }

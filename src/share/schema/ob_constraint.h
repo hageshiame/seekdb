@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SCHEMA_CONSTRAINT_H_
@@ -39,8 +43,8 @@ public:
   //operators
   ObConstraint &operator=(const ObConstraint &src_schema) = delete;
   int assign(const ObConstraint &src_schema);
-  // 不提供比较运算符，这个 schema 对象的成员变量数量越来越多，类型越来越复杂，比较运算很容易错
-  // 有比较 schema 对象的需求时建议根据需求定制比较函数
+  // Do not provide comparison operators, the number of member variables in this schema object is increasing, and the types are becoming more complex, making comparisons prone to errors
+  // When there is a need to compare schema objects, it is recommended to customize the comparison function according to the requirements
   bool operator==(const ObConstraint &r) const = delete;
   bool operator!=(const ObConstraint &r) const = delete;
 

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef DEV_SRC_SQL_ENGINE_DML_OB_DML_CTX_DEFINE_H_
@@ -92,8 +96,8 @@ public:
       uint32_t flags_;
       struct
       {
-        // is_update_属性貌似没用,trigger中update_columns_是通过ObDASUpdCtDef.updated_column_infos_
-        // 中的column_name进行初始化的
+        // is_update_ attribute seems unused, update_columns_ in trigger is through ObDASUpdCtDef.updated_column_infos_
+        // initialize the column_name
         uint32_t is_hidden_:1;
         uint32_t is_update_:1;
         uint32_t is_gen_col_:1;
@@ -326,7 +330,7 @@ public:
       rowkey_count_(0),
       rowkey_ids_(alloc)
   {}
-  // 父表的主表/unique索引表对应的分区键
+  // Parent table's primary table/unique index table corresponding partition key
 
   TO_STRING_KV(KPC_(calc_part_id_expr),
                K_(part_id_dep_exprs),
@@ -336,9 +340,9 @@ public:
                K_(tablet_id),
                K_(rowkey_count));
   ObExpr *calc_part_id_expr_;
-  // calc_part_id_expr_计算所依赖的表达式，用于clear_eval_flag
+  // calc_part_id_expr_calculate the dependent expression, used for clear_eval_flag
   ExprFixedArray part_id_dep_exprs_;
-  // 回表查询，为了结构统一，主表也需要一次回表，第一次的insert都返回主表的主键
+  // Back-table query, to maintain structural consistency, the main table also needs a back-table query, the first insert returns the primary key of the main table
   ObDASScanCtDef das_scan_ctdef_;
   ObDASTableLocMeta loc_meta_;
   bool is_part_table_;
@@ -489,6 +493,7 @@ public:
   bool is_table_without_pk_;
   bool has_instead_of_trigger_;
   ObExpr *trans_info_expr_;
+  bool is_vec_hnsw_index_vid_opt_;
 protected:
   ObDMLBaseCtDef(common::ObIAllocator &alloc,
                  ObDASDMLBaseCtDef &das_base_ctdef,
@@ -507,7 +512,8 @@ protected:
       is_primary_index_(false),
       is_table_without_pk_(false),
       has_instead_of_trigger_(false),
-      trans_info_expr_(nullptr)
+      trans_info_expr_(nullptr),
+      is_vec_hnsw_index_vid_opt_(false)
   { }
 };
 

@@ -1,16 +1,20 @@
 // owner: gengli.wzy 
 // owner group: transaction
 
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include <gtest/gtest.h>
@@ -495,12 +499,12 @@ TEST_F(ObMinorFreezeTest, observer_start)
 
 TEST_F(ObMinorFreezeTest, add_tenant)
 {
-  // 创建普通租户tt1
+  // Create normal tenant tt1
   ASSERT_EQ(OB_SUCCESS, create_tenant("tt1"));
-  // 获取租户tt1的tenant_id
+  // Get the tenant_id of tenant tt1
   ASSERT_EQ(OB_SUCCESS, get_tenant_id(RunCtx.tenant_id_));
   ASSERT_NE(0, RunCtx.tenant_id_);
-  // 初始化普通租户tt1的sql proxy
+  // Initialize the sql proxy for normal tenant tt1
   ASSERT_EQ(OB_SUCCESS, get_curr_simple_server().init_sql_proxy2());
 }
 

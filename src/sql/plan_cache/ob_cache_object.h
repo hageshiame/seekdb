@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef DEV_SRC_SQL_PLAN_CACHE_OB_CACHE_OBJECT_H_
@@ -123,12 +127,12 @@ struct ObParamInfo
                K_(precision));
 
   static const int64_t MAX_STR_DES_LEN = 17;
-  //存放是否需要check type和bool 值，以及期望的bool值
+  // Store whether to check type and bool value, as well as the expected bool value
   common::ParamFlag flag_;
   common::ObScale scale_;
   common::ObObjType type_;
   common::ObObjType ext_real_type_; // use as high 4 bytes of udt id if type is sql udt
-  //处理 Oracle 模式带类型 null 值在 plan_cache 中的匹配
+  // Process Oracle mode type null value matching in plan_cache
   bool is_oracle_null_value_;
   common::ObCollationType col_type_;
   common::ObPrecision precision_;
@@ -228,12 +232,12 @@ protected:
   ObOutlineState outline_state_;//TODO:check this need to be
   // store the expressions need to be calculated when plan beginning
   common::ObDList<ObPreCalcExprFrameInfo> pre_calc_frames_;
-  //存放参数化后的参数以及可计算表达式的结果值的信息
+  // Store the information of parameterized parameters and the result values of calculable expressions
   common::Ob2DArray<ObParamInfo,
                     common::OB_MALLOC_BIG_BLOCK_SIZE,
                     common::ObWrapperAllocator, false> params_info_;
-  bool is_contain_virtual_table_;//为虚拟表服务，如果判断出语句中涉及虚拟表
-  bool is_contain_inner_table_;//为内部表服务，如果判断出语句中涉及内部表
+  bool is_contain_virtual_table_;//for virtual table service, if it is determined that the statement involves a virtual table
+  bool is_contain_inner_table_;//for internal table service, if it is determined that the statement involves an internal table
   bool fetch_cur_time_;
   bool is_ignore_stmt_;
   stmt::StmtType stmt_type_;

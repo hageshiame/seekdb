@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -30,7 +34,7 @@ int ObTableRowStoreOpInput::init(ObTaskInfo &task_info)
   int ret = OB_SUCCESS;
   LOG_DEBUG("init table row store input", K(task_info), K(MY_SPEC.id_));
   allocator_ = &exec_ctx_.get_allocator();
-  //相同的计划可能有多个任务，所以这里需要清除掉之前的计划状态
+  // The same plan may have multiple tasks, so here we need to clear the previous plan status
   multi_row_store_.reset();
   ObIArray<ObTaskInfo::ObPartLoc> &part_locs = task_info.get_range_location().part_locs_;
   multi_row_store_.set_allocator(&exec_ctx_.get_allocator());
@@ -166,7 +170,7 @@ int ObTableRowStoreOp::inner_get_next_row()
     if (OB_UNLIKELY(OB_ITER_END != ret)) {
       LOG_WARN("fail to get next row", K(ret));
     } else if (row_store_idx_ < MY_INPUT.multi_row_store_.count() - 1) {
-      //迭代下一个row_store
+      // Iterate next row_store
       ++row_store_idx_;
       ObIArray<ObChunkDatumStore *> &multi_row_store = MY_INPUT.multi_row_store_;
       ObTableModifyOpInput *dml_input = static_cast<ObTableModifyOpInput*>(parent_->get_input());

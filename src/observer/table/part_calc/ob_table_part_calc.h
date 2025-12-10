@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2025 OceanBase
- * OceanBase is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_OBSERVER_OB_TABLE_PART_CALC_H_
@@ -77,26 +81,26 @@ public:
     }
   }
 public:
-  // 计算单个 entity 的 tablet id
+  // Calculate the tablet id for a single entity
   int calc(uint64_t table_id,
            const ObITableEntity &entity,
            common::ObTabletID &tablet_id);
-  // 计算单个 entity 的 tablet id
-  // 计算多个 entity 的 tablet id
+  // Calculate the tablet id for a single entity
+  // Calculate the tablet id for multiple entities
   int calc(uint64_t table_id,
            const common::ObIArray<ObITableEntity*> &entities,
            common::ObIArray<common::ObTabletID> &tablet_ids);
-  // 计算多个 entity 的 tablet id
-  // 计算单个 range 的 tablet id
+  // Calculate the tablet id for multiple entities
+  // Calculate the tablet id for a single range
   int calc(uint64_t table_id,
            const common::ObNewRange &range,
            common::ObIArray<common::ObTabletID> &tablet_ids);
-  // 计算单个 range 的 tablet id
-  // 计算多个 range 的 tablet id
+  // Calculate the tablet id for a single range
+  // Calculate the tablet id for multiple ranges
   int calc(uint64_t table_id,
            const common::ObIArray<ObNewRange> &ranges,
            common::ObIArray<common::ObTabletID> &tablet_ids);
-  // 计算多个 range 的 tablet id
+  // Calculate the tablet id for multiple ranges
   OB_INLINE void set_clip_type(ObTablePartClipType clip_type) { clip_type_ = clip_type; }
 private:
   void clear_evaluated_flag();

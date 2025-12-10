@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_PX_OB_DFO_SCHEDULER_H_
@@ -137,8 +141,8 @@ private:
     int dispatch_transmit_channel_info(ObExecContext &ctx, ObDfo &child, ObDfo &parent) const;
     int dispatch_receive_channel_info(ObExecContext &ctx, ObDfo &child, ObDfo &parent) const;
     int do_schedule_dfo(ObExecContext &exec_ctx, ObDfo &dfo) const;
-    /* task 的 transmit channel 数据通过 sqc 捎带过去，避免一次 rpc
-     * 用于和 root dfo 交互的场景
+    /* task's transmit channel data is carried over by sqc to avoid a single rpc
+     * used in scenarios interacting with the root dfo
      */
     int check_if_can_prealloc_xchg_ch(ObDfo &child, ObDfo &parent, bool &bret) const;
     int do_fast_schedule(ObExecContext &exec_ctx,

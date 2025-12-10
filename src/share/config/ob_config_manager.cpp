@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SHARE
@@ -41,11 +45,13 @@ int ObConfigManager::base_init()
 }
 
 
-int ObConfigManager::init(ObMySQLProxy &sql_proxy, const ObAddr &server)
+int ObConfigManager::init(ObMySQLProxy &sql_proxy, const ObAddr &server,
+                          const UpdateTenantConfigCb &update_tenant_config_cb)
 {
   int ret = OB_SUCCESS;
   sql_proxy_ = &sql_proxy;
   self_ = server;
+  update_tenant_config_cb_ = update_tenant_config_cb;
   if (OB_FAIL(TG_START(lib::TGDefIDs::CONFIG_MGR))) {
     LOG_WARN("init timer failed", K(ret));
   } else {
@@ -145,8 +151,8 @@ int ObConfigManager::load_config(const char *path)
   }
 
   // 
-  // 为了避免和 got_version 有并发问题，
-  // 必须等到 load_config 调用后， got_version 才工作
+  // To avoid concurrency issues with got_version,
+  // Must wait for load_config to be called before got_version works
   init_config_load_ = true;
   return ret;
 }
@@ -278,7 +284,7 @@ int ObConfigManager::dump2file_unsafe(const char* path) const
           ret = OB_ERR_SYS;
           LOG_WARN("fail to backup history config file", KERRMSG, K(ret));
         }
-        // 运行到这里的时候可能掉电，导致没有 conf 文件，需要 DBA 手工拷贝  tmp 文件到这里
+        // When execution reaches here, a power failure may occur, resulting in the absence of the conf file, requiring the DBA to manually copy the tmp file here
         if (0 != ::rename(tmp_path, path) && errno != ENOENT) {
           ret = OB_ERR_SYS;
           LOG_WARN("fail to move tmp config file", KERRMSG, K(ret));
@@ -298,35 +304,8 @@ int ObConfigManager::dump2file_unsafe(const char* path) const
 
 int ObConfigManager::dump2file(const char* path) const
 {
-  DRWLock::RDLockGuard guard(OTC_MGR.rwlock_);
+  DRWLock::RDLockGuard guard(GCONF.rwlock_);
   return dump2file_unsafe(path);
-}
-
-int ObConfigManager::config_backup()
-{
-  int ret = OB_SUCCESS;
-  char path[MAX_PATH_SIZE] = {};
-  static const char *CONF_COPY_NAME = "/observer.conf.bin";
-
-  for (int64_t idx = 0; idx < server_config_.config_additional_dir.size(); ++idx) {
-    if (OB_SUCC(server_config_.config_additional_dir.get(idx, path, MAX_PATH_SIZE))) {
-      if (STRLEN(path) > 0) {
-        if (OB_FAIL(common::FileDirectoryUtils::create_full_path(path))) {
-          LOG_ERROR("create additional configure directory fail", K(path), K(ret));
-        } else if (STRLEN(path) + STRLEN(CONF_COPY_NAME) < static_cast<uint64_t>(MAX_PATH_SIZE)) {
-          strcat(path, CONF_COPY_NAME);
-          if (OB_FAIL(dump2file_unsafe(path))) {
-            LOG_WARN("make additional configure file copy fail", K(path), K(ret));
-            ret = OB_SUCCESS;  // ignore ret code.
-          }
-        } else {
-          LOG_ERROR("additional configure directory path is too long",
-                    K(path), "len", STRLEN(path));
-        }
-      }
-    }
-  } // for
-  return ret;
 }
 
 int ObConfigManager::update_local(int64_t expected_version)
@@ -345,7 +324,7 @@ int ObConfigManager::update_local(int64_t expected_version)
       if (OB_FAIL(sql_client_retry_weak.read(result, sqlstr))) {
         LOG_WARN("read config from __all_sys_parameter failed", K(sqlstr), K(ret));
       } else {
-        DRWLock::WRLockGuard guard(OTC_MGR.rwlock_);
+        DRWLock::WRLockGuard guard(GCONF.rwlock_);
         if (OB_FAIL(system_config_.update(result))) {
           LOG_WARN("failed to load system config", K(ret));
         }
@@ -374,13 +353,12 @@ int ObConfigManager::update_local(int64_t expected_version)
     } else if (OB_FAIL(reload_config())) {
       LOG_WARN("Reload configuration failed", K(ret));
     } else {
-      DRWLock::RDLockGuard guard(OTC_MGR.rwlock_); // need protect tenant config because it will also serialize tenant config
+      DRWLock::RDLockGuard guard(GCONF.rwlock_); // need protect tenant config because it will also serialize tenant config
       if (OB_FAIL(dump2file_unsafe())) {
         LOG_WARN("Dump to file failed", K_(dump_path), K(ret));
       } else {
         GCONF.cluster.set_dumped_version(GCONF.cluster.version());
         LOG_INFO("Reload server config successfully!");
-        ret = config_backup();
       }
     }
     server_config_.print();
@@ -433,9 +411,9 @@ int ObConfigManager::got_version(int64_t version, const bool remove_repeat/* = f
     }
 
     if (schedule) {
-      // 如果决策了本次要调度一个新 task，那么现将队列中排队的所有 task 全部移除
-      // 有一点可以确保，到达这个点时无论移除的 task 是什么，下一个要添加的 task
-      // 的 version 一定是最新的。
+      // If the decision is to schedule a new task this time, then remove all tasks currently queued
+      // There is one thing that can be ensured, regardless of what task is removed when reaching this point, the next task to be added
+      // the version is definitely the latest.
       bool task_exist = false;
       int tmp_ret = TG_TASK_EXIST(lib::TGDefIDs::CONFIG_MGR, update_task_, task_exist);
       if (task_exist) {
@@ -507,6 +485,39 @@ void ObConfigManager::UpdateTask::runTimerTask()
     }
     ObCurTraceId::reset();
   }
+}
+
+int ObConfigManager::add_extra_config(const obrpc::ObTenantConfigArg &arg)
+{
+  int ret = OB_SUCCESS;
+  if (!arg.is_valid()) {
+    ret = OB_INVALID_ARGUMENT;
+    LOG_ERROR("invalid arg", K(ret), K(arg));
+  } else {
+    ret = server_config_.add_extra_config(arg.config_str_.ptr());
+  }
+  LOG_INFO("add tenant extra config", K(arg));
+  return ret;
+}
+
+void ObConfigManager::notify_tenant_config_changed(uint64_t tenant_id)
+{
+  update_tenant_config_cb_(tenant_id);
+}
+
+int ObConfigManager::init_tenant_config(const obrpc::ObTenantConfigArg &arg)
+{
+  int ret = OB_SUCCESS;
+  if (OB_FAIL(add_extra_config(arg))) {
+    LOG_WARN("fail to add extra config", KR(ret), K(arg));
+  } else {
+    if (OB_FAIL(dump2file_unsafe())) {
+      LOG_WARN("failed to dump2file", K(ret));
+    } else if (OB_FAIL(server_config_.publish_special_config_after_dump())) {
+      LOG_WARN("publish special config after dump failed", K(ret));
+    }
+  }
+  return ret;
 }
 
 } // namespace common

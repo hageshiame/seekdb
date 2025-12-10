@@ -1,14 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
- * This file contains implementation support for the JSON path abstraction.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_RESV
@@ -1060,7 +1063,7 @@ int ObJsonPathUtil::append_array_index(uint64_t index, bool from_end, ObJsonBuff
       LOG_WARN("fail to append the 'last' ", K(ret));
     } else {
       // if index > 0, it should have '-' after 'last' 
-      // such as：$[last-3 to last-1]
+      // such as: $[last-3 to last-1]
       if (index > 0) {
         if (OB_FAIL(str.append("-"))) {
           LOG_WARN("fail to append the '-' ", K(ret));
@@ -1826,7 +1829,7 @@ int ObJsonPath::parse_wildcard_ellipsis_node()
   return ret;
 }
 
-// get array index, range：
+// get array index, range:
 // start from expression[index_] until non-digit char
 // parse str to int32_t, return index
 int ObJsonPathUtil::get_index_num(const ObString& expression, uint64_t& idx, uint64_t& array_idx)
@@ -1903,7 +1906,7 @@ int ObJsonPath::parse_single_array_index(uint64_t& array_index, bool& from_end)
     }
   }
 
-  // Here will be three situation：
+  // Here will be three situation:
   // 'last' : get the last
   // 'last-num', such as 'last-3' : get the last number
   // 'num' : get the first number
@@ -1936,7 +1939,7 @@ int ObJsonPath::parse_single_array_index(uint64_t& array_index, bool& from_end)
 
 // parse **(JPN_ARRAY_CELL & RANGE)
 // @return  the error code.
-// three situation：
+// three situation:
 // '[*]' : just build ObJsonPathNode with type JPN_ARRAY_CELL_WILDCARD, and append to JsonPath
 // otherwise call parse_single_array_index() to do parse
 // if type is CELL, process one arg
@@ -2817,7 +2820,7 @@ int ObJsonPath::parse_oracle_path_node()
         }
         break;
       }
-      // may be ？
+      // may be ?
       case ObJsonPathItem::FILTER_FLAG: {
         ++index_;
         if (OB_FAIL(parse_filter_node())) {
@@ -4401,7 +4404,7 @@ int ObJsonPath::parse_condition(ObFilterArrayPointers& filter_stack, ObCharArray
                 if (OB_FAIL(filter_cond_node->init_cond_right(right_comp))) {
                   LOG_WARN("fail to init the right side of condition!", K(top));
                 } else {
-                // cond_node的参数正确初始化，加入filter_stack
+                // cond_node parameters are correctly initialized, added to filter_stack
                   if (OB_FAIL(filter_stack.push_back(filter_cond_node))) {
                     LOG_WARN("fail to append new filter_cond_node!", K(top));
                   } else {

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2023 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SERVER
@@ -103,52 +107,48 @@ bool ObTableLoadBackupTable_V_1_4::is_valid() const
 int ObTableLoadBackupTable_V_1_4::parse_path(const ObString &path)
 {
   int ret = OB_SUCCESS;
-  if (OB_UNLIKELY(storage_info_.get_type() != OB_STORAGE_OSS)) {
-    ret = OB_NOT_SUPPORTED;
-    LOG_WARN("unsupport storage type", KR(ret), K(storage_info_));
+  int64_t pos = 0;
+  char buf[OB_MAX_URI_LENGTH];
+  if (OB_FAIL(databuff_printf(buf, OB_MAX_URI_LENGTH, pos, "%.*s",
+                              path.length(), path.ptr()))) {
+    LOG_WARN("fail to fill buf", KR(ret), K(pos), K(path));
   } else {
-    int64_t pos = 0;
-    char buf[OB_MAX_URI_LENGTH];
-    if (OB_FAIL(databuff_printf(buf, OB_MAX_URI_LENGTH, pos, "%.*s", 
-                                path.length(), path.ptr()))) {
-      LOG_WARN("fail to fill buf", KR(ret), K(pos), K(path));                            
+    if (buf[pos - 1] != '/') {
+      buf[pos++] = '/';
+    }
+    if (OB_FAIL(ob_write_string(allocator_, ObString(pos, buf), data_path_))) {
+      LOG_WARN("fail to ob_write_string", KR(ret));
     } else {
-      if (buf[pos - 1] != '/') {
-        buf[pos++] = '/';
-      }
-      if (OB_FAIL(ob_write_string(allocator_, ObString(pos, buf), data_path_))) {
-        LOG_WARN("fail to ob_write_string", KR(ret));
-      } else {
-        ObString str(pos, buf);
-        while (OB_SUCC(ret)) {
-          ObString tmp_str = str.split_on(str.reverse_find('/'));
-          if (!str.empty()) {
-            if (OB_FAIL(ob_write_string(allocator_, str, table_id_))) {
-              LOG_WARN("fail to ob_write_string", KR(ret));
-            } else {
-              break;
-            }
+      ObString str(pos, buf);
+      while (OB_SUCC(ret)) {
+        ObString tmp_str = str.split_on(str.reverse_find('/'));
+        if (!str.empty()) {
+          if (OB_FAIL(ob_write_string(allocator_, str, table_id_))) {
+            LOG_WARN("fail to ob_write_string", KR(ret));
           } else {
-            str = tmp_str;
+            break;
           }
+        } else {
+          str = tmp_str;
         }
       }
-      if (OB_SUCC(ret)) {
-        ObString pattern("base_data_");
-        char *match_ptr = nullptr;
-        if (OB_ISNULL(match_ptr = strstr(buf, pattern.ptr()))) {
-          ret = OB_INVALID_ARGUMENT;
-          LOG_WARN("not match pattern", KR(ret), K(pattern));
-        } else {
-          pos -= pattern.length();
-          MEMMOVE(match_ptr, match_ptr + pattern.length(), pos - (match_ptr - buf));
-          if (OB_FAIL(ob_write_string(allocator_, ObString(pos, buf), meta_path_, true))) {
-            LOG_WARN("fail to ob_write_string", KR(ret));
-          }
+    }
+    if (OB_SUCC(ret)) {
+      ObString pattern("base_data_");
+      char *match_ptr = nullptr;
+      if (OB_ISNULL(match_ptr = strstr(buf, pattern.ptr()))) {
+        ret = OB_INVALID_ARGUMENT;
+        LOG_WARN("not match pattern", KR(ret), K(pattern));
+      } else {
+        pos -= pattern.length();
+        MEMMOVE(match_ptr, match_ptr + pattern.length(), pos - (match_ptr - buf));
+        if (OB_FAIL(ob_write_string(allocator_, ObString(pos, buf), meta_path_, true))) {
+          LOG_WARN("fail to ob_write_string", KR(ret));
         }
       }
     }
   }
+
 
   return ret;
 }

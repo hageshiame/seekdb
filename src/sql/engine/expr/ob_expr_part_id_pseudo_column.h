@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef _OCEANBASE_SQL_ENGINE_EXPR_PART_ID_PSEUDO_COLUMN_FOR_PDML_H_
@@ -16,10 +20,9 @@
 #include "sql/engine/expr/ob_expr_operator.h"
 #include "sql/engine/expr/ob_expr_res_type.h"
 #include "share/ob_i_sql_expression.h"
-
-// 为pdml功能中提供计算partition id的功能，具体的计算方法为：
-// 1. child算子（例如Table scan）在计算一行时，将对应的partition id填充到ObExprCtx中的ObExecContext中
-// 2. ObExprPartIdPseudoColumn表达式直接从ObExprCtx中获得对应的partition id
+// Provide the function to calculate partition id for pdml feature, the specific calculation method is:
+// 1. child operator (for example Table scan) in calculating a row, fills the corresponding partition id into ObExecContext in ObExprCtx
+// 2. ObExprPartIdPseudoColumn expression directly obtains the corresponding partition id from ObExprCtx
 namespace oceanbase
 {
 namespace sql

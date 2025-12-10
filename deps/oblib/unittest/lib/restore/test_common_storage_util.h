@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef TEST_STORAGE_COMMON_STORAGE_UTIL_H_
@@ -73,9 +77,6 @@ int TestCommonStorageUtil::build_object_storage_info(
           && OB_FAIL(databuff_printf(account, sizeof(account), pos,
                                      "&checksum_type=%s", checksum_type))) {
         OB_LOG(WARN, "fail to databuff printf", K(ret), K(checksum_type));
-      } else if (ObStorageType::OB_STORAGE_COS == storage_type && 
-                 databuff_printf(account, sizeof(account), pos, "&appid=%s", appid)) {
-        OB_LOG(WARN, "fail to databuff printf", K(ret), K(appid));
       } else if (ObStorageType::OB_STORAGE_S3 == storage_type &&
                  databuff_printf(account, sizeof(account), pos, "&s3_region=%s", region)) {
         OB_LOG(WARN, "fail to databuff printf", K(ret), K(region));

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_COMMON_OB_OBJ_CAST_
@@ -72,9 +76,9 @@ namespace common
 #define CM_FAST_COLUMN_CONV              (1ULL << 22)
 #define CM_ORA_SYS_VIEW_CAST             (1ULL << 23)
 #define CM_DEMOTE_CAST                   (1ULL << 24)
-// string->integer(int/uint)时默认进行round(round to nearest)，
-// 如果设置该标记，则会进行trunc(round to zero)
-// ceil(round to +inf)以及floor(round to -inf)暂时没有支持
+// string->integer(int/uint) when default rounding (round to nearest) is performed,
+// If this flag is set, truncation (round to zero) will be performed
+// ceil(round to +inf) and floor(round to -inf) are not currently supported
 #define CM_STRING_INTEGER_TRUNC          (1ULL << 57)
 #define CM_COLUMN_CONVERT                (1ULL << 58)
 #define CM_ENABLE_BLOB_CAST              (1ULL << 59)
@@ -408,14 +412,14 @@ public:
    *
    */
   //{{
-  //不支持向enum/set转换的版本
+  //Version not supporting conversion to enum/set
   static int to_type(const ObObjType expect_type, ObCastCtx &cast_ctx,
                      const ObObj &in_obj, ObObj &buf_obj, const ObObj *&out_obj);
   static int to_datetime(const ObObjType expect_type, ObCastCtx &cast_ctx,
                          const ObObj &in_obj, ObObj &buf_obj, const ObObj *&res_obj);
   static int bool_to_json(const ObObjType expect_type, ObCastCtx &cast_ctx,
                           const ObObj &in_obj, ObObj &buf_obj, const ObObj *&res_obj);
-  //支持向enum/set转换的版本
+  //Support version that converts to enum/set
   static int to_type(const ObExpectType &expect_type, ObCastCtx &cast_ctx,
                      const ObObj &in_obj, ObObj &buf_obj, const ObObj *&res_obj);
   //}}
@@ -481,7 +485,7 @@ public:
     return ObObjEvaluator::is_false(obj, CM_WARN_ON_FAIL, result);
   }
   static int is_true(const ObObj &obj, ObCastMode cast_mode, bool &result);
-  // is_false() 不是 !is_true()，因为布尔表达式的计算结果有三种：true，false，unknown
+  // is_false() is not !is_true(), because the result of a boolean expression can be three values: true, false, unknown
   static int is_false(const ObObj &obj, ObCastMode cast_mode, bool &result);
 };
 

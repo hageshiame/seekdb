@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_LOGSERVICE_LOG_DEFINE_
@@ -67,7 +71,7 @@ const int64_t PALF_PHY_BLOCK_SIZE = 1 << 26;                                    
 const int64_t PALF_BLOCK_SIZE = PALF_PHY_BLOCK_SIZE - MAX_INFO_BLOCK_SIZE;          // log block size is 64M-MAX_INFO_BLOCK_SIZE by default.
 const int64_t PALF_META_BLOCK_SIZE = PALF_PHY_BLOCK_SIZE - MAX_INFO_BLOCK_SIZE;     // meta block size is 64M-MAX_INFO_BLOCK_SIZE by default.
 
-constexpr int64_t CLOG_FILE_TAIL_PADDING_TRIGGER = 4096;     // 文件尾剩余空间补padding阈值
+constexpr int64_t CLOG_FILE_TAIL_PADDING_TRIGGER = 4096;     // Threshold for padding the remaining space at the end of the file
 // The valid group_entry (not padding entry) size range is:
 //    (0, (MAX_LOG_BODY_SIZE + MAX_LOG_HEADER_SIZE) ).
 // The padding group_entry size range is:
@@ -121,7 +125,7 @@ const int64_t PALF_SYNC_RPC_TIMEOUT_US = 2 * 1000 * 1000;                       
 const int64_t PALF_LOG_SYNC_DELAY_THRESHOLD_US = 3 * 1000 * 1000L;                  // 3 s
 constexpr int64_t INVALID_PROPOSAL_ID = INT64_MAX;
 constexpr int64_t PALF_MAX_PROPOSAL_ID = INT64_MAX - 1;
-constexpr int64_t PALF_INITIAL_PROPOSAL_ID = 0;
+constexpr int64_t PALF_INITIAL_PROPOSAL_ID = 1;
 constexpr char PADDING_LOG_CONTENT_CHAR = '\0';
 const int64_t MIN_WRITING_THTOTTLING_TRIGGER_PERCENTAGE = 40;
 constexpr int64_t PALF_IO_WAIT_EVENT_TIMEOUT_MS = 100;

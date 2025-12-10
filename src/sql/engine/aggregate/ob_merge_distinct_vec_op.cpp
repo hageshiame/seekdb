@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -195,11 +199,11 @@ int ObMergeDistinctVecOp::deduplicate_for_batch(bool has_last, const ObBatchRows
       curr_idx = first_active_idx + 1;
       switch (vec->get_format()) {
         case VEC_FIXED : {
-          // 对big_int进行特化
+          // Specialize for big_int
           if (ob_is_integer_type(MY_SPEC.distinct_exprs_.at(col_idx)->datum_meta_.type_)) {
-            // 测试发现，对于bigint类型，当前列的每一行不判断（是否被上一列的比较输出）直接进行比较性能通常更高(at有位运算导致)，
-            // 首列过滤行较少时，将后续列看作是first_col不进行当前行out的取值性能会更好
-            // 而对于第一列就输出大量行，此时仍将后续列视为first_col的话性能会发生较大回退，因此暂时不进行该优化
+            // Test found that for bigint type, each row of the current column is compared directly without checking (whether it is output by the comparison of the previous column) performance is usually higher (at has bitwise operations causing),
+            // When the number of filtered rows in the first column is small, treating subsequent columns as first_col without taking the current row's out value will result in better performance
+            // And for the first column outputting a large number of lines, if we still consider subsequent columns as first_col, performance will degrade significantly, therefore this optimization is not currently implemented
             ObFixedLengthVector<int64_t, VectorBasicOp<VEC_TC_INTEGER>> *fixed_vec = 
               static_cast<ObFixedLengthVector<int64_t, VectorBasicOp<VEC_TC_INTEGER>> *> (vec);
             if (OB_FAIL(compare_in_column_with_format<FixedLengthVectorBigInt>(fixed_vec, child_brs,
@@ -346,7 +350,7 @@ int ObMergeDistinctVecOp::Compare::equal_in_row(const common::ObIArray<ObExpr*> 
   int ret = OB_SUCCESS;
   equal = false;
   if (0 == set_exprs->count()) {
-    // 表示是distinct 常量，所以没有distinct列，则永远相等
+    // indicates it is a distinct constant, so if there is no distinct column, it will always be equal
     // case: select distinct 1 from t1;
     equal = true;
   } else {

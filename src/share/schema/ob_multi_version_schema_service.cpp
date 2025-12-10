@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SHARE_SCHEMA
@@ -226,7 +230,7 @@ int ObMultiVersionSchemaService::update_schema_cache(
                                                 *table))) {
       LOG_WARN("put schema failed", KR(ret), "table_id", table->get_table_id());
     } else {
-      LOG_INFO("put schema succeed", K(*table));
+      LOG_TRACE("put schema succeed", K(*table));
     }
   }
   return ret;
@@ -248,7 +252,7 @@ int ObMultiVersionSchemaService::update_schema_cache(
                                                 table))) {
       LOG_WARN("put schema failed", KR(ret), "table_id", table.get_table_id());
     } else {
-      LOG_INFO("put schema succeed", K(table));
+      LOG_TRACE("put schema succeed", K(table));
     }
   }
   return ret;
@@ -268,7 +272,7 @@ int ObMultiVersionSchemaService::update_schema_cache(
                                          tenant))) {
       LOG_WARN("put schema failed", K(ret));
     } else {
-      LOG_INFO("put schema succeed", K(tenant));
+      LOG_TRACE("put schema succeed", K(tenant));
     }
   }
   return ret;
@@ -286,7 +290,7 @@ int ObMultiVersionSchemaService::update_schema_cache(
                                        schema))) {
     LOG_WARN("put schema failed", K(ret));
   } else {
-    LOG_INFO("put schema succeed", K(schema));
+    LOG_TRACE("put schema succeed", K(schema));
   }
   return ret;
 }
@@ -1752,7 +1756,9 @@ int ObMultiVersionSchemaService::broadcast_tenant_schema(
   int ret = OB_SUCCESS;
   lib::ObMutexGuard guard(schema_refresh_mutex_);
   FOREACH_CNT_X(table_schema, table_schemas, OB_SUCC(ret)) {
-    if (OB_FAIL(schema_cache_.put_schema(
+    if (OB_ALL_CORE_TABLE_TID == table_schema->get_table_id()) {
+      continue;
+    } else if (OB_FAIL(schema_cache_.put_schema(
                 TABLE_SCHEMA,
                 tenant_id,
                 table_schema->get_table_id(),
@@ -1761,7 +1767,7 @@ int ObMultiVersionSchemaService::broadcast_tenant_schema(
       LOG_WARN("put sys schema to schema cache failed",
                KR(ret), K(tenant_id), KPC(table_schema));
     } else {
-      LOG_INFO("add sys table schema", KR(ret), K(tenant_id), KPC(table_schema));
+      LOG_TRACE("add sys table schema", KR(ret), K(tenant_id), KPC(table_schema));
     }
   }
   auto attr = SET_USE_500("BroFullSchema", ObCtxIds::SCHEMA_SERVICE);
@@ -2090,7 +2096,7 @@ int ObMultiVersionSchemaService::add_schema(
       bool can_switch = false;
       int64_t max_schema_slot_num = OB_MAX_VERSION_COUNT;
       if (!ObSchemaService::g_liboblog_mode_) {
-        omt::ObTenantConfigGuard tenant_config(OTC_MGR.get_tenant_config_with_lock(tenant_id));
+        omt::ObTenantConfigGuard tenant_config(TENANT_CONF(tenant_id));
         if (tenant_config.is_valid()) {
           max_schema_slot_num = tenant_config->_max_schema_slot_num;
         }
@@ -2349,7 +2355,8 @@ int ObMultiVersionSchemaService::async_refresh_schema(
  * 4. If a tenant fails to update to the specified version, an error will be reported and the external logic will try again
  */
 int ObMultiVersionSchemaService::refresh_and_add_schema(const ObIArray<uint64_t> &tenant_ids,
-                                                        bool check_bootstrap/* = false*/)
+                                                        bool check_bootstrap/* = false*/,
+                                                        common::ObIArray<share::schema::ObTableSchema> *table_schemas/* = nullptr*/)
 {
   FLOG_INFO("[REFRESH_SCHEMA] start to refresh and add schema", K(tenant_ids));
   const int64_t start = ObTimeUtility::current_time();
@@ -2404,7 +2411,7 @@ int ObMultiVersionSchemaService::refresh_and_add_schema(const ObIArray<uint64_t>
       } else if (0 == tenant_ids.count()) {
         // refresh all tenant schema
         ObSchemaMgr *schema_mgr = NULL;
-        if (OB_FAIL(refresh_tenant_schema(OB_SYS_TENANT_ID))) {
+        if (OB_FAIL(refresh_tenant_schema(OB_SYS_TENANT_ID, table_schemas))) {
           LOG_WARN("fail to refresh sys schema", K(ret), K(all_tenant_ids));
         } else if (OB_FAIL(schema_mgr_for_cache_map_.get_refactored(OB_SYS_TENANT_ID, schema_mgr))) {
           LOG_WARN("fail to get sys schema mgr for cache", K(ret));
@@ -2421,7 +2428,7 @@ int ObMultiVersionSchemaService::refresh_and_add_schema(const ObIArray<uint64_t>
             const uint64_t tenant_id = all_tenant_ids.at(i);
             if (OB_SYS_TENANT_ID == tenant_id) {
               // skip
-            } else if (OB_SUCCESS != (tmp_ret = refresh_tenant_schema(tenant_id))) {
+            } else if (OB_SUCCESS != (tmp_ret = refresh_tenant_schema(tenant_id, table_schemas))) {
               LOG_WARN("fail to refresh tenant schema", K(tmp_ret), K(tenant_id));
             }
             if (OB_SUCCESS != tmp_ret && OB_SUCCESS == ret) {
@@ -2438,7 +2445,7 @@ int ObMultiVersionSchemaService::refresh_and_add_schema(const ObIArray<uint64_t>
           if (OB_INVALID_TENANT_ID == tenant_id) {
             tmp_ret = OB_INVALID_ARGUMENT;
             LOG_WARN("invalid tenant_id", K(tmp_ret), K(tenant_id));
-          } else if (OB_SUCCESS != (tmp_ret = refresh_tenant_schema(tenant_id))) {
+          } else if (OB_SUCCESS != (tmp_ret = refresh_tenant_schema(tenant_id, table_schemas))) {
             LOG_WARN("fail to refresh tenant schema", K(tmp_ret), K(tenant_id));
           }
           if (OB_SUCCESS != tmp_ret && OB_SUCCESS == ret) {
@@ -2516,7 +2523,8 @@ int ObMultiVersionSchemaService::get_schema_version_by_timestamp(
 // 3. user tenants of the standalone cluster are weakly consistent in reading and refresh schema,
 //  and they need to obtain the weakly consistent read version number and the visible schema version
 int ObMultiVersionSchemaService::refresh_tenant_schema(
-    const uint64_t tenant_id)
+    const uint64_t tenant_id,
+    common::ObIArray<share::schema::ObTableSchema> *table_schemas)
 {
   FLOG_INFO("[REFRESH_SCHEMA] start to refresh and add schema by tenant", K(tenant_id));
   const int64_t start = ObTimeUtility::current_time();
@@ -2597,7 +2605,7 @@ int ObMultiVersionSchemaService::refresh_tenant_schema(
       }
 
       if (OB_SUCC(ret) && need_refresh) {
-        if (OB_FAIL(refresh_schema(refresh_schema_status))) {
+        if (OB_FAIL(refresh_schema(refresh_schema_status, table_schemas))) {
           LOG_WARN("fail to refresh schema by tenant", KR(ret), K(refresh_schema_status));
         }
       }

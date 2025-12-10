@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX  TRANS
@@ -289,7 +293,7 @@ int ObTenantWeakReadClusterService::persist_version_if_need_(const SCN last_min_
   int64_t begin_ts = ObTimeUtility::current_time();
   static const int64_t PRINT_INTERVAL = 1 * 1000 * 1000L;
   // check if need update
-  // NOTE：min_version <= max_version
+  // NOTE: min_version <= max_version
   if (new_min_version > last_min_version && new_min_version >= last_max_version) {
     ObASHSetInnerSqlWaitGuard ash_inner_sql_guard(ObInnerSqlWaitTypeId::TX_UPDATE_WEAK_READ_VERSION);
     if (OB_ISNULL(mysql_proxy_)) {
@@ -642,7 +646,7 @@ int ObTenantWeakReadClusterService::update_cluster_version(int64_t &affected_row
     ret = OB_NOT_IN_SERVICE;
   } else if (OB_FAIL(check_leader_info_(cur_leader_epoch))) {
     if (OB_NOT_MASTER == ret) {
-      // NOT Leader了
+      // NOT Leader anymore
     } else {
       LOG_WARN("check WRS leader info fail", KR(ret));
     }
@@ -660,7 +664,7 @@ int ObTenantWeakReadClusterService::update_cluster_version(int64_t &affected_row
   } else {
     ATOMIC_STORE(&skipped_server_count_, skipped_server_count);
     // if new version exceeds the weak read version range([min, max)), do PERSIST
-    // NOTE：Note that min_version maybe equal to max_version
+    // NOTE: Note that min_version maybe equal to max_version
     if (new_version > min_version_ && new_version >= max_version_) {
       SCN new_min_version = new_version;
       SCN new_max_version = generate_max_version_(new_min_version);
@@ -949,7 +953,7 @@ int ObTenantWeakReadClusterService::update_server_version(const common::ObAddr &
     }
     // check if in service first
     else if (OB_UNLIKELY(! is_in_service())) {
-      // 没有服务
+      // No service
       ret = OB_NOT_IN_SERVICE;
     }
     // check if self is wrs Leader

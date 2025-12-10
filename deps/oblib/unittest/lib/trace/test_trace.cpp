@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include <gtest/gtest.h>
@@ -38,7 +42,7 @@ TEST(TestUUID, basic_test)
 
 TEST(TestTrace, basic_test)
 {
-  // 框架端完成初始化
+  // Framework end completes initialization
   char buffer[8 << 10];
   uint8_t level = 3;
   uint8_t auto_flush = 1;
@@ -51,7 +55,7 @@ TEST(TestTrace, basic_test)
   FLT_SET_TAG(sql_text, "select 1 from dual;");
   FLUSH_TRACE();
   auto t = std::thread([=]() {
-    // RPC框架端完成初始化
+    // RPC framework end completes initialization
     OBTRACE->init(trace_id, proxy->get_span_id(), (auto_flush << 7) + level);
     //
     FLTSpanGuard(ObSql);

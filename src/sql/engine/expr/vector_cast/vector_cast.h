@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SQL_ENG_EXPR_VECTOR_CAST_H_
@@ -241,11 +245,10 @@ struct VectorCasterUtil
 };
 } // end sql
 } // end oceanbase
-
-// 出现错误时,处理如下：
-// 如果只设置了WARN_ON_FAIL，会覆盖错误码
-// 如果设置了WARN_ON_FAIL和ZERO_ON_WARN,会覆盖错误码，且结果被置为0
-// 如果设置了WARN_ON_FAIL和NULL_ON_WARN,会覆盖错误码，且结果被置为null
+// When an error occurs, handle as follows:
+// If only WARN_ON_FAIL is set, it will override the error code
+// If WARN_ON_FAIL and ZERO_ON_WARN are set, it will override the error code, and the result will be set to 0
+// If WARN_ON_FAIL and NULL_ON_WARN are set, it will override the error code, and the result will be set to null
 #define SET_RES_OBJ(cast_mode, func_val, zero_value, value, idx)       \
   do {                                                            \
     if (OB_SUCC(ret)) {                                           \

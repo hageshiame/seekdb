@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -73,7 +77,7 @@ OB_INLINE int ObExprFromUnixTime::set_scale_for_single_param(ObExprResType &type
   if (type1.is_integer_type()) {
     type.set_scale(DEFAULT_SCALE_FOR_INTEGER);
   } else if(type1.is_varchar() || type.is_enum_or_set()) {
-    // 这里是不是有bug，type1.is_enum_or_set() TODO @zongmei.zzm
+    // Here is there a bug, type1.is_enum_or_set() TODO @zongmei.zzm
     type.set_scale(MAX_SCALE_FOR_TEMPORAL);
   } else {
     type.set_scale(static_cast<ObScale>(MIN(type1.get_scale(), MAX_SCALE_FOR_TEMPORAL)));
@@ -223,14 +227,14 @@ int ObExprFromUnixTime::eval_fromtime_normal(const ObExpr &expr,
   } else if (OB_ISNULL(param1)) {
     ret = OB_ERR_UNEXPECTED;
     LOG_WARN("unexpected null param1", K(ret), K(param1));
-  } else if (param1->is_null()) { // mysql 模式 from_unixtime有短路逻辑
+  } else if (param1->is_null()) { // mysql mode from_unixtime has short-circuit logic
     expr_datum.set_null();
   } else if (OB_FAIL(expr.args_[1]->eval(ctx, param2))) {
     LOG_WARN("failed to eval", K(ret));
   } else if (OB_ISNULL(param2)) {
     ret = OB_ERR_UNEXPECTED;
     LOG_WARN("unexpected null param2", K(ret));
-  } else if (param2->is_null() || param2->get_string().empty()) { // 需要运行时cast
+  } else if (param2->is_null() || param2->get_string().empty()) { // need runtime cast
     expr_datum.set_null();
   } else if (OB_FAIL(helper.get_sql_mode(sql_mode))) {
     LOG_WARN("get sql mode failed", K(ret));
@@ -259,7 +263,7 @@ int ObExprFromUnixTime::eval_fromtime_normal(const ObExpr &expr,
       char *buf = NULL;
       int64_t pos = 0;
       const int64_t BUF_LEN = 1024;
-      // 这里先用expr_datum，最后输出结果的时候会调用set_string覆盖其结果
+      // Here we first use expr_datum, finally when outputting the result it will call set_string to override its result
       expr_datum.set_time(usec_val);
       if (usec_val < 0) {
         expr_datum.set_null();
@@ -301,7 +305,7 @@ int ObExprFromUnixTime::eval_fromtime_special(const ObExpr &expr,
   ObDatum *param2 = NULL;
   if (OB_FAIL(expr.args_[0]->eval(ctx, param1))) {
     LOG_WARN("failed to eval", K(ret));
-  } else if (param1->is_null()) { // mysql 模式 from_unixtime有短路逻辑
+  } else if (param1->is_null()) { // mysql mode from_unixtime has short-circuit logic
     expr_datum.set_null();
   } else if (OB_FAIL(expr.args_[1]->eval(ctx, param2))) {
     LOG_WARN("failed to eval", K(ret));

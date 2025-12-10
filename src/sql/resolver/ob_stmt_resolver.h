@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef _OB_STMT_RESOLVER_H
@@ -86,13 +90,13 @@ public:
                                   int32_t *dblink_name_len = NULL,
                                   bool *has_dblink_node = NULL);
   /**
-   * @brief  解析一个T_REF_FACTOR节点，得到database name和table name
-   * @param [in] node  - 语法节点
-   * @param [in] session_info  - session信息
-   * @param [out] table_name  - 表名
-   * @param [out] db_name  - 库名
-   * @param [in] dblink_name_ptr  - dblink名, 用于判别某些ddl是否引用了dblink，如果引用，该ddl应该报错ORA-02021
-   * @param [in] dblink_name_len  - dblink名长度, 用于分区 "drop table t1@;" 和 "drop table t1@q;"，应该报不同的错误
+   * @brief  Parse a T_REF_FACTOR node to get database name and table name
+   * @param [in] node  - syntax node
+   * @param [in] session_info  - session information
+   * @param [out] table_name  - table name
+   * @param [out] db_name  - database name
+   * @param [in] dblink_name_ptr  - dblink name, used to determine if certain ddl references dblink, if referenced, this ddl should return error ORA-02021
+   * @param [in] dblink_name_len  - dblink name length, used for partition "drop table t1@;" and "drop table t1@q;", should return different errors
    * @retval OB_SUCCESS execute success
    * @retval OB_SOME_ERROR special errno need to handle
    *

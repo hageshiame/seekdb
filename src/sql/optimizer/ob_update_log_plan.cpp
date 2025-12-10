@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_OPT
@@ -23,9 +27,9 @@ using namespace oceanbase::share::schema;
 using namespace oceanbase::sql::log_op_def;
 
 /*
-为了理解 ObUpdateLogPlan 代码，
-需要知道：一个较为复杂的 update 语句，
-可以包含 LIMIT、SORT、SubPlanFilter 等算子。
+To understand the ObUpdateLogPlan code,
+you need to know: a relatively complex update statement,
+can contain LIMIT, SORT, SubPlanFilter etc operators.
 
 create table t1 (i int, j int);
 create table t2 (i int, j int);
@@ -94,7 +98,7 @@ int ObUpdateLogPlan::generate_normal_raw_plan()
 
     // step. allocate 'limit' if needed
     if (OB_SUCC(ret) && update_stmt->has_limit() && need_limit) {
-      // 说明：MySQL 模式下使用 limit时，会生成 limit 算子
+      // Description: In MySQL mode, when using limit, a limit operator will be generated
       if (OB_FAIL(candi_allocate_limit(order_items))) {
         LOG_WARN("failed to allocate limit operator", K(ret));
       } else {
@@ -118,10 +122,9 @@ int ObUpdateLogPlan::generate_normal_raw_plan()
             K(candidates_.candidate_plans_.count()));
       }
     }
-
     //
-    // 以上是针对被 update 表相关的查询部分，其输出是符合条件的行
-    // 下面针对 assign 部分涉及的查询生成计划，其输出是更新后的值
+    // The above is the query part related to the updated table, its output is the rows that meet the conditions
+    // Below is the query generation plan involved in the assign part, its output is the updated value
     //
     if (OB_SUCC(ret)) {
       const ObUpdateStmt *update_stmt = get_stmt();
@@ -151,14 +154,14 @@ int ObUpdateLogPlan::generate_normal_raw_plan()
       } else if (OB_FAIL(compute_dml_parallel())) {
         LOG_WARN("failed to compute dml parallel", K(ret));
       } else if (use_pdml()) {
-        // PDML计划
+        // PDML plan
         if (OB_FAIL(candi_allocate_pdml_update())) {
           LOG_WARN("failed to allocate pdml update operator", K(ret));
         } else {
           LOG_TRACE("succeed to allocate pdml update operator",
               K(candidates_.candidate_plans_.count()));
         }
-        // normal update 计划
+        // normal update plan
       } else {
         if (OB_FAIL(candi_allocate_update())) {
           LOG_WARN("failed to allocate update operator", K(ret));
@@ -171,7 +174,7 @@ int ObUpdateLogPlan::generate_normal_raw_plan()
 
     // step. allocate scalar operator
     if (OB_SUCC(ret) && update_stmt->get_returning_aggr_item_size() > 0) {
-      // returning 逻辑用于存储过程中将最终结果做聚集后填入一个变量，例如：
+      // returning logic is used to store the aggregated final result into a variable, for example:
       //
       // DECLARE
       //   l_max_id NUMBER;
@@ -364,8 +367,8 @@ int ObUpdateLogPlan::candi_allocate_pdml_update()
                  index_dml_info->is_update_primary_key_) {
         IndexDMLInfo *index_delete_info = nullptr;
         IndexDMLInfo *index_insert_info = nullptr;
-        // 更新了当前索引的分区键，需要做 row-movement
-        // 需要为每一个global index以及primary index分配各自的 update operator，形成如下的计划:
+        // Updated the partition key of the current index, need to do row-movement
+        // Need to allocate a separate update operator for each global index and primary index, forming the following plan:
         //  ....
         //    INSERT INDEX (i3)
         //      DELETE INDEX (i3)
@@ -393,8 +396,8 @@ int ObUpdateLogPlan::candi_allocate_pdml_update()
           }
         }
       } else {
-        // 在PDML update中，可能包含有多个global index，
-        // 需要为每一个global index以及primary index分配各自的 update operator，形成如下的计划:
+        // In PDML update, there may contain multiple global index,
+        // Need to allocate a separate update operator for each global index and primary index, forming the following plan:
         //  ....
         //    UPDATE INDEX (i3)
         //       UPDATE INDEX (i2)
@@ -493,7 +496,7 @@ int ObUpdateLogPlan::prepare_table_dml_info_special(const ObDmlTableInfo& table_
     ret = OB_ERR_UNEXPECTED;
     LOG_WARN("failed to get table schema", K(table_info), K(ret));
   } else if (!update_stmt->has_instead_of_trigger() && 
-             OB_FAIL(check_update_primary_key(index_schema, table_dml_info))) {
+             OB_FAIL(check_update_primary_key(*schema_guard, index_schema, table_dml_info))) {
     LOG_WARN("failed to check update unique key", K(ret));
   } else if (!table_info.is_link_table_ &&
              OB_FAIL(check_update_part_key(index_schema, table_dml_info))) {
@@ -548,7 +551,7 @@ int ObUpdateLogPlan::prepare_table_dml_info_special(const ObDmlTableInfo& table_
         LOG_WARN("failed to init assignment info", K(ret));
       } else if (OB_FAIL(check_update_unique_key(index_schema, index_dml_info))) {
         LOG_WARN("failed to check update unique key", K(ret));
-      } else if (OB_FAIL(check_update_primary_key(index_schema, index_dml_info))) {
+      } else if (OB_FAIL(check_update_primary_key(*schema_guard, index_schema, index_dml_info))) {
         LOG_WARN("failed to check update primary key", K(ret));
       } else if (!table_info.is_link_table_ &&
                  OB_FAIL(check_update_part_key(index_schema, index_dml_info))) {

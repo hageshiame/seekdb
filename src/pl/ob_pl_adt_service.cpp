@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX PL
@@ -44,7 +48,7 @@ int ObPLADTService::get_objmeta(ObLLVMType &type)
         uint8_t type_;
         uint8_t cs_level_;    // collation level
         uint8_t cs_type_;     // collation type
-        int8_t scale_;        // scale, 当type_ 为ObBitType时，该字段存储bit的length
+        int8_t scale_;        // scale, when type_ is ObBitType, this field stores the length of bit
        */
       if (OB_FAIL(obj_meta.push_back(int8_type))) {
         LOG_WARN("push_back error", K(ret));
@@ -452,7 +456,7 @@ int ObPLADTService::get_unwind_exception(ObLLVMType &type)
       _Unwind_Word private_1;
       _Unwind_Word private_2;
      */
-    //只映射第一项exception_class
+    //Only map the first item exception_class
     ObLLVMType int64_type;
     if (OB_FAIL(helper_.get_llvm_type(ObIntType, int64_type))) {
       LOG_WARN("failed to get_llvm_type", K(ret));
@@ -566,9 +570,9 @@ int ObPLADTService::get_seg_pointer_array(jit::ObLLVMType &type)
         T *data_;
         int64_t count_;
         char local_data_buf_[LOCAL_ARRAY_SIZE * sizeof(T)];
-        int64_t block_size_; // 申请内存的块单位
-        int64_t capacity_; // 标记ObSEArray的内部可用空间
-        int64_t max_print_count_; //表示最大需要打印的元素数量；
+        int64_t block_size_; // memory block unit for allocation
+        int64_t capacity_; // marks the internal available space of ObSEArray
+        int64_t max_print_count_; // indicates the maximum number of elements to be printed;
         int32_t error_;  //
         ObWrapperAllocator block_allocator_;
         bool has_alloc_;

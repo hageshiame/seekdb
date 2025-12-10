@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -69,18 +73,17 @@ static int calc_or_expr2(const ObDatum &left, const ObDatum &right, ObDatum &res
   }
   return ret;
 }
-
-// 特殊处理：
-// 1. select null or ''; -> or结果为0
-//    原因：针对select语句，cast_mode会自动加上WARN_ON_FAIL，所以空串转为number时，
-//    结果为0，错误码被覆盖，上述语句就会返回0
-// 2. create table t1 as (select null or ''); -> or的结果为NULL
-//    原因：针对非select/explain语句，cast_mode没有WARN_ON_FAIL，所以上面空串转number时，
-//    报OB_ERR_TRUNCATED_WRONG_VALUE_FOR_FIELD，但是为了兼容MySQL，这里会进行特殊处理，
-//    将错误码覆盖，并且or的结果为NULL而非0
+// Special processing:
+// 1. select null or ''; -> or result is 0
+//    Reason: For the select statement, cast_mode will automatically add WARN_ON_FAIL, so an empty string is converted to a number when,
+//    Result is 0, error code is overwritten, the above statement will return 0
+// 2. create table t1 as (select null or ''); -> the result of or is NULL
+//    Reason: For non-select/explain statements, cast_mode does not have WARN_ON_FAIL, so the above empty string conversion to number,
+//    report OB_ERR_TRUNCATED_WRONG_VALUE_FOR_FIELD, but for compatibility with MySQL, special handling will be performed here,
+//    Overwrite the error code, and the result of or should be NULL rather than 0
 //
-// 上面说的针对空串的特殊处理都是针对MySQL的，因为Oracle模式下or两边的子节点都必须是有
-// 布尔语义的表达式，不会直接是空串
+// The special handling mentioned above for empty strings is specific to MySQL, because in Oracle mode both sub-nodes on either side of OR must be present
+// Boolean semantic expression, will not be an empty string directly
 int calc_or_exprN(const ObExpr &expr, ObEvalCtx &ctx, ObDatum &res_datum)
 {
   int ret = OB_SUCCESS;
@@ -142,12 +145,12 @@ int ObExprOr::eval_or_batch_exprN(const ObExpr &expr, ObEvalCtx &ctx,
     ObBitVector &my_skip = expr.get_pvt_skip(ctx);
     my_skip.deep_copy(skip, batch_size);
     const int64_t real_param = batch_size - my_skip.accumulate_bit_cnt(batch_size);
-    int64_t skip_cnt = 0; //记录一个batch中skip的数量， 所有参数被skip即可结束
+    int64_t skip_cnt = 0; // record the number of skips in a batch, all parameters are skipped to end
 
-    /*为省略对results的初始化操作以及减少对my_skip的写入，分成3段求值
-    *args_[first]需要设置eval flags， 设置初始值， 为true设置skip
-    *args_[middle]需要设置非false的result， 为true设置skip
-    *args_[last]只需要设置非false的result*/
+    /*To omit the initialization of results and reduce writes to my_skip, the evaluation is divided into 3 segments
+    *args_[first] needs to set eval flags, set initial value, set skip to true
+    *args_[middle] needs to set a non-false result, set skip to true
+    *args_[last] only needs to set a non-false result*/
 
     //eval first
     if (real_param == skip_cnt) {

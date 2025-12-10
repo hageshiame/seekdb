@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2025 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX STORAGE
@@ -36,7 +40,7 @@ ObDirectLoadDiscreteVector::ObDirectLoadDiscreteVector(ObDiscreteBase *discrete_
 
 void ObDirectLoadDiscreteVector::reuse(const int64_t batch_size)
 {
-  // shallow_copy可能会修改lens_和ptrs_
+  // shallow_copy may modify lens_ and ptrs_
   if (lens_ != vec_lens_ || ptrs_ != vec_ptrs_) {
     set_vector(vec_lens_, vec_ptrs_);
   } else {
@@ -53,7 +57,7 @@ int ObDirectLoadDiscreteVector::_append_batch(const int64_t batch_idx, ObContinu
   int ret = OB_SUCCESS;
   const uint32_t *offsets = src_vec->get_offsets();
   const char *data = src_vec->get_data();
-  // 计算total_size
+  // Calculate total_size
   const int64_t total_size = offsets[offset + size] - offsets[offset];
   char *buf = nullptr;
   if (OB_ISNULL(buf = alloc_buf(total_size))) {
@@ -83,14 +87,14 @@ int ObDirectLoadDiscreteVector::_append_batch(const int64_t batch_idx, ObDiscret
   ObDiscreteBase *dest_vec = discrete_vector_;
   ObLength *lens = src_vec->get_lens();
   char **ptrs = src_vec->get_ptrs();
-  // 统计total_size
+  // Calculate total_size
   int64_t total_size = 0;
   for (int64_t src_idx = offset; src_idx < offset + size; ++src_idx) {
     total_size += lens[src_idx];
   }
-  // 更新lens
+  // update lens
   MEMCPY(lens_ + batch_idx, lens + offset, sizeof(ObLength) * size);
-  // 拷贝数据, 更新ptrs
+  // Copy data, update ptrs
   char *buf = nullptr;
   if (OB_ISNULL(buf = alloc_buf(total_size))) {
     ret = OB_ALLOCATE_MEMORY_FAILED;
@@ -115,12 +119,12 @@ int ObDirectLoadDiscreteVector::_append_batch<false>(const int64_t batch_idx, co
                                                      const int64_t offset, const int64_t size)
 {
   int ret = OB_SUCCESS;
-  // 统计total_size
+  // Calculate total_size
   int64_t total_size = 0;
   for (int64_t src_idx = offset; src_idx < offset + size; ++src_idx) {
     total_size += datums[src_idx].len_;
   }
-  // 拷贝数据, 更新ptrs, lens
+  // Copy data, update ptrs, lens
   char *buf = nullptr;
   if (OB_ISNULL(buf = alloc_buf(total_size))) {
     ret = OB_ALLOCATE_MEMORY_FAILED;
@@ -168,13 +172,13 @@ inline int ObDirectLoadDiscreteVector::_append_selective(const int64_t batch_idx
   int ret = OB_SUCCESS;
   const uint32_t *offsets = src_vec->get_offsets();
   const char *data = src_vec->get_data();
-  // 统计total_size
+  // Calculate total_size
   int64_t total_size = 0;
   for (int64_t i = 0; i < size; ++i) {
     const int64_t src_idx = selector[i];
     total_size += offsets[src_idx + 1] - offsets[src_idx];
   }
-  // 拷贝数据, 更新lens, ptrs
+  // Copy data, update lens, ptrs
   char *buf = nullptr;
   if (OB_ISNULL(buf = alloc_buf(total_size))) {
     ret = OB_ALLOCATE_MEMORY_FAILED;
@@ -205,13 +209,13 @@ inline int ObDirectLoadDiscreteVector::_append_selective(const int64_t batch_idx
   int ret = OB_SUCCESS;
   ObLength *lens = src_vec->get_lens();
   char **ptrs = src_vec->get_ptrs();
-  // 统计total_size
+  // Calculate total_size
   int64_t total_size = 0;
   for (int64_t i = 0; i < size; ++i) {
     const int64_t src_idx = selector[i];
     total_size += lens[src_idx];
   }
-  // 拷贝数据, 更新lens, ptrs
+  // Copy data, update lens, ptrs
   char *buf = nullptr;
   if (OB_ISNULL(buf = alloc_buf(total_size))) {
     ret = OB_ALLOCATE_MEMORY_FAILED;
@@ -240,13 +244,13 @@ inline int ObDirectLoadDiscreteVector::_append_selective<false>(const int64_t ba
                                                                 const int64_t size)
 {
   int ret = OB_SUCCESS;
-  // 统计total_size
+  // Calculate total_size
   int64_t total_size = 0;
   for (int64_t i = 0; i < size; ++i) {
     const int64_t src_idx = selector[i];
     total_size += datums[src_idx].len_;
   }
-  // 拷贝数据, 更新ptrs, lens
+  // Copy data, update ptrs, lens
   char *buf = nullptr;
   if (OB_ISNULL(buf = alloc_buf(total_size))) {
     ret = OB_ALLOCATE_MEMORY_FAILED;

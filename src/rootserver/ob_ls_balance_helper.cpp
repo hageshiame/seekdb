@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 #define USING_LOG_PREFIX BALANCE
 #include "rootserver/ob_ls_balance_helper.h"
@@ -379,7 +383,7 @@ int ObLSBalanceTaskHelper::generate_migrate_task_()
         //get one unit group, which less than primary_zone_unit_num
         const ObLSStatusInfo &ls_status = balance_info.get_redundant_ls_array().at(j);
         new_task = false;
-        //一个ls_status只能生成一个ls_alter任务，在生成任务后，要跳出循环
+        //An ls_status can only generate one ls_alter task, after generating the task, you need to break out of the loop
         for (int64_t k = 0; OB_SUCC(ret) && k < unit_group_balance_array_.count() && !new_task; ++k) {
           ObUnitGroupBalanceInfo &dest_balance_info = unit_group_balance_array_.at(k);  
           if (dest_balance_info.get_lack_ls_count() > 0) {

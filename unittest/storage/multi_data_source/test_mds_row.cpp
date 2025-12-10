@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 #define UNITTEST_DEBUG
 #include <gtest/gtest.h>
@@ -96,14 +100,14 @@ void TestMdsRowAndMdsCtx::mds_row_set_element() {
   ASSERT_EQ(user_node->user_data_.data_.ptr(), p_data);
   MdsCtx ctx2(2);
   ExampleUserData2 data2(2);
-  ASSERT_EQ(OB_TRY_LOCK_ROW_CONFLICT, row_.set(data2, ctx2, 0));// 不设超时，报6005
-  ASSERT_EQ(OB_ERR_EXCLUSIVE_LOCK_CONFLICT, row_.set(data2, ctx2, 200_ms));// 设超时，报6003
+  ASSERT_EQ(OB_TRY_LOCK_ROW_CONFLICT, row_.set(data2, ctx2, 0));// No timeout, report 6005
+  ASSERT_EQ(OB_ERR_EXCLUSIVE_LOCK_CONFLICT, row_.set(data2, ctx2, 200_ms)); // Set timeout, report 6003
   ctx1.on_redo(mock_scn(1));
-  ASSERT_EQ(OB_TRY_LOCK_ROW_CONFLICT, row_.set(data2, ctx2, 0));// 不设超时，报6005
+  ASSERT_EQ(OB_TRY_LOCK_ROW_CONFLICT, row_.set(data2, ctx2, 0)); // Do not set timeout, report 6005
   ctx1.before_prepare();
-  ASSERT_EQ(OB_TRY_LOCK_ROW_CONFLICT, row_.set(data2, ctx2, 0));// 不设超时，报6005
+  ASSERT_EQ(OB_TRY_LOCK_ROW_CONFLICT, row_.set(data2, ctx2, 0));// No timeout, report 6005
   ctx1.on_prepare(mock_scn(2));
-  ASSERT_EQ(OB_TRY_LOCK_ROW_CONFLICT, row_.set(data2, ctx2, 0));// 不设超时，报6005
+  ASSERT_EQ(OB_TRY_LOCK_ROW_CONFLICT, row_.set(data2, ctx2, 0));// No timeout, report 6005
   ctx1.on_commit(mock_scn(3));
   ASSERT_EQ(OB_SUCCESS, row_.set(data2, ctx2, 0));
 }

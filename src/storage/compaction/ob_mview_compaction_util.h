@@ -1,12 +1,18 @@
-// Copyright (c) 2024 OceanBase
-// OceanBase is licensed under Mulan PubL v2.
-// You can use this software according to the terms and conditions of the Mulan PubL v2.
-// You may obtain a copy of Mulan PubL v2 at:
-//          http://license.coscl.org.cn/MulanPubL-2.0
-// THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
-// EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
-// MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
-// See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #ifndef OCEANBASE_STORAGE_OB_MVIEW_COMPACTION_UTIL_
 #define OCEANBASE_STORAGE_OB_MVIEW_COMPACTION_UTIL_
@@ -98,11 +104,10 @@ struct ObMviewMergeParameter
   ObMviewMergeSQL refresh_sqls_[REFRESH_SQL_COUNT];
   ObSqlString validation_sql_;
 };
-
-// 1. 默认最少校验1个合并任务，最多2个
-// 2. 保证第N=1个进来的合并任务进行校验
-// 3. 从第N=2个开始，如果当前只校验了一次，那么以 1/RANDOM_SELECT_BASE 概率选择第N个是否校验
-// 4. 另外如果有开tracepoint被选中校验，那么就校验，但默认不开启tracepoint
+// 1. Default to check a minimum of 1 merge task, a maximum of 2
+// 2. Ensure the first incoming merge task (N=1) is validated
+// 3. Starting from the N=2nd, if the current one has only been validated once, then with a probability of 1/RANDOM_SELECT_BASE, select whether to validate the Nth one
+// 4. Additionally if any tracepoints are selected for validation, then validate, but tracepoints are not enabled by default
 class ObMviewCompactionValidation
 {
 public:

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef _OB_SHARE_SEQ_SEQUENCE_CACHE_H_
@@ -124,11 +128,11 @@ public:
     int ret = common::OB_SUCCESS;
     if (OB_LIKELY(with_prefetch_node_)) {
       if (curr_node_.end() != prefetch_node_.start()) {
-        // 两个 node 的数据不连续，则使用 prefetch 数据，丢弃 curr_node 残余数据
+        // The data of two nodes is not continuous, then use the prefetch data, discard the remaining data of curr_node
         ret = curr_node_.set_start(prefetch_node_.start());
       }
       curr_node_.set_end(prefetch_node_.end());
-      // 通知预取逻辑，prefetch node 可以接受新的预取数据
+      // Notify prefetch logic, prefetch node can accept new prefetch data
       with_prefetch_node_ = false;
     }
     return ret;
@@ -142,15 +146,15 @@ public:
 public:
   SequenceCacheNode curr_node_;
   SequenceCacheNode prefetch_node_;
-  // 标记当前 item 是否正在做 prefetching 操作，避免并发做 prefetch query
+  // Mark the current item whether it is performing a prefetching operation to avoid concurrent prefetch queries
   bool prefetching_;
-  // 标记 prefetch_node 是否被填充了值
+  // Mark whether prefetch_node has been filled with a value
   bool with_prefetch_node_;
-  // 如果 next-value 的计算流程为：先读取 last_number，然后加上 increment by
-  // 但对于首次取值，不加 increment by。所以使用 base_on_last_number 加以标记
-  // base_on_last_number_ = false 时表示首次取值
+  // If the calculation process of next-value is: first read last_number, then add increment by
+  // But for the first value retrieval, do not add increment by. So use base_on_last_number to mark
+  // base_on_last_number_ = false indicates the first value retrieval
   bool base_on_last_number_;
-  // 记录上次取得的值，用于 cycle 模式下判断下次取值是否需要加上 increment_by
+  // Record the last obtained value, used to determine if the next value needs to be incremented by increment_by in cycle mode
   int64_t last_refresh_ts_;
   lib::ObMutex alloc_mutex_;
   lib::ObMutex fetch_;
@@ -179,7 +183,7 @@ public:
   int init(share::schema::ObMultiVersionSchemaService &schema_service,
             common::ObMySQLProxy &sql_proxy);
   int nextval(const share::schema::ObSequenceSchema &schema,
-              common::ObIAllocator &allocator, // 用于各种临时计算
+              common::ObIAllocator &allocator, // used for various temporary calculations
               ObSequenceValue &nextval);
   int remove(uint64_t tenant_id, uint64_t sequence_id, obrpc::ObSeqCleanCacheRes &cache_res);
 

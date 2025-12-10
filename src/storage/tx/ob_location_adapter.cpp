@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "ob_location_adapter.h"
@@ -137,7 +141,7 @@ int ObLocationAdapter::get_leader_(const int64_t cluster_id,
     if (OB_FAIL(location_service_->nonblock_get_leader(cluster_id, tenant_id, ls_id, leader))) {
       TRANS_LOG(DEBUG, "nonblock get leader from locatition cache error", K(ret), K(ls_id));
       int tmp_ret = OB_SUCCESS;
-      //异步获取leader失败，暂时不清除location的cache；
+      // Asynchronous get leader failed, temporarily do not clear the cache of location;
       if (OB_SUCCESS != (tmp_ret = location_service_->nonblock_renew(cluster_id, tenant_id, ls_id))) {
         TRANS_LOG(WARN, "nonblock renew from location cache error", "ret", tmp_ret, K(ls_id));
       }

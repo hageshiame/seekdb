@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef __OB_SHARE_SEQUENCE_SEQUENCE_DML_PROXY_H__
@@ -50,13 +54,13 @@ public:
   void init(share::schema::ObMultiVersionSchemaService &schema_service,
             common::ObMySQLProxy &sql_proxy);
   /*
-   * 1. select for update, 读取到 sequence 参数
-   * 2. 如果是 nocycle，则按照 cache 值为上限尽可能取值填入
-   *    next_inclusvie_start, next_inclusvie_end
-   *    如果是 cycle， 则也是尽可能取，但如果没有内容可取了，则回环到
-   *    起点重新取满一个 cache，并填入
-   *    next_inclusvie_start, next_inclusvie_end
-   *  3. 更新 sequence_object 表
+   * 1. select for update, read the sequence parameter
+   * 2. If it is nocycle, then take values up to the cache limit as much as possible and fill them into
+   *    next_inclusive_start, next_inclusive_end
+   *    If it is cycle, then also take as many values as possible, but if there are no more values to take,
+   *    loop back to the start and refill one cache, then fill them into
+   *    next_inclusive_start, next_inclusive_end
+   *  3. Update the sequence_object table
    */
   int next_batch(const uint64_t tenant_id,
                  const uint64_t sequence_id,

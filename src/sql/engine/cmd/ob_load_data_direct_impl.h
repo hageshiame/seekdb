@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2023 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 #pragma once
 
@@ -41,11 +45,11 @@ class ObTableLoadBackupTable;
 namespace sql
 {
 /**
- * LOAD DATA接入direct load路径
+ * LOAD DATA access direct load path
  *
- * - 输入行必须包含表的所有列数据, 除了堆表的隐藏主键列
- * - 不支持SET子句
- * - 不支持表达式
+ * - Input lines must contain data for all columns of the table, except for the hidden primary key column of heap tables
+ * - SET clause is not supported
+ * - Expressions are not supported
  */
 class ObLoadDataDirectImpl : public ObLoadDataBase
 {
@@ -243,8 +247,8 @@ private:
   private:
     ObArenaAllocator allocator_;
     LoadExecuteContext *execute_ctx_;
-    ObCSVGeneralParser csv_parser_; // 用来计算完整行
-    ObLoadFileDataTrimer data_trimer_; // 缓存不完整行的数据
+    ObCSVGeneralParser csv_parser_; // used to calculate complete rows
+    ObLoadFileDataTrimer data_trimer_; // cache incomplete line data
     ObFileReader *file_reader_;
     int64_t end_offset_; // use -1 in stream file such as load data local
     bool read_raw_;
@@ -269,7 +273,7 @@ private:
     ObCSVGeneralParser csv_parser_;
     DataBuffer escape_buffer_;
     DataBuffer *data_buffer_;
-    // 以下参数是为了打错误日志
+    // The following parameters are for logging errors
     common::ObString file_name_;
     int64_t start_line_no_;
     int64_t pos_;
@@ -334,7 +338,7 @@ private:
     int64_t worker_idx_; // parse thread idx
     int32_t session_id_; // table load session id
     DataDesc data_desc_;
-    int64_t start_line_no_; // 从1开始
+    int64_t start_line_no_; // Start from 1
     table::ObTableLoadSequenceNo sequence_no_;
     TaskResult result_;
     TO_STRING_KV(K_(task_id), K_(data_buffer), K_(worker_idx), K_(session_id), K_(data_desc),
@@ -386,7 +390,7 @@ private:
     // task ctrl
     ObParallelTaskController task_controller_;
     ObConcurrentFixedCircularArray<TaskHandle *> handle_reserve_queue_;
-    common::ObArray<TaskHandle *> handle_resource_; // 用于释放资源
+    common::ObArray<TaskHandle *> handle_resource_; // used to release resources
     int64_t total_line_count_;
     // trans
     observer::ObTableLoadInstance::TransCtx trans_ctx_;

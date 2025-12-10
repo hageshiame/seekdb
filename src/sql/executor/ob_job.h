@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SQL_EXECUTOR_JOB_
@@ -58,7 +62,7 @@ public:
   DECLARE_TO_STRING;
 private:
   const ObPhysicalPlan *phy_plan_;
-  //供新引擎使用
+  // For new engine use
   const ObOpSpec *root_spec_;
   const ObOpSpec *extend_spec_;
 };
@@ -68,16 +72,14 @@ class ObJob
 public:
   ObJob();
   virtual ~ObJob();
-  // 不同Job，Task的调度顺序不同，切分方式不同
+  // Different Job, Task scheduling order is different, splitting method is different
   void set_task_spliter(ObTaskSpliter *spliter) { task_spliter_ = spliter; }
   // @deprecated
-  // 设置依赖的Job
+  // Set dependent Job
   int add_depending_job(const ObJob *job);
-
-  // 获取Job中的Task集合
+  // Get the Task collection from Job
   int get_task_control(const ObExecContext &ctx, ObTaskControl *&task_control);
-
-  // 判断Job的当前状态
+  // Determine the current status of the Job
   ObJobState get_state() { return state_; }
   void set_state(ObJobState state) { state_ = state; }
 
@@ -89,7 +91,7 @@ public:
   inline void set_phy_plan(ObPhysicalPlan *phy_plan) {
     phy_plan_ = phy_plan;
     if (phy_plan) {
-      // 凡不是select语句，就认为是 dml，不可以做分区级重试
+      // Any statement that is not a select statement is considered DML, and partition-level retries are not allowed
       task_control_.set_is_select_plan(phy_plan->is_select_plan());
     }
   }
@@ -113,7 +115,7 @@ public:
 
   DECLARE_TO_STRING;
 private:
-  // task control 初始化接口
+  // task control initialization interface
   int prepare_task_control(const ObExecContext &exec_ctx);
   int get_parallel_degree(const ObExecContext &exec_ctx, int64_t &stmt_parallel_degree);
   // disallow copy
@@ -124,7 +126,7 @@ private:
   bool is_root_job_;
   ObPhysicalPlan *phy_plan_;
   ObJobState state_;
-  // 控制task的切分，以及task的状态
+  // Control task splitting, as well as task status
   ObTaskSpliter *task_spliter_;
   bool task_splited_;
   ObTaskControl task_control_;

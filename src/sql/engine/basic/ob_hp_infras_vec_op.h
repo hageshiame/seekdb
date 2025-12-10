@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OB_HASH_PARTITIONING_INFRASTRUCTURE_VEC_OP_H_
@@ -214,13 +218,13 @@ public:
         int32_t part_shift_ : 8;     // part_shift: max value is 64(bytes)
         int32_t nth_way_ : 8;     // 0: left, 1: right
         int32_t level_ : 16;
-        // 这里采用递增方式来处理，原因是存在left和right任何一边可能没有数据
-        // 但另外一个发生了dump，导致获取其中一路为空时，可能另外一路还遗留在part_list中
-        // 从而只有(side, level, nth_part)不够表示唯一
-        // 而每层假设128个partition，总共4层，则128^4=268435456，则part需要差不多32bit表示
-        // 所以采用递增id方式来保证左右两边完全一致
-        // 这里暂时假设应用层使用part比较随机
-        // 其实如果保证按照类似先序遍历方式写入和读取，则可以保证同层次下的part只有一个，则不需要这么大的id
+        // Here we use an incremental approach to handle, the reason is that either left or right side may have no data
+        // but another one had a dump, leading to one of the routes being empty when retrieved, possibly leaving the other route in part_list
+        // Thus only (side, level, nth_part) is not sufficient to represent uniquely
+        // And each layer assumes 128 partitions, totaling 4 layers, then 128^4=268435456, then part needs about 32 bits to represent
+        // So adopt the incremental id method to ensure both sides are completely consistent
+        // Here we temporarily assume that the application layer uses part comparison randomly
+        // Actually, if we ensure writing and reading in a similar pre-order traversal manner, then there can be only one part at the same level, so such a large id is not needed
         int64_t nth_part_ : 32;
       };
     };
@@ -524,8 +528,7 @@ protected:
   }
 
   int64_t get_mem_used() { return (nullptr == mem_context_) ? 0 : mem_context_->used();}
-
-  // 高位4 byte作为partition hash value
+  // High 4 byte as partition hash value
   OB_INLINE int64_t get_part_idx(const uint64_t hash_value)
   {
     return (hash_value >> part_shift_) & (est_part_cnt_ - 1);
@@ -559,7 +562,7 @@ protected:
                                                                                     right_part_map_;
   ObIOEventObserver *io_event_observer_;
   ObSqlMemMgrProcessor *sql_mem_processor_;
-  // 这里暂时以一份保存，如果是多元operator，part_col_idxs不一样，需要区分
+  // Here temporarily save one, if it is a multi-operator, part_col_idxs are different, need to distinguish
   const common::ObIArray<ObSortFieldCollation> *sort_collations_;
   ObEvalCtx *eval_ctx_;
   ObIntraPartition *cur_left_part_;

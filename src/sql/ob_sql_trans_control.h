@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OCEANBASE_SQL_TRANS_CONTROL_
@@ -50,7 +54,7 @@ class ObIDASTaskOp;
 class TransState
 {
 private:
-  /* 两位表示一个动作：低位表示是否执行，高位表示是否成功 */
+  /* Two bits represent an action: the low bit indicates whether to execute, the high bit indicates whether it was successful */
   static const uint32_t START_TRANS_EXECUTED_BIT   = (1 << 0);
   static const uint32_t END_TRANS_EXECUTED_BIT     = (1 << 2);
   static const uint32_t START_STMT_EXECUTED_BIT    = (1 << 4);
@@ -137,8 +141,8 @@ private:
   // cached for start_stmt, start_participants, end_participants
 };
 
-/* 内部类，仅用于本文件。将SQL层的Consistency转化为事务层的Consistency。
- * 事务层对Consistency只有STRONg/WEAK的概念，没有FROZEN的概念。
+/* Inner class, used only within this file. Converts Consistency from the SQL layer to the transaction layer.
+ * The transaction layer only has STRONG/WEAK concepts of Consistency, without the FROZEN concept.
  **/
 class ObConsistencyLevelAdaptor
 {

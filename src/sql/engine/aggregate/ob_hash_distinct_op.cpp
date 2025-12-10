@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -229,7 +233,7 @@ int ObHashDistinctOp::build_distinct_data(bool is_block)
       }
       if (OB_FAIL(ret)) {
       } else if (is_block) {
-        // 如果是block模式，则处理完一批数据（可能来自于child或者dump的partition),则开始返回数据
+        // If it is block mode, then after processing a batch of data (which may come from child or dump partition), start returning the data
         LOG_TRACE("trace block", K(is_block));
         break;
       } else if (OB_FAIL(hp_infras_.end_round())) {
@@ -544,7 +548,7 @@ int ObHashDistinctOp::do_block_distinct()
     } else if (OB_FAIL(hp_infras_.open_hash_table_part())) {
       LOG_WARN("failed to open hash table part", K(ret));
     }
-    // 这里进行clear主要为了如果在dump情况下，distinct_exprs被写过值，不进行clean，可能导致被计算的值没有覆盖
+    // Here we perform clear mainly to ensure that if distinct_exprs has been assigned a value during dump, not cleaning it could lead to calculated values not being overwritten
     clear_evaluated_flag();
     first_got_row_ = false;
   }

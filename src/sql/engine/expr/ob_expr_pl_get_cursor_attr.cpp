@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #define USING_LOG_PREFIX SQL_ENG
@@ -290,7 +294,7 @@ int ObExprPLGetCursorAttr::calc_pl_get_cursor_attr(
           ObString rowid;
           if (OB_FAIL(cursor->get_rowid(rowid))) {
             LOG_WARN("fail to get rowcount attr", K(ret));
-            // is_for_update && !has_hidden_rowid,说明是多表join且没有指定唯一for update 表
+            // is_for_update && !has_hidden_rowid, indicates that it is a multi-table join without specifying a unique for update table
             if (OB_INVALID_ROWID == ret && cursor->is_for_update() && !cursor->has_hidden_rowid()) {
               ret = OB_SUCCESS;
               expr_datum.set_null();

@@ -1,13 +1,17 @@
-/**
- * Copyright (c) 2021 OceanBase
- * OceanBase CE is licensed under Mulan PubL v2.
- * You can use this software according to the terms and conditions of the Mulan PubL v2.
- * You may obtain a copy of Mulan PubL v2 at:
- *          http://license.coscl.org.cn/MulanPubL-2.0
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PubL v2 for more details.
+/*
+ * Copyright (c) 2025 OceanBase.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "election_utils.h"
@@ -179,8 +183,8 @@ int MemberListWithStates::record_accept_ok(const ElectionAcceptResponseMsg &acce
     if (ok_count < (p_impl_->member_list_.get_replica_num() / 2 + 1)) {
       ret = OB_ELECTION_BELOW_MAJORITY;
     }
-    // 这里不能返回OVER_MAJORITY，因为在续约阶段，所有的accept_ok_promise_not_vote_before_local_ts_都是
-    // 有效的，并且这里不判断OVER_MAJORITY的另一个好处是，每一次返回accept ok都可能把leader lease向后推进
+    // Here we cannot return OVER_MAJORITY, because during the renewal phase, all accept_ok_promise_not_vote_before_local_ts_ are
+    // valid, and another benefit here is that every return of accept ok may advance the leader lease
   }
   return ret;
 }
@@ -337,7 +341,7 @@ void Lease::get_owner_and_ballot(ObAddr &owner, int64_t &ballot) const
 }
 
 bool Lease::is_expired() const
-{ // is_expired()只支持在本地判断
+{ // is_expired() only supports local judgment
   TCRLockGuard guard(lock_);
   return get_monotonic_ts() > lease_end_ts_;
 }
@@ -355,7 +359,7 @@ void Lease::reset()
 }
 
 bool Lease::is_empty() const
-{ // is_empty()支持在任意机器上判断
+{ // is_empty() supports checking on any machine
   TCRLockGuard guard(lock_);
   return !owner_.is_valid() && lease_end_ts_ == -1;
 }
